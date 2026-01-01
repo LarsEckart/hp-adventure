@@ -25,13 +25,17 @@ decodeGameState =
 decodeCurrent : Decoder Model.GameState
 decodeCurrent =
     Decode.map3
-        (\schemaVersion player currentAdventure ->
-            { schemaVersion = schemaVersion
+        (\_ player currentAdventure ->
+            { schemaVersion = 2
             , player = player
             , currentAdventure = currentAdventure
             , actionInput = ""
             , isLoading = False
             , error = Nothing
+            , notice = Nothing
+            , showInventory = True
+            , showHistory = True
+            , pendingAbandon = False
             }
         )
         (Decode.field "schemaVersion" Decode.int)
@@ -43,12 +47,22 @@ decodeLegacy : Decoder Model.GameState
 decodeLegacy =
     Decode.map2
         (\playerName houseName ->
-            { schemaVersion = 1
-            , player = { name = playerName, houseName = houseName }
+            { schemaVersion = 2
+            , player =
+                { name = playerName
+                , houseName = houseName
+                , inventory = []
+                , completedAdventures = []
+                , stats = { adventuresCompleted = 0, totalTurns = 0 }
+                }
             , currentAdventure = Nothing
             , actionInput = ""
             , isLoading = False
             , error = Nothing
+            , notice = Nothing
+            , showInventory = True
+            , showHistory = True
+            , pendingAbandon = False
             }
         )
         (Decode.field "playerName" Decode.string)
@@ -60,14 +74,32 @@ encodePlayer player =
     Encode.object
         [ ( "name", Encode.string player.name )
         , ( "houseName", Encode.string player.houseName )
+        , ( "inventory", Encode.list encodeItem player.inventory )
+        , ( "completedAdventures", Encode.list encodeCompletedAdventure player.completedAdventures )
+        , ( "stats", encodeStats player.stats )
         ]
 
 
 decodePlayer : Decoder Model.Player
 decodePlayer =
-    Decode.map2 Model.Player
+    Decode.map5 Model.Player
         (Decode.field "name" Decode.string)
         (Decode.field "houseName" Decode.string)
+        (Decode.oneOf
+            [ Decode.field "inventory" (Decode.list decodeItem)
+            , Decode.succeed []
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "completedAdventures" (Decode.list decodeCompletedAdventure)
+            , Decode.succeed []
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "stats" decodeStats
+            , Decode.succeed { adventuresCompleted = 0, totalTurns = 0 }
+            ]
+        )
 
 
 encodeAdventure : Model.Adventure -> Encode.Value
@@ -111,16 +143,28 @@ encodeAssistant assistant =
     Encode.object
         [ ( "storyText", Encode.string assistant.storyText )
         , ( "suggestedActions", Encode.list Encode.string assistant.suggestedActions )
+        , ( "newItems", Encode.list encodeItem assistant.newItems )
+        , ( "adventureCompleted", Encode.bool assistant.adventureCompleted )
         ]
 
 
 decodeAssistant : Decoder Model.AssistantTurn
 decodeAssistant =
-    Decode.map2 Model.AssistantTurn
+    Decode.map4 Model.AssistantTurn
         (Decode.field "storyText" Decode.string)
         (Decode.oneOf
             [ Decode.field "suggestedActions" (Decode.list Decode.string)
             , Decode.succeed []
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "newItems" (Decode.list decodeItem)
+            , Decode.succeed []
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "adventureCompleted" Decode.bool
+            , Decode.succeed False
             ]
         )
 
@@ -133,3 +177,60 @@ encodeMaybe encoder maybeValue =
 
         Just value ->
             encoder value
+
+
+encodeItem : Model.Item -> Encode.Value
+encodeItem item =
+    Encode.object
+        [ ( "name", Encode.string item.name )
+        , ( "description", Encode.string item.description )
+        , ( "foundAt", Encode.string item.foundAt )
+        ]
+
+
+decodeItem : Decoder Model.Item
+decodeItem =
+    Decode.map3 Model.Item
+        (Decode.field "name" Decode.string)
+        (Decode.field "description" Decode.string)
+        (Decode.field "foundAt" Decode.string)
+
+
+encodeCompletedAdventure : Model.CompletedAdventure -> Encode.Value
+encodeCompletedAdventure adventure =
+    Encode.object
+        [ ( "title", Encode.string adventure.title )
+        , ( "summary", Encode.string adventure.summary )
+        , ( "completedAt", Encode.string adventure.completedAt )
+        ]
+
+
+decodeCompletedAdventure : Decoder Model.CompletedAdventure
+decodeCompletedAdventure =
+    Decode.map3 Model.CompletedAdventure
+        (Decode.field "title" Decode.string)
+        (Decode.field "summary" Decode.string)
+        (Decode.field "completedAt" Decode.string)
+
+
+encodeStats : Model.Stats -> Encode.Value
+encodeStats stats =
+    Encode.object
+        [ ( "adventuresCompleted", Encode.int stats.adventuresCompleted )
+        , ( "totalTurns", Encode.int stats.totalTurns )
+        ]
+
+
+decodeStats : Decoder Model.Stats
+decodeStats =
+    Decode.map2 Model.Stats
+        (Decode.oneOf
+            [ Decode.field "adventuresCompleted" Decode.int
+            , Decode.succeed 0
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "totalTurns" Decode.int
+            , Decode.succeed 0
+            ]
+        )

@@ -10,4 +10,10 @@ type Msg
     | SendAction
     | UseSuggestedAction String
     | GotStoryResponse (Result Api.HttpError Api.StoryResponse)
+    | ToggleInventory
+    | ToggleHistory
+    | RequestAbandon
+    | ConfirmAbandon
+    | CancelAbandon
+    | DismissNotice
     | ResetState

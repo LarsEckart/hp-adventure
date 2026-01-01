@@ -784,11 +784,11 @@ function _Debug_crash_UNUSED(identifier, fact1, fact2, fact3, fact4)
 
 function _Debug_regionToString(region)
 {
-	if (region.L.A === region.W.A)
+	if (region.N.A === region.X.A)
 	{
-		return 'on line ' + region.L.A;
+		return 'on line ' + region.N.A;
 	}
-	return 'on lines ' + region.L.A + ' through ' + region.W.A;
+	return 'on lines ' + region.N.A + ' through ' + region.X.A;
 }
 
 
@@ -1861,9 +1861,9 @@ var _Platform_worker = F4(function(impl, flagDecoder, debugMetadata, args)
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aQ,
-		impl.a5,
-		impl.a1,
+		impl.a_,
+		impl.bi,
+		impl.bd,
 		function() { return function() {} }
 	);
 });
@@ -2728,8 +2728,8 @@ var _VirtualDom_mapEventRecord = F2(function(func, record)
 {
 	return {
 		o: func(record.o),
-		M: record.M,
-		I: record.I
+		O: record.O,
+		K: record.K
 	}
 });
 
@@ -2998,10 +2998,10 @@ function _VirtualDom_makeCallback(eventNode, initialHandler)
 
 		var value = result.a;
 		var message = !tag ? value : tag < 3 ? value.a : value.o;
-		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.M;
+		var stopPropagation = tag == 1 ? value.b : tag == 3 && value.O;
 		var currentEventNode = (
 			stopPropagation && event.stopPropagation(),
-			(tag == 2 ? value.b : tag == 3 && value.I) && event.preventDefault(),
+			(tag == 2 ? value.b : tag == 3 && value.K) && event.preventDefault(),
 			eventNode
 		);
 		var tagger;
@@ -3951,11 +3951,11 @@ var _Browser_element = _Debugger_element || F4(function(impl, flagDecoder, debug
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aQ,
-		impl.a5,
-		impl.a1,
+		impl.a_,
+		impl.bi,
+		impl.bd,
 		function(sendToApp, initialModel) {
-			var view = impl.a7;
+			var view = impl.bk;
 			/**/
 			var domNode = args['node'];
 			//*/
@@ -3987,12 +3987,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 	return _Platform_initialize(
 		flagDecoder,
 		args,
-		impl.aQ,
-		impl.a5,
-		impl.a1,
+		impl.a_,
+		impl.bi,
+		impl.bd,
 		function(sendToApp, initialModel) {
-			var divertHrefToApp = impl.K && impl.K(sendToApp)
-			var view = impl.a7;
+			var divertHrefToApp = impl.M && impl.M(sendToApp)
+			var view = impl.bk;
 			var title = _VirtualDom_doc.title;
 			var bodyNode = _VirtualDom_doc.body;
 			var currNode = _VirtualDom_virtualize(bodyNode);
@@ -4000,12 +4000,12 @@ var _Browser_document = _Debugger_document || F4(function(impl, flagDecoder, deb
 			{
 				_VirtualDom_divertHrefToApp = divertHrefToApp;
 				var doc = view(model);
-				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aH);
+				var nextNode = _VirtualDom_node('body')(_List_Nil)(doc.aO);
 				var patches = _VirtualDom_diff(currNode, nextNode);
 				bodyNode = _VirtualDom_applyPatches(bodyNode, currNode, patches, sendToApp);
 				currNode = nextNode;
 				_VirtualDom_divertHrefToApp = 0;
-				(title !== doc.N) && (_VirtualDom_doc.title = title = doc.N);
+				(title !== doc.G) && (_VirtualDom_doc.title = title = doc.G);
 			});
 		}
 	);
@@ -4061,12 +4061,12 @@ function _Browser_makeAnimator(model, draw)
 
 function _Browser_application(impl)
 {
-	var onUrlChange = impl.aT;
-	var onUrlRequest = impl.aU;
+	var onUrlChange = impl.a2;
+	var onUrlRequest = impl.a3;
 	var key = function() { key.a(onUrlChange(_Browser_getUrl())); };
 
 	return _Browser_document({
-		K: function(sendToApp)
+		M: function(sendToApp)
 		{
 			key.a = sendToApp;
 			_Browser_window.addEventListener('popstate', key);
@@ -4082,9 +4082,9 @@ function _Browser_application(impl)
 					var next = $elm$url$Url$fromString(href).a;
 					sendToApp(onUrlRequest(
 						(next
-							&& curr.al === next.al
-							&& curr.ab === next.ab
-							&& curr.ai.a === next.ai.a
+							&& curr.ap === next.ap
+							&& curr.ac === next.ac
+							&& curr.am.a === next.am.a
 						)
 							? $elm$browser$Browser$Internal(next)
 							: $elm$browser$Browser$External(href)
@@ -4092,13 +4092,13 @@ function _Browser_application(impl)
 				}
 			});
 		},
-		aQ: function(flags)
+		a_: function(flags)
 		{
-			return A3(impl.aQ, flags, _Browser_getUrl(), key);
+			return A3(impl.a_, flags, _Browser_getUrl(), key);
 		},
-		a7: impl.a7,
-		a5: impl.a5,
-		a1: impl.a1
+		bk: impl.bk,
+		bi: impl.bi,
+		bd: impl.bd
 	});
 }
 
@@ -4164,17 +4164,17 @@ var _Browser_decodeEvent = F2(function(decoder, event)
 function _Browser_visibilityInfo()
 {
 	return (typeof _VirtualDom_doc.hidden !== 'undefined')
-		? { aN: 'hidden', aI: 'visibilitychange' }
+		? { aX: 'hidden', aP: 'visibilitychange' }
 		:
 	(typeof _VirtualDom_doc.mozHidden !== 'undefined')
-		? { aN: 'mozHidden', aI: 'mozvisibilitychange' }
+		? { aX: 'mozHidden', aP: 'mozvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.msHidden !== 'undefined')
-		? { aN: 'msHidden', aI: 'msvisibilitychange' }
+		? { aX: 'msHidden', aP: 'msvisibilitychange' }
 		:
 	(typeof _VirtualDom_doc.webkitHidden !== 'undefined')
-		? { aN: 'webkitHidden', aI: 'webkitvisibilitychange' }
-		: { aN: 'hidden', aI: 'visibilitychange' };
+		? { aX: 'webkitHidden', aP: 'webkitvisibilitychange' }
+		: { aX: 'hidden', aP: 'visibilitychange' };
 }
 
 
@@ -4255,12 +4255,12 @@ var _Browser_call = F2(function(functionName, id)
 function _Browser_getViewport()
 {
 	return {
-		ar: _Browser_getScene(),
-		az: {
-			aB: _Browser_window.pageXOffset,
-			aC: _Browser_window.pageYOffset,
-			aA: _Browser_doc.documentElement.clientWidth,
-			aa: _Browser_doc.documentElement.clientHeight
+		av: _Browser_getScene(),
+		aE: {
+			aG: _Browser_window.pageXOffset,
+			aH: _Browser_window.pageYOffset,
+			aF: _Browser_doc.documentElement.clientWidth,
+			ab: _Browser_doc.documentElement.clientHeight
 		}
 	};
 }
@@ -4270,8 +4270,8 @@ function _Browser_getScene()
 	var body = _Browser_doc.body;
 	var elem = _Browser_doc.documentElement;
 	return {
-		aA: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
-		aa: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
+		aF: Math.max(body.scrollWidth, body.offsetWidth, elem.scrollWidth, elem.offsetWidth, elem.clientWidth),
+		ab: Math.max(body.scrollHeight, body.offsetHeight, elem.scrollHeight, elem.offsetHeight, elem.clientHeight)
 	};
 }
 
@@ -4294,15 +4294,15 @@ function _Browser_getViewportOf(id)
 	return _Browser_withNode(id, function(node)
 	{
 		return {
-			ar: {
-				aA: node.scrollWidth,
-				aa: node.scrollHeight
+			av: {
+				aF: node.scrollWidth,
+				ab: node.scrollHeight
 			},
-			az: {
-				aB: node.scrollLeft,
-				aC: node.scrollTop,
-				aA: node.clientWidth,
-				aa: node.clientHeight
+			aE: {
+				aG: node.scrollLeft,
+				aH: node.scrollTop,
+				aF: node.clientWidth,
+				ab: node.clientHeight
 			}
 		};
 	});
@@ -4332,18 +4332,18 @@ function _Browser_getElement(id)
 		var x = _Browser_window.pageXOffset;
 		var y = _Browser_window.pageYOffset;
 		return {
-			ar: _Browser_getScene(),
-			az: {
-				aB: x,
-				aC: y,
-				aA: _Browser_doc.documentElement.clientWidth,
-				aa: _Browser_doc.documentElement.clientHeight
+			av: _Browser_getScene(),
+			aE: {
+				aG: x,
+				aH: y,
+				aF: _Browser_doc.documentElement.clientWidth,
+				ab: _Browser_doc.documentElement.clientHeight
 			},
-			aK: {
-				aB: x + rect.left,
-				aC: y + rect.top,
-				aA: rect.width,
-				aa: rect.height
+			aT: {
+				aG: x + rect.left,
+				aH: y + rect.top,
+				aF: rect.width,
+				ab: rect.height
 			}
 		};
 	});
@@ -4388,25 +4388,25 @@ var _Http_toTask = F3(function(router, toTask, request)
 	return _Scheduler_binding(function(callback)
 	{
 		function done(response) {
-			callback(toTask(request.aL.a(response)));
+			callback(toTask(request.aU.a(response)));
 		}
 
 		var xhr = new XMLHttpRequest();
 		xhr.addEventListener('error', function() { done($elm$http$Http$NetworkError_); });
 		xhr.addEventListener('timeout', function() { done($elm$http$Http$Timeout_); });
-		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aL.b, xhr)); });
-		$elm$core$Maybe$isJust(request.ax) && _Http_track(router, xhr, request.ax.a);
+		xhr.addEventListener('load', function() { done(_Http_toResponse(request.aU.b, xhr)); });
+		$elm$core$Maybe$isJust(request.aC) && _Http_track(router, xhr, request.aC.a);
 
 		try {
-			xhr.open(request.aR, request.a6, true);
+			xhr.open(request.a0, request.bj, true);
 		} catch (e) {
-			return done($elm$http$Http$BadUrl_(request.a6));
+			return done($elm$http$Http$BadUrl_(request.bj));
 		}
 
 		_Http_configureRequest(xhr, request);
 
-		request.aH.a && xhr.setRequestHeader('Content-Type', request.aH.a);
-		xhr.send(request.aH.b);
+		request.aO.a && xhr.setRequestHeader('Content-Type', request.aO.a);
+		xhr.send(request.aO.b);
 
 		return function() { xhr.c = true; xhr.abort(); };
 	});
@@ -4417,13 +4417,13 @@ var _Http_toTask = F3(function(router, toTask, request)
 
 function _Http_configureRequest(xhr, request)
 {
-	for (var headers = request._; headers.b; headers = headers.b) // WHILE_CONS
+	for (var headers = request.aa; headers.b; headers = headers.b) // WHILE_CONS
 	{
 		xhr.setRequestHeader(headers.a.a, headers.a.b);
 	}
-	xhr.timeout = request.a3.a || 0;
-	xhr.responseType = request.aL.d;
-	xhr.withCredentials = request.aF;
+	xhr.timeout = request.bf.a || 0;
+	xhr.responseType = request.aU.d;
+	xhr.withCredentials = request.aM;
 }
 
 
@@ -4444,10 +4444,10 @@ function _Http_toResponse(toBody, xhr)
 function _Http_toMetadata(xhr)
 {
 	return {
-		a6: xhr.responseURL,
-		a$: xhr.status,
-		a0: xhr.statusText,
-		_: _Http_parseHeaders(xhr.getAllResponseHeaders())
+		bj: xhr.responseURL,
+		bb: xhr.status,
+		bc: xhr.statusText,
+		aa: _Http_parseHeaders(xhr.getAllResponseHeaders())
 	};
 }
 
@@ -4542,15 +4542,15 @@ function _Http_track(router, xhr, tracker)
 	xhr.upload.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Sending({
-			aZ: event.loaded,
-			as: event.total
+			a8: event.loaded,
+			ay: event.total
 		}))));
 	});
 	xhr.addEventListener('progress', function(event) {
 		if (xhr.c) { return; }
 		_Scheduler_rawSpawn(A2($elm$core$Platform$sendToSelf, router, _Utils_Tuple2(tracker, $elm$http$Http$Receiving({
-			aX: event.loaded,
-			as: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
+			a6: event.loaded,
+			ay: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
 }var $elm$core$Basics$always = F2(
@@ -5061,7 +5061,7 @@ var $elm$url$Url$Http = 0;
 var $elm$url$Url$Https = 1;
 var $elm$url$Url$Url = F6(
 	function (protocol, host, port_, path, query, fragment) {
-		return {Z: fragment, ab: host, ag: path, ai: port_, al: protocol, am: query};
+		return {_: fragment, ac: host, aj: path, am: port_, ap: protocol, aq: query};
 	});
 var $elm$core$String$contains = _String_contains;
 var $elm$core$String$length = _String_length;
@@ -5342,22 +5342,35 @@ var $elm$core$Task$perform = F2(
 var $elm$browser$Browser$element = _Browser_element;
 var $author$project$Model$Adventure = F3(
 	function (title, startedAt, turns) {
-		return {a_: startedAt, N: title, a4: turns};
+		return {a9: startedAt, G: title, bh: turns};
 	});
 var $author$project$Model$Turn = F2(
 	function (userAction, assistant) {
-		return {Q: assistant, ay: userAction};
+		return {S: assistant, aD: userAction};
 	});
-var $author$project$Model$AssistantTurn = F2(
-	function (storyText, suggestedActions) {
-		return {at: storyText, a2: suggestedActions};
+var $author$project$Model$AssistantTurn = F4(
+	function (storyText, suggestedActions, newItems, adventureCompleted) {
+		return {aK: adventureCompleted, a1: newItems, az: storyText, be: suggestedActions};
+	});
+var $elm$json$Json$Decode$bool = _Json_decodeBool;
+var $author$project$Model$Item = F3(
+	function (name, description, foundAt) {
+		return {aR: description, aW: foundAt, ag: name};
 	});
 var $elm$json$Json$Decode$field = _Json_decodeField;
-var $elm$json$Json$Decode$list = _Json_decodeList;
-var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $elm$json$Json$Decode$map3 = _Json_map3;
 var $elm$json$Json$Decode$string = _Json_decodeString;
-var $author$project$Codec$decodeAssistant = A3(
-	$elm$json$Json$Decode$map2,
+var $author$project$Codec$decodeItem = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Model$Item,
+	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'description', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'foundAt', $elm$json$Json$Decode$string));
+var $elm$json$Json$Decode$list = _Json_decodeList;
+var $elm$json$Json$Decode$map4 = _Json_map4;
+var $elm$json$Json$Decode$oneOf = _Json_oneOf;
+var $author$project$Codec$decodeAssistant = A5(
+	$elm$json$Json$Decode$map4,
 	$author$project$Model$AssistantTurn,
 	A2($elm$json$Json$Decode$field, 'storyText', $elm$json$Json$Decode$string),
 	$elm$json$Json$Decode$oneOf(
@@ -5368,6 +5381,21 @@ var $author$project$Codec$decodeAssistant = A3(
 				'suggestedActions',
 				$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
 				$elm$json$Json$Decode$succeed(_List_Nil)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$field,
+				'newItems',
+				$elm$json$Json$Decode$list($author$project$Codec$decodeItem)),
+				$elm$json$Json$Decode$succeed(_List_Nil)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$field, 'adventureCompleted', $elm$json$Json$Decode$bool),
+				$elm$json$Json$Decode$succeed(false)
 			])));
 var $elm$json$Json$Decode$maybe = function (decoder) {
 	return $elm$json$Json$Decode$oneOf(
@@ -5383,7 +5411,6 @@ var $author$project$Codec$decodeTurn = A3(
 	A2($elm$json$Json$Decode$field, 'userAction', $elm$json$Json$Decode$string),
 	$elm$json$Json$Decode$maybe(
 		A2($elm$json$Json$Decode$field, 'assistant', $author$project$Codec$decodeAssistant)));
-var $elm$json$Json$Decode$map3 = _Json_map3;
 var $author$project$Codec$decodeAdventure = A4(
 	$elm$json$Json$Decode$map3,
 	$author$project$Model$Adventure,
@@ -5399,21 +5426,76 @@ var $author$project$Codec$decodeAdventure = A4(
 				$elm$json$Json$Decode$list($author$project$Codec$decodeTurn)),
 				$elm$json$Json$Decode$succeed(_List_Nil)
 			])));
-var $author$project$Model$Player = F2(
-	function (name, houseName) {
-		return {aO: houseName, aS: name};
+var $author$project$Model$Player = F5(
+	function (name, houseName, inventory, completedAdventures, stats) {
+		return {aQ: completedAdventures, aY: houseName, a$: inventory, ag: name, ba: stats};
 	});
-var $author$project$Codec$decodePlayer = A3(
+var $author$project$Model$CompletedAdventure = F3(
+	function (title, summary, completedAt) {
+		return {H: completedAt, P: summary, G: title};
+	});
+var $author$project$Codec$decodeCompletedAdventure = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Model$CompletedAdventure,
+	A2($elm$json$Json$Decode$field, 'title', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'summary', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'completedAt', $elm$json$Json$Decode$string));
+var $author$project$Model$Stats = F2(
+	function (adventuresCompleted, totalTurns) {
+		return {aL: adventuresCompleted, bg: totalTurns};
+	});
+var $elm$json$Json$Decode$int = _Json_decodeInt;
+var $author$project$Codec$decodeStats = A3(
 	$elm$json$Json$Decode$map2,
+	$author$project$Model$Stats,
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$field, 'adventuresCompleted', $elm$json$Json$Decode$int),
+				$elm$json$Json$Decode$succeed(0)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$field, 'totalTurns', $elm$json$Json$Decode$int),
+				$elm$json$Json$Decode$succeed(0)
+			])));
+var $elm$json$Json$Decode$map5 = _Json_map5;
+var $author$project$Codec$decodePlayer = A6(
+	$elm$json$Json$Decode$map5,
 	$author$project$Model$Player,
 	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
-	A2($elm$json$Json$Decode$field, 'houseName', $elm$json$Json$Decode$string));
-var $elm$json$Json$Decode$int = _Json_decodeInt;
+	A2($elm$json$Json$Decode$field, 'houseName', $elm$json$Json$Decode$string),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$field,
+				'inventory',
+				$elm$json$Json$Decode$list($author$project$Codec$decodeItem)),
+				$elm$json$Json$Decode$succeed(_List_Nil)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$field,
+				'completedAdventures',
+				$elm$json$Json$Decode$list($author$project$Codec$decodeCompletedAdventure)),
+				$elm$json$Json$Decode$succeed(_List_Nil)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$field, 'stats', $author$project$Codec$decodeStats),
+				$elm$json$Json$Decode$succeed(
+				{aL: 0, bg: 0})
+			])));
 var $author$project$Codec$decodeCurrent = A4(
 	$elm$json$Json$Decode$map3,
 	F3(
-		function (schemaVersion, player, currentAdventure) {
-			return {O: '', U: currentAdventure, X: $elm$core$Maybe$Nothing, ac: false, aW: player, J: schemaVersion};
+		function (_v0, player, currentAdventure) {
+			return {Q: '', V: currentAdventure, Y: $elm$core$Maybe$Nothing, ad: false, ah: $elm$core$Maybe$Nothing, ak: false, a5: player, L: 2, aw: true, ax: true};
 		}),
 	A2($elm$json$Json$Decode$field, 'schemaVersion', $elm$json$Json$Decode$int),
 	A2($elm$json$Json$Decode$field, 'player', $author$project$Codec$decodePlayer),
@@ -5424,23 +5506,43 @@ var $author$project$Codec$decodeLegacy = A3(
 	F2(
 		function (playerName, houseName) {
 			return {
-				O: '',
-				U: $elm$core$Maybe$Nothing,
-				X: $elm$core$Maybe$Nothing,
-				ac: false,
-				aW: {aO: houseName, aS: playerName},
-				J: 1
+				Q: '',
+				V: $elm$core$Maybe$Nothing,
+				Y: $elm$core$Maybe$Nothing,
+				ad: false,
+				ah: $elm$core$Maybe$Nothing,
+				ak: false,
+				a5: {
+					aQ: _List_Nil,
+					aY: houseName,
+					a$: _List_Nil,
+					ag: playerName,
+					ba: {aL: 0, bg: 0}
+				},
+				L: 2,
+				aw: true,
+				ax: true
 			};
 		}),
 	A2($elm$json$Json$Decode$field, 'playerName', $elm$json$Json$Decode$string),
 	A2($elm$json$Json$Decode$field, 'houseName', $elm$json$Json$Decode$string));
 var $author$project$Model$defaultState = {
-	O: '',
-	U: $elm$core$Maybe$Nothing,
-	X: $elm$core$Maybe$Nothing,
-	ac: false,
-	aW: {aO: '', aS: ''},
-	J: 1
+	Q: '',
+	V: $elm$core$Maybe$Nothing,
+	Y: $elm$core$Maybe$Nothing,
+	ad: false,
+	ah: $elm$core$Maybe$Nothing,
+	ak: false,
+	a5: {
+		aQ: _List_Nil,
+		aY: '',
+		a$: _List_Nil,
+		ag: '',
+		ba: {aL: 0, bg: 0}
+	},
+	L: 2,
+	aw: true,
+	ax: true
 };
 var $elm$json$Json$Decode$null = _Json_decodeNull;
 var $author$project$Codec$decodeGameState = $elm$json$Json$Decode$oneOf(
@@ -5474,15 +5576,7 @@ var $author$project$Codec$encodeMaybe = F2(
 			return encoder(value);
 		}
 	});
-var $elm$json$Json$Encode$list = F2(
-	function (func, entries) {
-		return _Json_wrap(
-			A3(
-				$elm$core$List$foldl,
-				_Json_addEntry(func),
-				_Json_emptyArray(0),
-				entries));
-	});
+var $elm$json$Json$Encode$bool = _Json_wrap;
 var $elm$json$Json$Encode$object = function (pairs) {
 	return _Json_wrap(
 		A3(
@@ -5497,16 +5591,46 @@ var $elm$json$Json$Encode$object = function (pairs) {
 			pairs));
 };
 var $elm$json$Json$Encode$string = _Json_wrap;
+var $author$project$Codec$encodeItem = function (item) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(item.ag)),
+				_Utils_Tuple2(
+				'description',
+				$elm$json$Json$Encode$string(item.aR)),
+				_Utils_Tuple2(
+				'foundAt',
+				$elm$json$Json$Encode$string(item.aW))
+			]));
+};
+var $elm$json$Json$Encode$list = F2(
+	function (func, entries) {
+		return _Json_wrap(
+			A3(
+				$elm$core$List$foldl,
+				_Json_addEntry(func),
+				_Json_emptyArray(0),
+				entries));
+	});
 var $author$project$Codec$encodeAssistant = function (assistant) {
 	return $elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'storyText',
-				$elm$json$Json$Encode$string(assistant.at)),
+				$elm$json$Json$Encode$string(assistant.az)),
 				_Utils_Tuple2(
 				'suggestedActions',
-				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, assistant.a2))
+				A2($elm$json$Json$Encode$list, $elm$json$Json$Encode$string, assistant.be)),
+				_Utils_Tuple2(
+				'newItems',
+				A2($elm$json$Json$Encode$list, $author$project$Codec$encodeItem, assistant.a1)),
+				_Utils_Tuple2(
+				'adventureCompleted',
+				$elm$json$Json$Encode$bool(assistant.aK))
 			]));
 };
 var $author$project$Codec$encodeTurn = function (turn) {
@@ -5515,10 +5639,10 @@ var $author$project$Codec$encodeTurn = function (turn) {
 			[
 				_Utils_Tuple2(
 				'userAction',
-				$elm$json$Json$Encode$string(turn.ay)),
+				$elm$json$Json$Encode$string(turn.aD)),
 				_Utils_Tuple2(
 				'assistant',
-				A2($author$project$Codec$encodeMaybe, $author$project$Codec$encodeAssistant, turn.Q))
+				A2($author$project$Codec$encodeMaybe, $author$project$Codec$encodeAssistant, turn.S))
 			]));
 };
 var $author$project$Codec$encodeAdventure = function (adventure) {
@@ -5527,13 +5651,41 @@ var $author$project$Codec$encodeAdventure = function (adventure) {
 			[
 				_Utils_Tuple2(
 				'title',
-				A2($author$project$Codec$encodeMaybe, $elm$json$Json$Encode$string, adventure.N)),
+				A2($author$project$Codec$encodeMaybe, $elm$json$Json$Encode$string, adventure.G)),
 				_Utils_Tuple2(
 				'startedAt',
-				$elm$json$Json$Encode$string(adventure.a_)),
+				$elm$json$Json$Encode$string(adventure.a9)),
 				_Utils_Tuple2(
 				'turns',
-				A2($elm$json$Json$Encode$list, $author$project$Codec$encodeTurn, adventure.a4))
+				A2($elm$json$Json$Encode$list, $author$project$Codec$encodeTurn, adventure.bh))
+			]));
+};
+var $author$project$Codec$encodeCompletedAdventure = function (adventure) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'title',
+				$elm$json$Json$Encode$string(adventure.G)),
+				_Utils_Tuple2(
+				'summary',
+				$elm$json$Json$Encode$string(adventure.P)),
+				_Utils_Tuple2(
+				'completedAt',
+				$elm$json$Json$Encode$string(adventure.H))
+			]));
+};
+var $elm$json$Json$Encode$int = _Json_wrap;
+var $author$project$Codec$encodeStats = function (stats) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'adventuresCompleted',
+				$elm$json$Json$Encode$int(stats.aL)),
+				_Utils_Tuple2(
+				'totalTurns',
+				$elm$json$Json$Encode$int(stats.bg))
 			]));
 };
 var $author$project$Codec$encodePlayer = function (player) {
@@ -5542,26 +5694,34 @@ var $author$project$Codec$encodePlayer = function (player) {
 			[
 				_Utils_Tuple2(
 				'name',
-				$elm$json$Json$Encode$string(player.aS)),
+				$elm$json$Json$Encode$string(player.ag)),
 				_Utils_Tuple2(
 				'houseName',
-				$elm$json$Json$Encode$string(player.aO))
+				$elm$json$Json$Encode$string(player.aY)),
+				_Utils_Tuple2(
+				'inventory',
+				A2($elm$json$Json$Encode$list, $author$project$Codec$encodeItem, player.a$)),
+				_Utils_Tuple2(
+				'completedAdventures',
+				A2($elm$json$Json$Encode$list, $author$project$Codec$encodeCompletedAdventure, player.aQ)),
+				_Utils_Tuple2(
+				'stats',
+				$author$project$Codec$encodeStats(player.ba))
 			]));
 };
-var $elm$json$Json$Encode$int = _Json_wrap;
 var $author$project$Codec$encodeGameState = function (state) {
 	return $elm$json$Json$Encode$object(
 		_List_fromArray(
 			[
 				_Utils_Tuple2(
 				'schemaVersion',
-				$elm$json$Json$Encode$int(state.J)),
+				$elm$json$Json$Encode$int(state.L)),
 				_Utils_Tuple2(
 				'player',
-				$author$project$Codec$encodePlayer(state.aW)),
+				$author$project$Codec$encodePlayer(state.a5)),
 				_Utils_Tuple2(
 				'currentAdventure',
-				A2($author$project$Codec$encodeMaybe, $author$project$Codec$encodeAdventure, state.U))
+				A2($author$project$Codec$encodeMaybe, $author$project$Codec$encodeAdventure, state.V))
 			]));
 };
 var $author$project$Main$saveState = _Platform_outgoingPort('saveState', $elm$core$Basics$identity);
@@ -5569,302 +5729,21 @@ var $author$project$Main$save = function (state) {
 	return $author$project$Main$saveState(
 		$author$project$Codec$encodeGameState(state));
 };
-var $author$project$Update$updateAdventureTitle = F2(
-	function (maybeTitle, adventure) {
-		var _v0 = _Utils_Tuple2(adventure.N, maybeTitle);
-		if ((_v0.a.$ === 1) && (!_v0.b.$)) {
-			var _v1 = _v0.a;
-			var title = _v0.b.a;
-			return _Utils_update(
-				adventure,
-				{
-					N: $elm$core$Maybe$Just(title)
-				});
-		} else {
-			return adventure;
-		}
+var $elm$core$List$filter = F2(
+	function (isGood, list) {
+		return A3(
+			$elm$core$List$foldr,
+			F2(
+				function (x, xs) {
+					return isGood(x) ? A2($elm$core$List$cons, x, xs) : xs;
+				}),
+			_List_Nil,
+			list);
 	});
-var $author$project$Update$updateLastTurn = F2(
-	function (assistant, adventure) {
-		var _v0 = $elm$core$List$reverse(adventure.a4);
-		if (!_v0.b) {
-			return adventure;
-		} else {
-			var lastTurn = _v0.a;
-			var rest = _v0.b;
-			var updatedTurn = _Utils_update(
-				lastTurn,
-				{
-					Q: $elm$core$Maybe$Just(assistant)
-				});
-			return _Utils_update(
-				adventure,
-				{
-					a4: $elm$core$List$reverse(
-						A2($elm$core$List$cons, updatedTurn, rest))
-				});
-		}
-	});
-var $author$project$Update$applyStoryResponse = F3(
-	function (save, response, state) {
-		var _v0 = state.U;
-		if (_v0.$ === 1) {
-			var next = _Utils_update(
-				state,
-				{ac: false});
-			return _Utils_Tuple2(
-				next,
-				save(next));
-		} else {
-			var adventure = _v0.a;
-			var assistantTurn = {at: response.Q.at, a2: response.Q.a2};
-			var updatedAdventure = A2(
-				$author$project$Update$updateAdventureTitle,
-				response.Q.aE.N,
-				A2($author$project$Update$updateLastTurn, assistantTurn, adventure));
-			var next = _Utils_update(
-				state,
-				{
-					U: $elm$core$Maybe$Just(updatedAdventure),
-					X: $elm$core$Maybe$Nothing,
-					ac: false
-				});
-			return _Utils_Tuple2(
-				next,
-				save(next));
-		}
-	});
-var $author$project$Msg$GotStoryResponse = function (a) {
-	return {$: 6, a: a};
-};
-var $author$project$Api$StoryResponse = function (assistant) {
-	return {Q: assistant};
-};
-var $author$project$Api$Assistant = F3(
-	function (storyText, suggestedActions, adventure) {
-		return {aE: adventure, at: storyText, a2: suggestedActions};
-	});
-var $author$project$Api$AdventureMeta = F4(
-	function (title, completed, summary, completedAt) {
-		return {S: completed, T: completedAt, av: summary, N: title};
-	});
-var $elm$json$Json$Decode$bool = _Json_decodeBool;
-var $elm$json$Json$Decode$map4 = _Json_map4;
-var $author$project$Api$adventureDecoder = A5(
-	$elm$json$Json$Decode$map4,
-	$author$project$Api$AdventureMeta,
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'title', $elm$json$Json$Decode$string)),
-	$elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$field, 'completed', $elm$json$Json$Decode$bool),
-				$elm$json$Json$Decode$succeed(false)
-			])),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'summary', $elm$json$Json$Decode$string)),
-	$elm$json$Json$Decode$maybe(
-		A2($elm$json$Json$Decode$field, 'completedAt', $elm$json$Json$Decode$string)));
-var $author$project$Api$defaultAdventure = {S: false, T: $elm$core$Maybe$Nothing, av: $elm$core$Maybe$Nothing, N: $elm$core$Maybe$Nothing};
-var $author$project$Api$assistantDecoder = A4(
-	$elm$json$Json$Decode$map3,
-	$author$project$Api$Assistant,
-	A2($elm$json$Json$Decode$field, 'storyText', $elm$json$Json$Decode$string),
-	$elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2(
-				$elm$json$Json$Decode$field,
-				'suggestedActions',
-				$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
-				$elm$json$Json$Decode$succeed(_List_Nil)
-			])),
-	$elm$json$Json$Decode$oneOf(
-		_List_fromArray(
-			[
-				A2($elm$json$Json$Decode$field, 'adventure', $author$project$Api$adventureDecoder),
-				$elm$json$Json$Decode$succeed($author$project$Api$defaultAdventure)
-			])));
-var $author$project$Api$decodeStoryResponse = A2(
-	$elm$json$Json$Decode$map,
-	$author$project$Api$StoryResponse,
-	A2($elm$json$Json$Decode$field, 'assistant', $author$project$Api$assistantDecoder));
-var $author$project$Api$encodeMaybe = F2(
-	function (encoder, maybeValue) {
-		if (maybeValue.$ === 1) {
-			return $elm$json$Json$Encode$null;
-		} else {
-			var value = maybeValue.a;
-			return encoder(value);
-		}
-	});
-var $author$project$Api$encodeAdventure = function (adventure) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'title',
-				A2($author$project$Api$encodeMaybe, $elm$json$Json$Encode$string, adventure.N)),
-				_Utils_Tuple2(
-				'startedAt',
-				$elm$json$Json$Encode$string(adventure.a_))
-			]));
-};
-var $author$project$Api$encodeChatMessage = function (message) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'role',
-				$elm$json$Json$Encode$string(message.B)),
-				_Utils_Tuple2(
-				'content',
-				$elm$json$Json$Encode$string(message.z))
-			]));
-};
-var $author$project$Api$encodePlayer = function (player) {
-	return $elm$json$Json$Encode$object(
-		_List_fromArray(
-			[
-				_Utils_Tuple2(
-				'name',
-				$elm$json$Json$Encode$string(player.aS)),
-				_Utils_Tuple2(
-				'houseName',
-				$elm$json$Json$Encode$string(player.aO)),
-				_Utils_Tuple2(
-				'inventory',
-				A2($elm$json$Json$Encode$list, $elm$core$Basics$identity, _List_Nil)),
-				_Utils_Tuple2(
-				'completedAdventures',
-				A2($elm$json$Json$Encode$list, $elm$core$Basics$identity, _List_Nil)),
-				_Utils_Tuple2('stats', $elm$json$Json$Encode$null)
-			]));
-};
-var $elm$core$List$append = F2(
-	function (xs, ys) {
-		if (!ys.b) {
-			return xs;
-		} else {
-			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
-		}
-	});
-var $elm$core$List$concat = function (lists) {
-	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
-};
-var $elm$core$List$concatMap = F2(
-	function (f, list) {
-		return $elm$core$List$concat(
-			A2($elm$core$List$map, f, list));
-	});
-var $author$project$Api$turnToMessages = function (turn) {
-	var _v0 = turn.Q;
-	if (_v0.$ === 1) {
-		return _List_fromArray(
-			[
-				{z: turn.ay, B: 'user'}
-			]);
-	} else {
-		var assistant = _v0.a;
-		return _List_fromArray(
-			[
-				{z: turn.ay, B: 'user'},
-				{z: assistant.at, B: 'assistant'}
-			]);
-	}
-};
-var $author$project$Api$historyFromAdventure = function (maybeAdventure) {
-	if (maybeAdventure.$ === 1) {
-		return _List_Nil;
-	} else {
-		var adventure = maybeAdventure.a;
-		return A2($elm$core$List$concatMap, $author$project$Api$turnToMessages, adventure.a4);
-	}
-};
-var $author$project$Api$encodeStoryRequest = F2(
-	function (state, action) {
-		return $elm$json$Json$Encode$object(
-			_List_fromArray(
-				[
-					_Utils_Tuple2(
-					'player',
-					$author$project$Api$encodePlayer(state.aW)),
-					_Utils_Tuple2(
-					'currentAdventure',
-					A2($author$project$Api$encodeMaybe, $author$project$Api$encodeAdventure, state.U)),
-					_Utils_Tuple2(
-					'conversationHistory',
-					A2(
-						$elm$json$Json$Encode$list,
-						$author$project$Api$encodeChatMessage,
-						$author$project$Api$historyFromAdventure(state.U))),
-					_Utils_Tuple2(
-					'action',
-					$elm$json$Json$Encode$string(action))
-				]));
-	});
-var $elm$json$Json$Decode$decodeString = _Json_runOnString;
-var $elm$http$Http$BadStatus_ = F2(
-	function (a, b) {
-		return {$: 3, a: a, b: b};
-	});
-var $elm$http$Http$BadUrl_ = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$http$Http$GoodStatus_ = F2(
-	function (a, b) {
-		return {$: 4, a: a, b: b};
-	});
-var $elm$http$Http$NetworkError_ = {$: 2};
-var $elm$http$Http$Receiving = function (a) {
-	return {$: 1, a: a};
-};
-var $elm$http$Http$Sending = function (a) {
-	return {$: 0, a: a};
-};
-var $elm$http$Http$Timeout_ = {$: 1};
+var $elm$core$Set$Set_elm_builtin = $elm$core$Basics$identity;
 var $elm$core$Dict$RBEmpty_elm_builtin = {$: -2};
 var $elm$core$Dict$empty = $elm$core$Dict$RBEmpty_elm_builtin;
-var $elm$core$Maybe$isJust = function (maybe) {
-	if (!maybe.$) {
-		return true;
-	} else {
-		return false;
-	}
-};
-var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
-var $elm$core$Basics$compare = _Utils_compare;
-var $elm$core$Dict$get = F2(
-	function (targetKey, dict) {
-		get:
-		while (true) {
-			if (dict.$ === -2) {
-				return $elm$core$Maybe$Nothing;
-			} else {
-				var key = dict.b;
-				var value = dict.c;
-				var left = dict.d;
-				var right = dict.e;
-				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
-				switch (_v1) {
-					case 0:
-						var $temp$targetKey = targetKey,
-							$temp$dict = left;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-					case 1:
-						return $elm$core$Maybe$Just(value);
-					default:
-						var $temp$targetKey = targetKey,
-							$temp$dict = right;
-						targetKey = $temp$targetKey;
-						dict = $temp$dict;
-						continue get;
-				}
-			}
-		}
-	});
+var $elm$core$Set$empty = $elm$core$Dict$empty;
 var $elm$core$Dict$Black = 1;
 var $elm$core$Dict$RBNode_elm_builtin = F5(
 	function (a, b, c, d, e) {
@@ -5925,6 +5804,7 @@ var $elm$core$Dict$balance = F5(
 			}
 		}
 	});
+var $elm$core$Basics$compare = _Utils_compare;
 var $elm$core$Dict$insertHelp = F3(
 	function (key, value, dict) {
 		if (dict.$ === -2) {
@@ -5973,6 +5853,543 @@ var $elm$core$Dict$insert = F3(
 			return x;
 		}
 	});
+var $elm$core$Set$insert = F2(
+	function (key, _v0) {
+		var dict = _v0;
+		return A3($elm$core$Dict$insert, key, 0, dict);
+	});
+var $elm$core$Set$fromList = function (list) {
+	return A3($elm$core$List$foldl, $elm$core$Set$insert, $elm$core$Set$empty, list);
+};
+var $elm$core$Dict$get = F2(
+	function (targetKey, dict) {
+		get:
+		while (true) {
+			if (dict.$ === -2) {
+				return $elm$core$Maybe$Nothing;
+			} else {
+				var key = dict.b;
+				var value = dict.c;
+				var left = dict.d;
+				var right = dict.e;
+				var _v1 = A2($elm$core$Basics$compare, targetKey, key);
+				switch (_v1) {
+					case 0:
+						var $temp$targetKey = targetKey,
+							$temp$dict = left;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+					case 1:
+						return $elm$core$Maybe$Just(value);
+					default:
+						var $temp$targetKey = targetKey,
+							$temp$dict = right;
+						targetKey = $temp$targetKey;
+						dict = $temp$dict;
+						continue get;
+				}
+			}
+		}
+	});
+var $elm$core$Dict$member = F2(
+	function (key, dict) {
+		var _v0 = A2($elm$core$Dict$get, key, dict);
+		if (!_v0.$) {
+			return true;
+		} else {
+			return false;
+		}
+	});
+var $elm$core$Set$member = F2(
+	function (key, _v0) {
+		var dict = _v0;
+		return A2($elm$core$Dict$member, key, dict);
+	});
+var $elm$core$Basics$not = _Basics_not;
+var $elm$core$String$toLower = _String_toLower;
+var $author$project$Update$addItems = F2(
+	function (newItems, player) {
+		var existingNames = $elm$core$Set$fromList(
+			A2(
+				$elm$core$List$map,
+				function (item) {
+					return $elm$core$String$toLower(item.ag);
+				},
+				player.a$));
+		var uniqueNewItems = A2(
+			$elm$core$List$filter,
+			function (item) {
+				return !A2(
+					$elm$core$Set$member,
+					$elm$core$String$toLower(item.ag),
+					existingNames);
+			},
+			newItems);
+		return _Utils_update(
+			player,
+			{
+				a$: _Utils_ap(player.a$, uniqueNewItems)
+			});
+	});
+var $author$project$Update$incrementTurns = function (player) {
+	var currentStats = player.ba;
+	return _Utils_update(
+		player,
+		{
+			ba: _Utils_update(
+				currentStats,
+				{bg: currentStats.bg + 1})
+		});
+};
+var $author$project$Update$newItemNotice = function (items) {
+	if (!items.b) {
+		return $elm$core$Maybe$Nothing;
+	} else {
+		return $elm$core$Maybe$Just(
+			'Neue Gegenstände: ' + A2(
+				$elm$core$String$join,
+				', ',
+				A2(
+					$elm$core$List$map,
+					function ($) {
+						return $.ag;
+					},
+					items)));
+	}
+};
+var $author$project$Update$updateAdventureTitle = F2(
+	function (maybeTitle, adventure) {
+		var _v0 = _Utils_Tuple2(adventure.G, maybeTitle);
+		if ((_v0.a.$ === 1) && (!_v0.b.$)) {
+			var _v1 = _v0.a;
+			var title = _v0.b.a;
+			return _Utils_update(
+				adventure,
+				{
+					G: $elm$core$Maybe$Just(title)
+				});
+		} else {
+			return adventure;
+		}
+	});
+var $author$project$Update$updateLastTurn = F2(
+	function (assistant, adventure) {
+		var _v0 = $elm$core$List$reverse(adventure.bh);
+		if (!_v0.b) {
+			return adventure;
+		} else {
+			var lastTurn = _v0.a;
+			var rest = _v0.b;
+			var updatedTurn = _Utils_update(
+				lastTurn,
+				{
+					S: $elm$core$Maybe$Just(assistant)
+				});
+			return _Utils_update(
+				adventure,
+				{
+					bh: $elm$core$List$reverse(
+						A2($elm$core$List$cons, updatedTurn, rest))
+				});
+		}
+	});
+var $elm$core$Maybe$withDefault = F2(
+	function (_default, maybe) {
+		if (!maybe.$) {
+			var value = maybe.a;
+			return value;
+		} else {
+			return _default;
+		}
+	});
+var $author$project$Update$applyStoryResponse = F3(
+	function (save, response, state) {
+		var _v0 = state.V;
+		if (_v0.$ === 1) {
+			var next = _Utils_update(
+				state,
+				{ad: false});
+			return _Utils_Tuple2(
+				next,
+				save(next));
+		} else {
+			var adventure = _v0.a;
+			var updatedPlayer = $author$project$Update$incrementTurns(
+				A2($author$project$Update$addItems, response.S.a1, state.a5));
+			var assistantTurn = {aK: response.S.aJ.U, a1: response.S.a1, az: response.S.az, be: response.S.be};
+			var updatedAdventure = A2(
+				$author$project$Update$updateAdventureTitle,
+				response.S.aJ.G,
+				A2($author$project$Update$updateLastTurn, assistantTurn, adventure));
+			var _v1 = function () {
+				if (response.S.aJ.U) {
+					var updatedStats = {aL: updatedPlayer.ba.aL + 1, bg: updatedPlayer.ba.bg};
+					var title = function () {
+						var _v2 = response.S.aJ.G;
+						if (!_v2.$) {
+							var value = _v2.a;
+							return value;
+						} else {
+							var _v3 = updatedAdventure.G;
+							if (!_v3.$) {
+								var existing = _v3.a;
+								return existing;
+							} else {
+								return 'Unbenanntes Abenteuer';
+							}
+						}
+					}();
+					var summary = A2($elm$core$Maybe$withDefault, '', response.S.aJ.P);
+					var completedAt = A2($elm$core$Maybe$withDefault, '', response.S.aJ.H);
+					var completedAdventure = {H: completedAt, P: summary, G: title};
+					return _Utils_Tuple3(
+						_Utils_update(
+							updatedPlayer,
+							{
+								aQ: A2($elm$core$List$cons, completedAdventure, updatedPlayer.aQ),
+								ba: updatedStats
+							}),
+						$elm$core$Maybe$Nothing,
+						$elm$core$Maybe$Just('Abenteuer abgeschlossen: ' + title));
+				} else {
+					return _Utils_Tuple3(
+						updatedPlayer,
+						$elm$core$Maybe$Just(updatedAdventure),
+						$author$project$Update$newItemNotice(response.S.a1));
+				}
+			}();
+			var finalPlayer = _v1.a;
+			var finalAdventure = _v1.b;
+			var notice = _v1.c;
+			var next = _Utils_update(
+				state,
+				{V: finalAdventure, Y: $elm$core$Maybe$Nothing, ad: false, ah: notice, ak: false, a5: finalPlayer});
+			return _Utils_Tuple2(
+				next,
+				save(next));
+		}
+	});
+var $author$project$Update$cancelAbandon = F2(
+	function (save, state) {
+		var next = _Utils_update(
+			state,
+			{ah: $elm$core$Maybe$Nothing, ak: false});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
+var $author$project$Update$confirmAbandon = F2(
+	function (save, state) {
+		var next = _Utils_update(
+			state,
+			{
+				V: $elm$core$Maybe$Nothing,
+				ad: false,
+				ah: $elm$core$Maybe$Just('Abenteuer aufgegeben.'),
+				ak: false
+			});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
+var $author$project$Api$errorToString = function (error) {
+	switch (error.$) {
+		case 0:
+			return 'Die Anfrage war ungültig.';
+		case 1:
+			return 'Die Anfrage hat zu lange gedauert.';
+		case 2:
+			return 'Netzwerkfehler. Bitte prüfe deine Verbindung.';
+		case 3:
+			return 'Der Server hat mit einem Fehler geantwortet.';
+		default:
+			return 'Die Antwort konnte nicht gelesen werden.';
+	}
+};
+var $author$project$Update$setError = F3(
+	function (save, message, state) {
+		var next = _Utils_update(
+			state,
+			{
+				Y: $elm$core$Maybe$Just(message)
+			});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
+var $author$project$Update$requestAbandon = F2(
+	function (save, state) {
+		var _v0 = state.V;
+		if (_v0.$ === 1) {
+			return A3($author$project$Update$setError, save, 'Es gibt kein Abenteuer zum Aufgeben.', state);
+		} else {
+			var next = _Utils_update(
+				state,
+				{
+					Q: '',
+					ah: $elm$core$Maybe$Just('Möchtest du das Abenteuer wirklich aufgeben?'),
+					ak: true
+				});
+			return _Utils_Tuple2(
+				next,
+				save(next));
+		}
+	});
+var $author$project$Msg$GotStoryResponse = function (a) {
+	return {$: 6, a: a};
+};
+var $author$project$Api$StoryResponse = function (assistant) {
+	return {S: assistant};
+};
+var $author$project$Api$Assistant = F4(
+	function (storyText, suggestedActions, newItems, adventure) {
+		return {aJ: adventure, a1: newItems, az: storyText, be: suggestedActions};
+	});
+var $author$project$Api$AdventureMeta = F4(
+	function (title, completed, summary, completedAt) {
+		return {U: completed, H: completedAt, P: summary, G: title};
+	});
+var $author$project$Api$adventureDecoder = A5(
+	$elm$json$Json$Decode$map4,
+	$author$project$Api$AdventureMeta,
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'title', $elm$json$Json$Decode$string)),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$field, 'completed', $elm$json$Json$Decode$bool),
+				$elm$json$Json$Decode$succeed(false)
+			])),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'summary', $elm$json$Json$Decode$string)),
+	$elm$json$Json$Decode$maybe(
+		A2($elm$json$Json$Decode$field, 'completedAt', $elm$json$Json$Decode$string)));
+var $author$project$Api$defaultAdventure = {U: false, H: $elm$core$Maybe$Nothing, P: $elm$core$Maybe$Nothing, G: $elm$core$Maybe$Nothing};
+var $author$project$Api$itemDecoder = A4(
+	$elm$json$Json$Decode$map3,
+	$author$project$Model$Item,
+	A2($elm$json$Json$Decode$field, 'name', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'description', $elm$json$Json$Decode$string),
+	A2($elm$json$Json$Decode$field, 'foundAt', $elm$json$Json$Decode$string));
+var $author$project$Api$assistantDecoder = A5(
+	$elm$json$Json$Decode$map4,
+	$author$project$Api$Assistant,
+	A2($elm$json$Json$Decode$field, 'storyText', $elm$json$Json$Decode$string),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$field,
+				'suggestedActions',
+				$elm$json$Json$Decode$list($elm$json$Json$Decode$string)),
+				$elm$json$Json$Decode$succeed(_List_Nil)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2(
+				$elm$json$Json$Decode$field,
+				'newItems',
+				$elm$json$Json$Decode$list($author$project$Api$itemDecoder)),
+				$elm$json$Json$Decode$succeed(_List_Nil)
+			])),
+	$elm$json$Json$Decode$oneOf(
+		_List_fromArray(
+			[
+				A2($elm$json$Json$Decode$field, 'adventure', $author$project$Api$adventureDecoder),
+				$elm$json$Json$Decode$succeed($author$project$Api$defaultAdventure)
+			])));
+var $author$project$Api$decodeStoryResponse = A2(
+	$elm$json$Json$Decode$map,
+	$author$project$Api$StoryResponse,
+	A2($elm$json$Json$Decode$field, 'assistant', $author$project$Api$assistantDecoder));
+var $author$project$Api$encodeMaybe = F2(
+	function (encoder, maybeValue) {
+		if (maybeValue.$ === 1) {
+			return $elm$json$Json$Encode$null;
+		} else {
+			var value = maybeValue.a;
+			return encoder(value);
+		}
+	});
+var $author$project$Api$encodeAdventure = function (adventure) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'title',
+				A2($author$project$Api$encodeMaybe, $elm$json$Json$Encode$string, adventure.G)),
+				_Utils_Tuple2(
+				'startedAt',
+				$elm$json$Json$Encode$string(adventure.a9))
+			]));
+};
+var $author$project$Api$encodeChatMessage = function (message) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'role',
+				$elm$json$Json$Encode$string(message.B)),
+				_Utils_Tuple2(
+				'content',
+				$elm$json$Json$Encode$string(message.z))
+			]));
+};
+var $author$project$Api$encodeCompletedAdventure = function (adventure) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'title',
+				$elm$json$Json$Encode$string(adventure.G)),
+				_Utils_Tuple2(
+				'summary',
+				$elm$json$Json$Encode$string(adventure.P)),
+				_Utils_Tuple2(
+				'completedAt',
+				$elm$json$Json$Encode$string(adventure.H))
+			]));
+};
+var $author$project$Api$encodeItem = function (item) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(item.ag)),
+				_Utils_Tuple2(
+				'description',
+				$elm$json$Json$Encode$string(item.aR)),
+				_Utils_Tuple2(
+				'foundAt',
+				$elm$json$Json$Encode$string(item.aW))
+			]));
+};
+var $author$project$Api$encodeStats = function (stats) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'adventuresCompleted',
+				$elm$json$Json$Encode$int(stats.aL)),
+				_Utils_Tuple2(
+				'totalTurns',
+				$elm$json$Json$Encode$int(stats.bg))
+			]));
+};
+var $author$project$Api$encodePlayer = function (player) {
+	return $elm$json$Json$Encode$object(
+		_List_fromArray(
+			[
+				_Utils_Tuple2(
+				'name',
+				$elm$json$Json$Encode$string(player.ag)),
+				_Utils_Tuple2(
+				'houseName',
+				$elm$json$Json$Encode$string(player.aY)),
+				_Utils_Tuple2(
+				'inventory',
+				A2($elm$json$Json$Encode$list, $author$project$Api$encodeItem, player.a$)),
+				_Utils_Tuple2(
+				'completedAdventures',
+				A2($elm$json$Json$Encode$list, $author$project$Api$encodeCompletedAdventure, player.aQ)),
+				_Utils_Tuple2(
+				'stats',
+				$author$project$Api$encodeStats(player.ba))
+			]));
+};
+var $elm$core$List$append = F2(
+	function (xs, ys) {
+		if (!ys.b) {
+			return xs;
+		} else {
+			return A3($elm$core$List$foldr, $elm$core$List$cons, ys, xs);
+		}
+	});
+var $elm$core$List$concat = function (lists) {
+	return A3($elm$core$List$foldr, $elm$core$List$append, _List_Nil, lists);
+};
+var $elm$core$List$concatMap = F2(
+	function (f, list) {
+		return $elm$core$List$concat(
+			A2($elm$core$List$map, f, list));
+	});
+var $author$project$Api$turnToMessages = function (turn) {
+	var _v0 = turn.S;
+	if (_v0.$ === 1) {
+		return _List_fromArray(
+			[
+				{z: turn.aD, B: 'user'}
+			]);
+	} else {
+		var assistant = _v0.a;
+		return _List_fromArray(
+			[
+				{z: turn.aD, B: 'user'},
+				{z: assistant.az, B: 'assistant'}
+			]);
+	}
+};
+var $author$project$Api$historyFromAdventure = function (maybeAdventure) {
+	if (maybeAdventure.$ === 1) {
+		return _List_Nil;
+	} else {
+		var adventure = maybeAdventure.a;
+		return A2($elm$core$List$concatMap, $author$project$Api$turnToMessages, adventure.bh);
+	}
+};
+var $author$project$Api$encodeStoryRequest = F2(
+	function (state, action) {
+		return $elm$json$Json$Encode$object(
+			_List_fromArray(
+				[
+					_Utils_Tuple2(
+					'player',
+					$author$project$Api$encodePlayer(state.a5)),
+					_Utils_Tuple2(
+					'currentAdventure',
+					A2($author$project$Api$encodeMaybe, $author$project$Api$encodeAdventure, state.V)),
+					_Utils_Tuple2(
+					'conversationHistory',
+					A2(
+						$elm$json$Json$Encode$list,
+						$author$project$Api$encodeChatMessage,
+						$author$project$Api$historyFromAdventure(state.V))),
+					_Utils_Tuple2(
+					'action',
+					$elm$json$Json$Encode$string(action))
+				]));
+	});
+var $elm$json$Json$Decode$decodeString = _Json_runOnString;
+var $elm$http$Http$BadStatus_ = F2(
+	function (a, b) {
+		return {$: 3, a: a, b: b};
+	});
+var $elm$http$Http$BadUrl_ = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$http$Http$GoodStatus_ = F2(
+	function (a, b) {
+		return {$: 4, a: a, b: b};
+	});
+var $elm$http$Http$NetworkError_ = {$: 2};
+var $elm$http$Http$Receiving = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$http$Http$Sending = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$http$Http$Timeout_ = {$: 1};
+var $elm$core$Maybe$isJust = function (maybe) {
+	if (!maybe.$) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $elm$core$Platform$sendToSelf = _Platform_sendToSelf;
 var $elm$core$Dict$getMin = function (dict) {
 	getMin:
 	while (true) {
@@ -6395,7 +6812,7 @@ var $elm$http$Http$resolve = F2(
 			case 3:
 				var metadata = response.a;
 				return $elm$core$Result$Err(
-					$elm$http$Http$BadStatus(metadata.a$));
+					$elm$http$Http$BadStatus(metadata.bb));
 			default:
 				var body = response.b;
 				return A2(
@@ -6428,7 +6845,7 @@ var $elm$http$Http$Request = function (a) {
 };
 var $elm$http$Http$State = F2(
 	function (reqs, subs) {
-		return {ao: reqs, au: subs};
+		return {as: reqs, aA: subs};
 	});
 var $elm$http$Http$init = $elm$core$Task$succeed(
 	A2($elm$http$Http$State, $elm$core$Dict$empty, _List_Nil));
@@ -6472,7 +6889,7 @@ var $elm$http$Http$updateReqs = F3(
 					return A2(
 						$elm$core$Task$andThen,
 						function (pid) {
-							var _v4 = req.ax;
+							var _v4 = req.aC;
 							if (_v4.$ === 1) {
 								return A3($elm$http$Http$updateReqs, router, otherCmds, reqs);
 							} else {
@@ -6502,7 +6919,7 @@ var $elm$http$Http$onEffects = F4(
 				return $elm$core$Task$succeed(
 					A2($elm$http$Http$State, reqs, subs));
 			},
-			A3($elm$http$Http$updateReqs, router, cmds, state.ao));
+			A3($elm$http$Http$updateReqs, router, cmds, state.as));
 	});
 var $elm$core$List$maybeCons = F3(
 	function (f, mx, xs) {
@@ -6545,7 +6962,7 @@ var $elm$http$Http$onSelfMsg = F3(
 				A2(
 					$elm$core$List$filterMap,
 					A3($elm$http$Http$maybeSend, router, tracker, progress),
-					state.au)));
+					state.aA)));
 	});
 var $elm$http$Http$Cancel = function (a) {
 	return {$: 0, a: a};
@@ -6559,14 +6976,14 @@ var $elm$http$Http$cmdMap = F2(
 			var r = cmd.a;
 			return $elm$http$Http$Request(
 				{
-					aF: r.aF,
-					aH: r.aH,
-					aL: A2(_Http_mapExpect, func, r.aL),
-					_: r._,
-					aR: r.aR,
-					a3: r.a3,
-					ax: r.ax,
-					a6: r.a6
+					aM: r.aM,
+					aO: r.aO,
+					aU: A2(_Http_mapExpect, func, r.aU),
+					aa: r.aa,
+					a0: r.a0,
+					bf: r.bf,
+					aC: r.aC,
+					bj: r.bj
 				});
 		}
 	});
@@ -6589,56 +7006,47 @@ var $elm$http$Http$subscription = _Platform_leaf('Http');
 var $elm$http$Http$request = function (r) {
 	return $elm$http$Http$command(
 		$elm$http$Http$Request(
-			{aF: false, aH: r.aH, aL: r.aL, _: r._, aR: r.aR, a3: r.a3, ax: r.ax, a6: r.a6}));
+			{aM: false, aO: r.aO, aU: r.aU, aa: r.aa, a0: r.a0, bf: r.bf, aC: r.aC, bj: r.bj}));
 };
 var $elm$http$Http$post = function (r) {
 	return $elm$http$Http$request(
-		{aH: r.aH, aL: r.aL, _: _List_Nil, aR: 'POST', a3: $elm$core$Maybe$Nothing, ax: $elm$core$Maybe$Nothing, a6: r.a6});
+		{aO: r.aO, aU: r.aU, aa: _List_Nil, a0: 'POST', bf: $elm$core$Maybe$Nothing, aC: $elm$core$Maybe$Nothing, bj: r.bj});
 };
 var $author$project$Api$sendStory = F3(
 	function (state, action, toMsg) {
 		return $elm$http$Http$post(
 			{
-				aH: $elm$http$Http$jsonBody(
+				aO: $elm$http$Http$jsonBody(
 					A2($author$project$Api$encodeStoryRequest, state, action)),
-				aL: A2($elm$http$Http$expectJson, toMsg, $author$project$Api$decodeStoryResponse),
-				a6: '/api/story'
+				aU: A2($elm$http$Http$expectJson, toMsg, $author$project$Api$decodeStoryResponse),
+				bj: '/api/story'
 			});
-	});
-var $author$project$Update$setError = F3(
-	function (save, message, state) {
-		var next = _Utils_update(
-			state,
-			{
-				X: $elm$core$Maybe$Just(message)
-			});
-		return _Utils_Tuple2(
-			next,
-			save(next));
 	});
 var $author$project$Update$sendAction = F3(
 	function (save, action, state) {
-		var _v0 = state.U;
+		var _v0 = state.V;
 		if (_v0.$ === 1) {
 			return A3($author$project$Update$setError, save, 'Starte zuerst ein Abenteuer.', state);
 		} else {
 			var adventure = _v0.a;
-			var newTurn = {Q: $elm$core$Maybe$Nothing, ay: action};
+			var newTurn = {S: $elm$core$Maybe$Nothing, aD: action};
 			var updatedAdventure = _Utils_update(
 				adventure,
 				{
-					a4: _Utils_ap(
-						adventure.a4,
+					bh: _Utils_ap(
+						adventure.bh,
 						_List_fromArray(
 							[newTurn]))
 				});
 			var next = _Utils_update(
 				state,
 				{
-					O: '',
-					U: $elm$core$Maybe$Just(updatedAdventure),
-					X: $elm$core$Maybe$Nothing,
-					ac: true
+					Q: '',
+					V: $elm$core$Maybe$Just(updatedAdventure),
+					Y: $elm$core$Maybe$Nothing,
+					ad: true,
+					ah: $elm$core$Maybe$Nothing,
+					ak: false
 				});
 			return _Utils_Tuple2(
 				next,
@@ -6652,58 +7060,101 @@ var $author$project$Update$sendAction = F3(
 	});
 var $author$project$Update$beginAdventure = F2(
 	function (save, state) {
-		var adventure = {a_: '', N: $elm$core$Maybe$Nothing, a4: _List_Nil};
+		var adventure = {a9: '', G: $elm$core$Maybe$Nothing, bh: _List_Nil};
 		var next = _Utils_update(
 			state,
 			{
-				U: $elm$core$Maybe$Just(adventure)
+				V: $elm$core$Maybe$Just(adventure),
+				ah: $elm$core$Maybe$Nothing
 			});
 		return A3($author$project$Update$sendAction, save, 'start', next);
 	});
-var $author$project$Api$errorToString = function (error) {
-	switch (error.$) {
-		case 0:
-			return 'Die Anfrage war ungültig.';
-		case 1:
-			return 'Die Anfrage hat zu lange gedauert.';
-		case 2:
-			return 'Netzwerkfehler. Bitte prüfe deine Verbindung.';
-		case 3:
-			return 'Der Server hat mit einem Fehler geantwortet.';
-		default:
-			return 'Die Antwort konnte nicht gelesen werden.';
-	}
-};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$String$trim = _String_trim;
 var $author$project$Model$isProfileComplete = function (player) {
-	return ($elm$core$String$trim(player.aS) !== '') && ($elm$core$String$trim(player.aO) !== '');
+	return ($elm$core$String$trim(player.ag) !== '') && ($elm$core$String$trim(player.aY) !== '');
 };
-var $elm$core$Basics$not = _Basics_not;
+var $author$project$Update$startAdventure = F2(
+	function (save, state) {
+		if (!$author$project$Model$isProfileComplete(state.a5)) {
+			return A3($author$project$Update$setError, save, 'Bitte gib deinen Namen und dein Haus an.', state);
+		} else {
+			var _v0 = state.V;
+			if (!_v0.$) {
+				return A3($author$project$Update$setError, save, 'Du bist bereits in einem Abenteuer.', state);
+			} else {
+				return A2($author$project$Update$beginAdventure, save, state);
+			}
+		}
+	});
+var $author$project$Update$handleAction = F3(
+	function (save, rawAction, state) {
+		var trimmed = $elm$core$String$trim(rawAction);
+		var command = $elm$core$String$toLower(trimmed);
+		if (trimmed === '') {
+			return _Utils_Tuple2(state, $elm$core$Platform$Cmd$none);
+		} else {
+			if (command === 'inventar') {
+				var next = _Utils_update(
+					state,
+					{
+						Q: '',
+						ah: $elm$core$Maybe$Just('Inventar geöffnet.'),
+						ax: true
+					});
+				return _Utils_Tuple2(
+					next,
+					save(next));
+			} else {
+				if (command === 'geschichte') {
+					var next = _Utils_update(
+						state,
+						{
+							Q: '',
+							ah: $elm$core$Maybe$Just('Abenteuerchronik geöffnet.'),
+							aw: true
+						});
+					return _Utils_Tuple2(
+						next,
+						save(next));
+				} else {
+					if (command === 'aufgeben') {
+						return A2($author$project$Update$requestAbandon, save, state);
+					} else {
+						if (command === 'start') {
+							return A2($author$project$Update$startAdventure, save, state);
+						} else {
+							return A3($author$project$Update$sendAction, save, trimmed, state);
+						}
+					}
+				}
+			}
+		}
+	});
 var $author$project$Update$update = F3(
 	function (save, msg, state) {
 		switch (msg.$) {
 			case 0:
 				var name = msg.a;
-				var currentPlayer = state.aW;
+				var currentPlayer = state.a5;
 				var nextPlayer = _Utils_update(
 					currentPlayer,
-					{aS: name});
+					{ag: name});
 				var next = _Utils_update(
 					state,
-					{aW: nextPlayer});
+					{a5: nextPlayer});
 				return _Utils_Tuple2(
 					next,
 					save(next));
 			case 1:
 				var house = msg.a;
-				var currentPlayer = state.aW;
+				var currentPlayer = state.a5;
 				var nextPlayer = _Utils_update(
 					currentPlayer,
-					{aO: house});
+					{aY: house});
 				var next = _Utils_update(
 					state,
-					{aW: nextPlayer});
+					{a5: nextPlayer});
 				return _Utils_Tuple2(
 					next,
 					save(next));
@@ -6712,25 +7163,15 @@ var $author$project$Update$update = F3(
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,
-						{O: value}),
+						{Q: value}),
 					$elm$core$Platform$Cmd$none);
 			case 3:
-				if (!$author$project$Model$isProfileComplete(state.aW)) {
-					return A3($author$project$Update$setError, save, 'Bitte gib deinen Namen und dein Haus an.', state);
-				} else {
-					var _v1 = state.U;
-					if (!_v1.$) {
-						return A3($author$project$Update$setError, save, 'Du bist bereits in einem Abenteuer.', state);
-					} else {
-						return A2($author$project$Update$beginAdventure, save, state);
-					}
-				}
+				return A2($author$project$Update$startAdventure, save, state);
 			case 4:
-				var trimmed = $elm$core$String$trim(state.O);
-				return (trimmed === '') ? _Utils_Tuple2(state, $elm$core$Platform$Cmd$none) : A3($author$project$Update$sendAction, save, trimmed, state);
+				return A3($author$project$Update$handleAction, save, state.Q, state);
 			case 5:
 				var action = msg.a;
-				return A3($author$project$Update$sendAction, save, action, state);
+				return A3($author$project$Update$handleAction, save, action, state);
 			case 6:
 				var result = msg.a;
 				if (!result.$) {
@@ -6741,14 +7182,38 @@ var $author$project$Update$update = F3(
 					var next = _Utils_update(
 						state,
 						{
-							X: $elm$core$Maybe$Just(
+							Y: $elm$core$Maybe$Just(
 								$author$project$Api$errorToString(error)),
-							ac: false
+							ad: false
 						});
 					return _Utils_Tuple2(
 						next,
 						save(next));
 				}
+			case 7:
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{ax: !state.ax}),
+					$elm$core$Platform$Cmd$none);
+			case 8:
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{aw: !state.aw}),
+					$elm$core$Platform$Cmd$none);
+			case 9:
+				return A2($author$project$Update$requestAbandon, save, state);
+			case 10:
+				return A2($author$project$Update$confirmAbandon, save, state);
+			case 11:
+				return A2($author$project$Update$cancelAbandon, save, state);
+			case 12:
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{ah: $elm$core$Maybe$Nothing}),
+					$elm$core$Platform$Cmd$none);
 			default:
 				var next = $author$project$Model$defaultState;
 				return _Utils_Tuple2(
@@ -6810,48 +7275,8 @@ var $author$project$View$headerView = A2(
 					$elm$html$Html$text('Dein interaktives Hogwarts-Abenteuer im Browser.')
 				]))
 		]));
-var $author$project$Msg$SendAction = {$: 4};
-var $author$project$Msg$UpdateActionInput = function (a) {
-	return {$: 2, a: a};
-};
+var $author$project$Msg$DismissNotice = {$: 12};
 var $elm$html$Html$button = _VirtualDom_node('button');
-var $elm$json$Json$Encode$bool = _Json_wrap;
-var $elm$html$Html$Attributes$boolProperty = F2(
-	function (key, bool) {
-		return A2(
-			_VirtualDom_property,
-			key,
-			$elm$json$Json$Encode$bool(bool));
-	});
-var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
-var $elm$html$Html$input = _VirtualDom_node('input');
-var $author$project$View$latestSuggestions = function (adventure) {
-	var _v0 = $elm$core$List$reverse(adventure.a4);
-	if (!_v0.b) {
-		return _List_Nil;
-	} else {
-		var lastTurn = _v0.a;
-		var _v1 = lastTurn.Q;
-		if (_v1.$ === 1) {
-			return _List_Nil;
-		} else {
-			var assistant = _v1.a;
-			return assistant.a2;
-		}
-	}
-};
-var $author$project$View$loadingView = function (isLoading) {
-	return isLoading ? A2(
-		$elm$html$Html$p,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('loading')
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text('Magie sammelt sich...')
-			])) : $elm$html$Html$text('');
-};
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
 };
@@ -6868,6 +7293,309 @@ var $elm$html$Html$Events$onClick = function (msg) {
 		$elm$html$Html$Events$on,
 		'click',
 		$elm$json$Json$Decode$succeed(msg));
+};
+var $author$project$View$noticeView = function (maybeNotice) {
+	if (maybeNotice.$ === 1) {
+		return $elm$html$Html$text('');
+	} else {
+		var message = maybeNotice.a;
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('notice')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(message)
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('notice-close'),
+							$elm$html$Html$Events$onClick($author$project$Msg$DismissNotice)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Ok')
+						]))
+				]));
+	}
+};
+var $author$project$Msg$RequestAbandon = {$: 9};
+var $author$project$Msg$SendAction = {$: 4};
+var $author$project$Msg$UpdateActionInput = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Msg$CancelAbandon = {$: 11};
+var $author$project$Msg$ConfirmAbandon = {$: 10};
+var $author$project$View$abandonConfirmView = function (isVisible) {
+	return isVisible ? A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('confirm')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Willst du das Abenteuer wirklich aufgeben?')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('confirm-actions')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Msg$ConfirmAbandon)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Ja, aufgeben')
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('ghost'),
+								$elm$html$Html$Events$onClick($author$project$Msg$CancelAbandon)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Abbrechen')
+							]))
+					]))
+			])) : $elm$html$Html$text('');
+};
+var $elm$html$Html$h3 = _VirtualDom_node('h3');
+var $author$project$View$currentAdventurePanel = function (adventure) {
+	var titleText = function () {
+		var _v0 = adventure.G;
+		if (!_v0.$) {
+			var title = _v0.a;
+			return title;
+		} else {
+			return 'Unbenanntes Abenteuer';
+		}
+	}();
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('panel panel-side')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Aktuelles Abenteuer')
+					])),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(titleText)
+					]))
+			]));
+};
+var $elm$html$Html$Attributes$boolProperty = F2(
+	function (key, bool) {
+		return A2(
+			_VirtualDom_property,
+			key,
+			$elm$json$Json$Encode$bool(bool));
+	});
+var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
+var $author$project$Msg$ToggleHistory = {$: 8};
+var $elm$html$Html$li = _VirtualDom_node('li');
+var $author$project$View$historyItemView = function (adventure) {
+	return A2(
+		$elm$html$Html$li,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('history-item')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text(adventure.G)
+					])),
+				A2(
+				$elm$html$Html$p,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('muted')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(adventure.P)
+					])),
+				A2(
+				$elm$html$Html$p,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('muted')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text(adventure.H)
+					]))
+			]));
+};
+var $elm$core$List$isEmpty = function (xs) {
+	if (!xs.b) {
+		return true;
+	} else {
+		return false;
+	}
+};
+var $author$project$View$panelHeader = F3(
+	function (title, toggleMsg, isOpen) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('panel-header')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$h3,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(title)
+						])),
+					A2(
+					$elm$html$Html$button,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('ghost'),
+							$elm$html$Html$Events$onClick(toggleMsg)
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text(
+							isOpen ? 'Ausblenden' : 'Anzeigen')
+						]))
+				]));
+	});
+var $elm$html$Html$ul = _VirtualDom_node('ul');
+var $author$project$View$historyPanel = F2(
+	function (player, isVisible) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('panel panel-side')
+				]),
+			_List_fromArray(
+				[
+					A3($author$project$View$panelHeader, 'Abenteuerchronik', $author$project$Msg$ToggleHistory, isVisible),
+					isVisible ? ($elm$core$List$isEmpty(player.aQ) ? A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Noch keine abgeschlossenen Abenteuer.')
+						])) : A2(
+					$elm$html$Html$ul,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('panel-list')
+						]),
+					A2($elm$core$List$map, $author$project$View$historyItemView, player.aQ))) : $elm$html$Html$text('')
+				]));
+	});
+var $elm$html$Html$input = _VirtualDom_node('input');
+var $author$project$Msg$ToggleInventory = {$: 7};
+var $author$project$View$inventoryPanel = F2(
+	function (player, isVisible) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('panel panel-side')
+				]),
+			_List_fromArray(
+				[
+					A3($author$project$View$panelHeader, 'Inventar', $author$project$Msg$ToggleInventory, isVisible),
+					isVisible ? ($elm$core$List$isEmpty(player.a$) ? A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Noch keine Gegenstände.')
+						])) : A2(
+					$elm$html$Html$ul,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('panel-list')
+						]),
+					A2(
+						$elm$core$List$map,
+						function (item) {
+							return A2(
+								$elm$html$Html$li,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text(item.ag + (' — ' + item.aR))
+									]));
+						},
+						player.a$))) : $elm$html$Html$text('')
+				]));
+	});
+var $author$project$View$latestSuggestions = function (adventure) {
+	var _v0 = $elm$core$List$reverse(adventure.bh);
+	if (!_v0.b) {
+		return _List_Nil;
+	} else {
+		var lastTurn = _v0.a;
+		var _v1 = lastTurn.S;
+		if (_v1.$ === 1) {
+			return _List_Nil;
+		} else {
+			var assistant = _v1.a;
+			return assistant.be;
+		}
+	}
+};
+var $author$project$View$loadingView = function (isLoading) {
+	return isLoading ? A2(
+		$elm$html$Html$p,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('loading')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('Magie sammelt sich...')
+			])) : $elm$html$Html$text('');
 };
 var $elm$html$Html$Events$alwaysStop = function (x) {
 	return _Utils_Tuple2(x, true);
@@ -6901,40 +7629,150 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $elm$core$List$isEmpty = function (xs) {
-	if (!xs.b) {
-		return true;
-	} else {
-		return false;
-	}
+var $elm$html$Html$span = _VirtualDom_node('span');
+var $author$project$View$statItem = F2(
+	function (label, valueText) {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('stat-item')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$span,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(label)
+						])),
+					A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text(valueText)
+						]))
+				]));
+	});
+var $author$project$View$statsPanel = function (player) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('panel panel-side')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Statistik')
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('stats-grid')
+					]),
+				_List_fromArray(
+					[
+						A2(
+						$author$project$View$statItem,
+						'Abenteuer',
+						$elm$core$String$fromInt(player.ba.aL)),
+						A2(
+						$author$project$View$statItem,
+						'Züge',
+						$elm$core$String$fromInt(player.ba.bg))
+					]))
+			]));
 };
 var $author$project$Msg$UseSuggestedAction = function (a) {
 	return {$: 5, a: a};
 };
-var $author$project$View$suggestedButton = function (action) {
-	return A2(
-		$elm$html$Html$button,
-		_List_fromArray(
-			[
-				$elm$html$Html$Events$onClick(
-				$author$project$Msg$UseSuggestedAction(action))
-			]),
-		_List_fromArray(
-			[
-				$elm$html$Html$text(action)
-			]));
-};
-var $author$project$View$suggestedActionsView = function (actions) {
-	return $elm$core$List$isEmpty(actions) ? $elm$html$Html$text('') : A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('suggestions')
-			]),
-		A2($elm$core$List$map, $author$project$View$suggestedButton, actions));
-};
+var $author$project$View$suggestedButton = F3(
+	function (isLoading, isAbandoning, action) {
+		return A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Events$onClick(
+					$author$project$Msg$UseSuggestedAction(action)),
+					$elm$html$Html$Attributes$disabled(isLoading || isAbandoning)
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text(action)
+				]));
+	});
+var $author$project$View$suggestedActionsView = F3(
+	function (isLoading, isAbandoning, actions) {
+		return $elm$core$List$isEmpty(actions) ? $elm$html$Html$text('') : A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('suggestions')
+				]),
+			A2(
+				$elm$core$List$map,
+				A2($author$project$View$suggestedButton, isLoading, isAbandoning),
+				actions));
+	});
 var $elm$html$Html$Attributes$type_ = $elm$html$Html$Attributes$stringProperty('type');
 var $elm$html$Html$Attributes$value = $elm$html$Html$Attributes$stringProperty('value');
+var $author$project$View$completionView = function (completed) {
+	return completed ? A2(
+		$elm$html$Html$p,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('completion')
+			]),
+		_List_fromArray(
+			[
+				$elm$html$Html$text('Abenteuer abgeschlossen!')
+			])) : $elm$html$Html$text('');
+};
+var $author$project$View$newItemsView = function (items) {
+	if (!items.b) {
+		return $elm$html$Html$text('');
+	} else {
+		return A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('new-items')
+				]),
+			_List_fromArray(
+				[
+					A2(
+					$elm$html$Html$p,
+					_List_Nil,
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Neue Gegenstände:')
+						])),
+					A2(
+					$elm$html$Html$ul,
+					_List_Nil,
+					A2(
+						$elm$core$List$map,
+						function (item) {
+							return A2(
+								$elm$html$Html$li,
+								_List_Nil,
+								_List_fromArray(
+									[
+										$elm$html$Html$text(item.ag + (' — ' + item.aR))
+									]));
+						},
+						items))
+				]));
+	}
+};
 var $author$project$View$assistantView = function (maybeAssistant) {
 	if (maybeAssistant.$ === 1) {
 		return A2(
@@ -6962,8 +7800,10 @@ var $author$project$View$assistantView = function (maybeAssistant) {
 					_List_Nil,
 					_List_fromArray(
 						[
-							$elm$html$Html$text(assistant.at)
-						]))
+							$elm$html$Html$text(assistant.az)
+						])),
+					$author$project$View$newItemsView(assistant.a1),
+					$author$project$View$completionView(assistant.aK)
 				]));
 	}
 };
@@ -6988,8 +7828,8 @@ var $author$project$View$viewTurn = function (turn) {
 			]),
 		_List_fromArray(
 			[
-				$author$project$View$userActionView(turn.ay),
-				$author$project$View$assistantView(turn.Q)
+				$author$project$View$userActionView(turn.aD),
+				$author$project$View$assistantView(turn.S)
 			]));
 };
 var $author$project$View$adventureView = F2(
@@ -6998,7 +7838,7 @@ var $author$project$View$adventureView = F2(
 			$elm$html$Html$div,
 			_List_fromArray(
 				[
-					$elm$html$Html$Attributes$class('story')
+					$elm$html$Html$Attributes$class('story-layout')
 				]),
 			_List_fromArray(
 				[
@@ -7006,42 +7846,89 @@ var $author$project$View$adventureView = F2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('story-feed')
+							$elm$html$Html$Attributes$class('story-main')
 						]),
-					A2($elm$core$List$map, $author$project$View$viewTurn, adventure.a4)),
-					$author$project$View$loadingView(state.ac),
-					$author$project$View$suggestedActionsView(
-					$author$project$View$latestSuggestions(adventure)),
+					_List_fromArray(
+						[
+							A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('story')
+								]),
+							_List_fromArray(
+								[
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('story-feed')
+										]),
+									A2($elm$core$List$map, $author$project$View$viewTurn, adventure.bh)),
+									$author$project$View$loadingView(state.ad),
+									A3(
+									$author$project$View$suggestedActionsView,
+									state.ad,
+									state.ak,
+									$author$project$View$latestSuggestions(adventure)),
+									$author$project$View$abandonConfirmView(state.ak),
+									A2(
+									$elm$html$Html$div,
+									_List_fromArray(
+										[
+											$elm$html$Html$Attributes$class('action-bar')
+										]),
+									_List_fromArray(
+										[
+											A2(
+											$elm$html$Html$input,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$type_('text'),
+													$elm$html$Html$Attributes$placeholder('Was tust du?'),
+													$elm$html$Html$Attributes$value(state.Q),
+													$elm$html$Html$Events$onInput($author$project$Msg$UpdateActionInput)
+												]),
+											_List_Nil),
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Events$onClick($author$project$Msg$SendAction),
+													$elm$html$Html$Attributes$disabled(
+													state.ad || (state.ak || ($elm$core$String$trim(state.Q) === '')))
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Senden')
+												])),
+											A2(
+											$elm$html$Html$button,
+											_List_fromArray(
+												[
+													$elm$html$Html$Attributes$class('ghost'),
+													$elm$html$Html$Events$onClick($author$project$Msg$RequestAbandon),
+													$elm$html$Html$Attributes$disabled(state.ad)
+												]),
+											_List_fromArray(
+												[
+													$elm$html$Html$text('Aufgeben')
+												]))
+										]))
+								]))
+						])),
 					A2(
 					$elm$html$Html$div,
 					_List_fromArray(
 						[
-							$elm$html$Html$Attributes$class('action-bar')
+							$elm$html$Html$Attributes$class('story-sidebar')
 						]),
 					_List_fromArray(
 						[
-							A2(
-							$elm$html$Html$input,
-							_List_fromArray(
-								[
-									$elm$html$Html$Attributes$type_('text'),
-									$elm$html$Html$Attributes$placeholder('Was tust du?'),
-									$elm$html$Html$Attributes$value(state.O),
-									$elm$html$Html$Events$onInput($author$project$Msg$UpdateActionInput)
-								]),
-							_List_Nil),
-							A2(
-							$elm$html$Html$button,
-							_List_fromArray(
-								[
-									$elm$html$Html$Events$onClick($author$project$Msg$SendAction),
-									$elm$html$Html$Attributes$disabled(
-									state.ac || ($elm$core$String$trim(state.O) === ''))
-								]),
-							_List_fromArray(
-								[
-									$elm$html$Html$text('Senden')
-								]))
+							$author$project$View$statsPanel(state.a5),
+							$author$project$View$currentAdventurePanel(adventure),
+							A2($author$project$View$inventoryPanel, state.a5, state.ax),
+							A2($author$project$View$historyPanel, state.a5, state.aw)
 						]))
 				]));
 	});
@@ -7053,7 +7940,6 @@ var $author$project$Msg$UpdateName = function (a) {
 	return {$: 0, a: a};
 };
 var $elm$html$Html$h2 = _VirtualDom_node('h2');
-var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$View$setupView = function (state) {
 	return A2(
 		$elm$html$Html$div,
@@ -7091,7 +7977,7 @@ var $author$project$View$setupView = function (state) {
 							[
 								$elm$html$Html$Attributes$type_('text'),
 								$elm$html$Html$Attributes$placeholder('Dein Name'),
-								$elm$html$Html$Attributes$value(state.aW.aS),
+								$elm$html$Html$Attributes$value(state.a5.ag),
 								$elm$html$Html$Events$onInput($author$project$Msg$UpdateName)
 							]),
 						_List_Nil)
@@ -7117,7 +8003,7 @@ var $author$project$View$setupView = function (state) {
 							[
 								$elm$html$Html$Attributes$type_('text'),
 								$elm$html$Html$Attributes$placeholder('Gryffindor, Ravenclaw...'),
-								$elm$html$Html$Attributes$value(state.aW.aO),
+								$elm$html$Html$Attributes$value(state.a5.aY),
 								$elm$html$Html$Events$onInput($author$project$Msg$UpdateHouse)
 							]),
 						_List_Nil)
@@ -7128,7 +8014,7 @@ var $author$project$View$setupView = function (state) {
 					[
 						$elm$html$Html$Events$onClick($author$project$Msg$StartAdventure),
 						$elm$html$Html$Attributes$disabled(
-						!$author$project$Model$isProfileComplete(state.aW))
+						!$author$project$Model$isProfileComplete(state.a5))
 					]),
 				_List_fromArray(
 					[
@@ -7141,44 +8027,65 @@ var $author$project$View$startView = function (state) {
 		$elm$html$Html$div,
 		_List_fromArray(
 			[
-				$elm$html$Html$Attributes$class('panel')
+				$elm$html$Html$Attributes$class('start-layout')
 			]),
 		_List_fromArray(
 			[
 				A2(
-				$elm$html$Html$h2,
-				_List_Nil,
+				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Bereit für Hogwarts?')
-					])),
-				A2(
-				$elm$html$Html$p,
-				_List_Nil,
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Willkommen, ' + (state.aW.aS + (' aus ' + (state.aW.aO + '.'))))
-					])),
-				A2(
-				$elm$html$Html$button,
-				_List_fromArray(
-					[
-						$elm$html$Html$Events$onClick($author$project$Msg$StartAdventure)
+						$elm$html$Html$Attributes$class('panel')
 					]),
 				_List_fromArray(
 					[
-						$elm$html$Html$text('Los geht\'s')
+						A2(
+						$elm$html$Html$h2,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Bereit für Hogwarts?')
+							])),
+						A2(
+						$elm$html$Html$p,
+						_List_Nil,
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Willkommen, ' + (state.a5.ag + (' aus ' + (state.a5.aY + '.'))))
+							])),
+						A2(
+						$elm$html$Html$button,
+						_List_fromArray(
+							[
+								$elm$html$Html$Events$onClick($author$project$Msg$StartAdventure)
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Los geht\'s')
+							]))
+					])),
+				A2(
+				$elm$html$Html$div,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('meta-grid')
+					]),
+				_List_fromArray(
+					[
+						$author$project$View$statsPanel(state.a5),
+						A2($author$project$View$inventoryPanel, state.a5, state.ax),
+						A2($author$project$View$historyPanel, state.a5, state.aw)
 					]))
 			]));
 };
 var $author$project$View$viewBody = function (state) {
-	if (!$author$project$Model$isProfileComplete(state.aW)) {
+	if (!$author$project$Model$isProfileComplete(state.a5)) {
 		return _List_fromArray(
 			[
 				$author$project$View$setupView(state)
 			]);
 	} else {
-		var _v0 = state.U;
+		var _v0 = state.V;
 		if (_v0.$ === 1) {
 			return _List_fromArray(
 				[
@@ -7204,15 +8111,16 @@ var $author$project$View$view = function (state) {
 			_List_fromArray(
 				[
 					$author$project$View$headerView,
-					$author$project$View$errorView(state.X)
+					$author$project$View$errorView(state.Y),
+					$author$project$View$noticeView(state.ah)
 				]),
 			$author$project$View$viewBody(state)));
 };
 var $author$project$Main$main = $elm$browser$Browser$element(
 	{
-		aQ: $author$project$Main$init,
-		a1: $elm$core$Basics$always($elm$core$Platform$Sub$none),
-		a5: $author$project$Update$update($author$project$Main$save),
-		a7: $author$project$View$view
+		a_: $author$project$Main$init,
+		bd: $elm$core$Basics$always($elm$core$Platform$Sub$none),
+		bi: $author$project$Update$update($author$project$Main$save),
+		bk: $author$project$View$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$value)(0)}});}(this));

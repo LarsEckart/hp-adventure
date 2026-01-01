@@ -12,18 +12,21 @@ This document describes a detailed plan to rebuild the existing **German** Node.
 
 ## Status (2026-01-01)
 
-Milestone 0 is complete and Milestone 1 is partly complete:
+Milestones 0–2 are complete, plus service worker caching:
 
-- Backend serves `/health` and now calls Anthropic `/v1/messages` in `/api/story` (prompt builder + marker parsing + title/summary hooks).
-- Added backend parsing helpers + JUnit coverage (items, completion, options, marker stripping, prompt builder).
-- Frontend still has the minimal setup + story flow UI, sends actions to `/api/story`, and renders story responses.
+- Backend serves `/health` and calls Anthropic `/v1/messages` in `/api/story` (prompt builder + marker parsing + title/summary hooks).
+- Backend parsing helpers + JUnit coverage (items, completion, options, marker stripping, prompt builder).
+- Frontend now persists full player state: inventory, completed adventures, stats, and per-turn data.
+- Inventory/history UI panels, completion handling, and stats are wired in Elm.
+- Command shortcuts now work in the UI: `inventar`, `geschichte`, `aufgeben`, `start`.
+- Service worker caching is in place for the app shell (`sw.js`).
 - Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
 
-Still missing for Milestone 1:
-- Wire Elm to full story mechanics (inventory/history/completion).
-- Service worker / offline shell caching.
+Still missing:
+- Image generation + rendering (OpenAI `gpt-image-1` integration).
+- Offline banner/disable send when offline (optional polish).
 
-Next up: extend Elm state + UI for inventory/history/completion, then add image generation + rendering.
+Next up: implement image generation on the backend and render per-turn illustrations in Elm.
 
 ---
 

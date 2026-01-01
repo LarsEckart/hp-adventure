@@ -17,6 +17,7 @@ type alias StoryResponse =
 type alias Assistant =
     { storyText : String
     , suggestedActions : List String
+    , newItems : List Model.Item
     , adventure : AdventureMeta
     }
 
@@ -27,6 +28,8 @@ type alias AdventureMeta =
     , summary : Maybe String
     , completedAt : Maybe String
     }
+
+
 
 
 sendStory : Model.GameState -> String -> (Result HttpError StoryResponse -> msg) -> Cmd msg
@@ -72,9 +75,9 @@ encodePlayer player =
     Encode.object
         [ ( "name", Encode.string player.name )
         , ( "houseName", Encode.string player.houseName )
-        , ( "inventory", Encode.list identity [] )
-        , ( "completedAdventures", Encode.list identity [] )
-        , ( "stats", Encode.null )
+        , ( "inventory", Encode.list encodeItem player.inventory )
+        , ( "completedAdventures", Encode.list encodeCompletedAdventure player.completedAdventures )
+        , ( "stats", encodeStats player.stats )
         ]
 
 
@@ -129,10 +132,15 @@ decodeStoryResponse =
 
 assistantDecoder : Decoder Assistant
 assistantDecoder =
-    Decode.map3 Assistant
+    Decode.map4 Assistant
         (Decode.field "storyText" Decode.string)
         (Decode.oneOf
             [ Decode.field "suggestedActions" (Decode.list Decode.string)
+            , Decode.succeed []
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "newItems" (Decode.list itemDecoder)
             , Decode.succeed []
             ]
         )
@@ -163,6 +171,40 @@ defaultAdventure =
     , summary = Nothing
     , completedAt = Nothing
     }
+
+
+encodeItem : Model.Item -> Encode.Value
+encodeItem item =
+    Encode.object
+        [ ( "name", Encode.string item.name )
+        , ( "description", Encode.string item.description )
+        , ( "foundAt", Encode.string item.foundAt )
+        ]
+
+
+itemDecoder : Decoder Model.Item
+itemDecoder =
+    Decode.map3 Model.Item
+        (Decode.field "name" Decode.string)
+        (Decode.field "description" Decode.string)
+        (Decode.field "foundAt" Decode.string)
+
+
+encodeCompletedAdventure : Model.CompletedAdventure -> Encode.Value
+encodeCompletedAdventure adventure =
+    Encode.object
+        [ ( "title", Encode.string adventure.title )
+        , ( "summary", Encode.string adventure.summary )
+        , ( "completedAt", Encode.string adventure.completedAt )
+        ]
+
+
+encodeStats : Model.Stats -> Encode.Value
+encodeStats stats =
+    Encode.object
+        [ ( "adventuresCompleted", Encode.int stats.adventuresCompleted )
+        , ( "totalTurns", Encode.int stats.totalTurns )
+        ]
 
 
 encodeMaybe : (a -> Encode.Value) -> Maybe a -> Encode.Value
