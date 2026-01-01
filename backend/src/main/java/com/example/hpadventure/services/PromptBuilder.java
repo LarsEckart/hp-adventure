@@ -5,7 +5,9 @@ import com.example.hpadventure.api.Dtos;
 import java.util.List;
 
 public final class PromptBuilder {
-    public String build(Dtos.Player player) {
+    private static final int STORY_ARC_TOTAL_STEPS = 15;
+
+    public String build(Dtos.Player player, int storyStep) {
         StringBuilder prompt = new StringBuilder();
         prompt.append("Du bist ein Spielleiter für ein deutsches Text-Adventure im Harry Potter Universum. Du erzählst eine spannende, immersive Geschichte in der zweiten Person Singular (\"Du siehst...\", \"Du stehst vor...\").\n\n");
         prompt.append("SPIELER-INFORMATIONEN:\n");
@@ -58,6 +60,8 @@ public final class PromptBuilder {
         prompt.append("- Es können bekannte Charaktere auftauchen: Professoren, Geister, Hauselfen, magische Kreaturen\n");
         prompt.append("- Nutze typische Elemente: Zauberstäbe, Zaubersprüche, magische Gegenstände, Quidditch\n\n");
 
+        appendStoryArc(prompt, storyStep);
+
         prompt.append("REGELN:\n");
         prompt.append("1. Schreibe immer auf Deutsch\n");
         prompt.append("2. Halte deine Antworten kurz und prägnant (max 150 Wörter pro Abschnitt)\n");
@@ -90,11 +94,37 @@ public final class PromptBuilder {
         return prompt.toString();
     }
 
+    public String build(Dtos.Player player) {
+        return build(player, 1);
+    }
+
     private static boolean notBlank(String value) {
         return value != null && !value.isBlank();
     }
 
     private static String nullToEmpty(String value) {
         return value == null ? "" : value.trim();
+    }
+
+    private static void appendStoryArc(StringBuilder prompt, int storyStep) {
+        int step = Math.max(1, Math.min(storyStep, STORY_ARC_TOTAL_STEPS));
+        String phase;
+        String guidance;
+        if (step <= 5) {
+            phase = "Einführung (Schritte 1-5)";
+            guidance = "Stelle Ort, Atmosphäre und erste Konflikte vor. Baue Neugier und klare Ziele auf.";
+        } else if (step <= 13) {
+            phase = "Hauptbogen (Schritte 6-13)";
+            guidance = "Steigere Spannung, bringe Hindernisse und Enthüllungen, treibe die Handlung voran.";
+        } else {
+            phase = "Finale (Schritte 14-15)";
+            guidance = "Führe zur Auflösung, schließe lose Enden und beende das Abenteuer.";
+        }
+
+        prompt.append("GESCHICHTENBOGEN:\n");
+        prompt.append("- Schritt: ").append(step).append(" von ").append(STORY_ARC_TOTAL_STEPS).append("\n");
+        prompt.append("- Phase: ").append(phase).append("\n");
+        prompt.append("- Fokus: ").append(guidance).append("\n");
+        prompt.append("- Bis Schritt 15 muss das Abenteuer abgeschlossen sein und [ABENTEUER ABGESCHLOSSEN] enthalten.\n\n");
     }
 }

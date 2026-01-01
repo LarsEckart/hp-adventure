@@ -21,6 +21,7 @@ Developer notes:
 - Prompt now explicitly requires 2-3 `[OPTION: ...]` lines after "Was tust du?" to keep UI options populated.
 - Image prompts now instruct "no characters/portraits"; scenes only (locations, objects, enemies/creatures/animals).
 - New adventures auto-add a starter item ("Zauberstab") to the player inventory; prompt always includes an inventory section.
+- Story arc tracking: steps 1-5 intro, 6-13 main arc, 14-15 finale. Server derives step from completed assistant turns and injects it into the prompt.
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
 - Image generation uses OpenAI `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).

@@ -16,7 +16,7 @@ class PromptBuilderTest {
         Dtos.CompletedAdventure completed = new Dtos.CompletedAdventure("Die Flüsternde Rüstung", "Ein Geheimfach entdeckt.", "2026-01-01T11:00:00Z");
         Dtos.Player player = new Dtos.Player("Hermine", "Gryffindor", List.of(item), List.of(completed), new Dtos.Stats(1, 3));
 
-        String prompt = builder.build(player);
+        String prompt = builder.build(player, 3);
 
         assertTrue(prompt.contains("Name: Hermine"));
         assertTrue(prompt.contains("Haus: Gryffindor"));
@@ -24,6 +24,8 @@ class PromptBuilderTest {
         assertTrue(prompt.contains("Zauberstab"));
         assertTrue(prompt.contains("VERGANGENE ABENTEUER"));
         assertTrue(prompt.contains("Die Flüsternde Rüstung"));
+        assertTrue(prompt.contains("GESCHICHTENBOGEN"));
+        assertTrue(prompt.contains("Schritt: 3 von 15"));
         assertTrue(prompt.contains("[OPTION:"));
         assertTrue(prompt.contains("[SZENE:"));
     }

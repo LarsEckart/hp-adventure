@@ -17,6 +17,7 @@ import java.util.function.Consumer;
 
 public final class StoryService implements StoryHandler, StoryStreamHandler {
     private static final int STORY_MAX_TOKENS = 500;
+    private static final int STORY_ARC_TOTAL_STEPS = 15;
 
     private final AnthropicClient anthropicClient;
     private final PromptBuilder promptBuilder;
@@ -94,7 +95,8 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
 
         String action = request.action().trim();
         messages.add(new AnthropicClient.Message("user", action));
-        String systemPrompt = promptBuilder.build(request.player());
+        int arcStep = storyArcStep(history);
+        String systemPrompt = promptBuilder.build(request.player(), arcStep);
 
         return new StoryContext(history, messages, systemPrompt);
     }
@@ -145,6 +147,22 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             assistantMessages.add(latestStory);
         }
         return assistantMessages;
+    }
+
+    private int storyArcStep(List<Dtos.ChatMessage> history) {
+        int completedTurns = 0;
+        if (history != null) {
+            for (Dtos.ChatMessage message : history) {
+                if (message != null && "assistant".equals(message.role())) {
+                    completedTurns += 1;
+                }
+            }
+        }
+        int step = completedTurns + 1;
+        if (step < 1) {
+            return 1;
+        }
+        return Math.min(step, STORY_ARC_TOTAL_STEPS);
     }
 
     private record StoryContext(
