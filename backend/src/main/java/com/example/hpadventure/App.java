@@ -1,6 +1,7 @@
 package com.example.hpadventure;
 
-import com.example.hpadventure.api.Dtos;
+import com.example.hpadventure.api.HealthRoutes;
+import com.example.hpadventure.api.StoryRoutes;
 import com.example.hpadventure.config.RateLimiter;
 import com.example.hpadventure.clients.AnthropicClient;
 import com.example.hpadventure.clients.OpenAiImageClient;
@@ -14,7 +15,6 @@ import com.example.hpadventure.services.PromptBuilder;
 import com.example.hpadventure.services.StoryService;
 import com.example.hpadventure.services.SummaryService;
 import com.example.hpadventure.services.TitleService;
-import com.example.hpadventure.services.UpstreamException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -25,7 +25,6 @@ import okhttp3.OkHttpClient;
 
 import java.time.Clock;
 import java.time.Duration;
-import java.util.UUID;
 
 public final class App {
     public static void main(String[] args) {
@@ -106,37 +105,10 @@ public final class App {
             config.spaRoot.addFile("/", "/public/index.html");
         });
 
-        app.get("/health", ctx -> ctx.result("ok"));
-        app.post("/api/story", ctx -> {
-            String requestId = UUID.randomUUID().toString();
-            if (rateLimiter != null && !rateLimiter.allow(ctx.ip())) {
-                ctx.status(429).json(errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
-                return;
-            }
-            Dtos.StoryRequest request = ctx.bodyAsClass(Dtos.StoryRequest.class);
-            String action = request == null ? null : request.action();
-
-            if (action == null || action.isBlank()) {
-                ctx.status(400).json(errorResponse("INVALID_REQUEST", "action is required", requestId));
-                return;
-            }
-
-            try {
-                Dtos.Assistant assistant = storyService.nextTurn(request);
-                ctx.json(new Dtos.StoryResponse(assistant));
-            } catch (UpstreamException e) {
-                int status = e.status() >= 400 ? e.status() : 502;
-                ctx.status(status).json(errorResponse(e.code(), "Upstream error: " + e.getMessage(), requestId));
-            } catch (Exception e) {
-                ctx.status(500).json(errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
-            }
-        });
+        HealthRoutes.register(app);
+        StoryRoutes.register(app, storyService, rateLimiter);
 
         app.start(port);
-    }
-
-    private static Dtos.ErrorResponse errorResponse(String code, String message, String requestId) {
-        return new Dtos.ErrorResponse(new Dtos.ErrorResponse.Error(code, message, requestId));
     }
 
     private static Integer parseIntOrNull(String value) {

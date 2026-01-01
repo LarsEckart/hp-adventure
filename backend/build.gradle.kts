@@ -24,6 +24,7 @@ dependencies {
     implementation("org.slf4j:slf4j-simple:2.0.13")
 
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
+    testImplementation("io.javalin:javalin-testtools:6.1.6")
     testImplementation("com.squareup.okhttp3:mockwebserver:4.12.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }

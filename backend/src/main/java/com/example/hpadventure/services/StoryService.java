@@ -14,7 +14,7 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class StoryService {
+public final class StoryService implements StoryHandler {
     private static final int STORY_MAX_TOKENS = 500;
 
     private final AnthropicClient anthropicClient;
