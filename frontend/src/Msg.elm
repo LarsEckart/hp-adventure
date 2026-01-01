@@ -1,7 +1,13 @@
 module Msg exposing (Msg(..))
 
+import Api
+
 type Msg
     = UpdateName String
     | UpdateHouse String
-    | ToggleReady
+    | UpdateActionInput String
+    | StartAdventure
+    | SendAction
+    | UseSuggestedAction String
+    | GotStoryResponse (Result Api.HttpError Api.StoryResponse)
     | ResetState
