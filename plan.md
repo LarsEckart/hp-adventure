@@ -12,18 +12,18 @@ This document describes a detailed plan to rebuild the existing **German** Node.
 
 ## Status (2026-01-01)
 
-Milestone 0 is underway and the basic scaffold is now in place:
+Milestone 0 is complete and Milestone 1 is underway:
 
-- Backend skeleton added in `backend/` (Java 21 + Javalin) with `/health` and static file hosting.
-- Frontend skeleton added in `frontend/` (Elm 0.19) with a placeholder UI and localStorage wiring.
-- Build script `frontend/build.sh` compiles Elm and copies assets into `backend/src/main/resources/public`.
+- Backend now serves `/health` and a **stubbed** `/api/story` (static response) plus JSON mapper + DTOs.
+- Frontend now has a minimal setup + story flow UI, sends actions to `/api/story`, and renders story responses.
+- Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
 
-Still missing for Milestone 0:
-- API routes beyond `/health` (no `/api/story` yet).
-- Proper Elm modules for story flow, inventory, history, etc.
+Still missing for Milestone 1:
+- Replace `/api/story` stub with Anthropic story generation (no real AI integration yet).
+- Expand Elm state to full story mechanics (inventory/history/completion).
 - Service worker / offline shell caching.
 
-Next up: complete Milestone 0 by wiring a minimal `/api/story` stub and a first Elm screen that can call it, then proceed to Milestone 1.
+Next up: implement the real `/api/story` backend flow (Anthropic request + parsing), then extend Elm to handle inventory/history and completion.
 
 ---
 

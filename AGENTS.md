@@ -9,3 +9,9 @@ Project notes:
 - Frontend lives in `frontend/` (Elm 0.19). Build with `./frontend/build.sh` (copies assets into `backend/src/main/resources/public`).
 - Static assets served from `backend/src/main/resources/public`.
 - localStorage key is `hpAdventure:v1` (see `frontend/public/app.js`).
+
+Developer notes:
+- `POST /api/story` is currently a stub endpoint (static response) in `backend/src/main/java/com/example/hpadventure/App.java`.
+- Elm HTTP support requires `elm/http`; add deps with `elm install` (don’t hand-edit versions).
+- After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.
+- The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText` plus `assistant.suggestedActions`.
