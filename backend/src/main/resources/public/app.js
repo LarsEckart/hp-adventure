@@ -24,6 +24,12 @@
     });
   }
 
+  if (app.ports && app.ports.clearState) {
+    app.ports.clearState.subscribe(() => {
+      window.localStorage.removeItem(STORAGE_KEY);
+    });
+  }
+
   if (app.ports && app.ports.onlineStatus) {
     const reportStatus = () => {
       const isOnline = navigator.onLine !== false;

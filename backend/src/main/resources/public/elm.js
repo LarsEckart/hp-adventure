@@ -4910,6 +4910,12 @@ var $elm$core$Result$isOk = function (result) {
 	}
 };
 var $elm$core$Platform$Sub$batch = _Platform_batch;
+var $elm$json$Json$Encode$null = _Json_encodeNull;
+var $author$project$Main$clearState = _Platform_outgoingPort(
+	'clearState',
+	function ($) {
+		return $elm$json$Json$Encode$null;
+	});
 var $elm$json$Json$Decode$map = _Json_map1;
 var $elm$json$Json$Decode$map2 = _Json_map2;
 var $elm$json$Json$Decode$succeed = _Json_succeed;
@@ -5464,7 +5470,6 @@ var $author$project$Main$init = function (flags) {
 	}
 };
 var $author$project$Main$onlineStatus = _Platform_incomingPort('onlineStatus', $elm$json$Json$Decode$bool);
-var $elm$json$Json$Encode$null = _Json_encodeNull;
 var $author$project$Codec$encodeMaybe = F2(
 	function (encoder, maybeValue) {
 		if (maybeValue.$ === 1) {
@@ -6865,8 +6870,8 @@ var $author$project$Update$handleStreamEvent = F3(
 			return _Utils_Tuple2(state, $elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Update$update = F4(
-	function (save, startStream, msg, state) {
+var $author$project$Update$update = F5(
+	function (save, startStream, clearStorage, msg, state) {
 		switch (msg.$) {
 			case 0:
 				var name = msg.a;
@@ -6971,7 +6976,9 @@ var $author$project$Update$update = F4(
 					{ad: state.ad});
 				return _Utils_Tuple2(
 					next,
-					save(next));
+					$elm$core$Platform$Cmd$batch(
+						_List_fromArray(
+							[clearStorage])));
 			default:
 				return _Utils_Tuple2(state, $elm$core$Platform$Cmd$none);
 		}
@@ -7419,6 +7426,46 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
+var $author$project$Msg$ResetState = {$: 16};
+var $author$project$View$resetPanel = function (state) {
+	return A2(
+		$elm$html$Html$div,
+		_List_fromArray(
+			[
+				$elm$html$Html$Attributes$class('panel panel-side'),
+				$author$project$View$dataTestId('reset-panel')
+			]),
+		_List_fromArray(
+			[
+				A2(
+				$elm$html$Html$h3,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Neustart')
+					])),
+				A2(
+				$elm$html$Html$p,
+				_List_Nil,
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Setzt deinen Fortschritt zurück und leert den lokalen Speicher.')
+					])),
+				A2(
+				$elm$html$Html$button,
+				_List_fromArray(
+					[
+						$elm$html$Html$Attributes$class('ghost'),
+						$elm$html$Html$Events$onClick($author$project$Msg$ResetState),
+						$elm$html$Html$Attributes$disabled(state.ac),
+						$author$project$View$dataTestId('reset-state')
+					]),
+				_List_fromArray(
+					[
+						$elm$html$Html$text('Speicher leeren')
+					]))
+			]));
+};
 var $elm$html$Html$span = _VirtualDom_node('span');
 var $author$project$View$statItem = F3(
 	function (label, valueText, testId) {
@@ -7805,7 +7852,8 @@ var $author$project$View$adventureView = F2(
 							$author$project$View$statsPanel(state.a8),
 							$author$project$View$currentAdventurePanel(adventure),
 							A2($author$project$View$inventoryPanel, state.a8, state.aw),
-							A2($author$project$View$historyPanel, state.a8, state.av)
+							A2($author$project$View$historyPanel, state.a8, state.av),
+							$author$project$View$resetPanel(state)
 						]))
 				]));
 	});
@@ -7958,7 +8006,8 @@ var $author$project$View$startView = function (state) {
 					[
 						$author$project$View$statsPanel(state.a8),
 						A2($author$project$View$inventoryPanel, state.a8, state.aw),
-						A2($author$project$View$historyPanel, state.a8, state.av)
+						A2($author$project$View$historyPanel, state.a8, state.av),
+						$author$project$View$resetPanel(state)
 					]))
 			]));
 };
@@ -8012,7 +8061,11 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 						$author$project$Main$onlineStatus($author$project$Msg$OnlineStatusChanged),
 						$author$project$Main$storyStream($author$project$Msg$GotStoryStreamEvent)
 					]))),
-		bn: A2($author$project$Update$update, $author$project$Main$save, $author$project$Main$startStoryStream),
+		bn: A3(
+			$author$project$Update$update,
+			$author$project$Main$save,
+			$author$project$Main$startStoryStream,
+			$author$project$Main$clearState(0)),
 		bp: $author$project$View$view
 	});
 _Platform_export({'Main':{'init':$author$project$Main$main($elm$json$Json$Decode$value)(0)}});}(this));

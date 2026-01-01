@@ -10,6 +10,7 @@ import Update
 import View
 
 port saveState : Encode.Value -> Cmd msg
+port clearState : () -> Cmd msg
 port onlineStatus : (Bool -> msg) -> Sub msg
 port startStoryStream : Encode.Value -> Cmd msg
 port storyStream : (Decode.Value -> msg) -> Sub msg
@@ -18,7 +19,7 @@ main : Program Decode.Value Model.GameState Msg
 main =
     Browser.element
         { init = init
-        , update = Update.update save startStoryStream
+        , update = Update.update save startStoryStream (clearState ())
         , view = View.view
         , subscriptions = always (Sub.batch [ onlineStatus Msg.OnlineStatusChanged, storyStream Msg.GotStoryStreamEvent ])
         }

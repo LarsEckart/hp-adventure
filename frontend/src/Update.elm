@@ -13,8 +13,8 @@ import Task
 import Time
 import Util
 
-update : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
-update save startStream msg state =
+update : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Cmd Msg -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
+update save startStream clearStorage msg state =
     case msg of
         UpdateName name ->
             let
@@ -112,7 +112,7 @@ update save startStream msg state =
                 next =
                     { baseState | isOnline = state.isOnline }
             in
-            ( next, save next )
+            ( next, Cmd.batch [ clearStorage ] )
 
         ScrolledToBottom _ ->
             ( state, Cmd.none )

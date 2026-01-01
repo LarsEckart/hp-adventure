@@ -121,6 +121,7 @@ startView state =
             [ statsPanel state.player
             , inventoryPanel state.player state.showInventory
             , historyPanel state.player state.showHistory
+            , resetPanel state
             ]
         ]
 
@@ -164,6 +165,7 @@ adventureView state adventure =
             , currentAdventurePanel adventure
             , inventoryPanel state.player state.showInventory
             , historyPanel state.player state.showHistory
+            , resetPanel state
             ]
         ]
 
@@ -385,6 +387,21 @@ historyItemView adventure =
         [ p [] [ text adventure.title ]
         , p [ class "muted" ] [ text adventure.summary ]
         , p [ class "muted" ] [ text adventure.completedAt ]
+        ]
+
+
+resetPanel : Model.GameState -> Html Msg
+resetPanel state =
+    div [ class "panel panel-side", dataTestId "reset-panel" ]
+        [ h3 [] [ text "Neustart" ]
+        , p [] [ text "Setzt deinen Fortschritt zurück und leert den lokalen Speicher." ]
+        , button
+            [ class "ghost"
+            , onClick ResetState
+            , disabled state.isLoading
+            , dataTestId "reset-state"
+            ]
+            [ text "Speicher leeren" ]
         ]
 
 
