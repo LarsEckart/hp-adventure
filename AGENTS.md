@@ -15,6 +15,7 @@ Project notes:
 - Story feed auto-scroll uses the `story-feed` element id in `frontend/src/View.elm` (keep it stable if you refactor the layout).
 
 Developer notes:
+- Backend logs via slf4j-simple to stdout; `/api/story` + `/api/story/stream` emit `requestId` in logs and `X-Request-Id` response header for correlation.
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
 - Image generation uses OpenAI `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
