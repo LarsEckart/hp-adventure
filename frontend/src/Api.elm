@@ -19,6 +19,7 @@ type alias Assistant =
     , suggestedActions : List String
     , newItems : List Model.Item
     , adventure : AdventureMeta
+    , image : Maybe Model.ImageData
     }
 
 
@@ -132,7 +133,7 @@ decodeStoryResponse =
 
 assistantDecoder : Decoder Assistant
 assistantDecoder =
-    Decode.map4 Assistant
+    Decode.map5 Assistant
         (Decode.field "storyText" Decode.string)
         (Decode.oneOf
             [ Decode.field "suggestedActions" (Decode.list Decode.string)
@@ -147,6 +148,11 @@ assistantDecoder =
         (Decode.oneOf
             [ Decode.field "adventure" adventureDecoder
             , Decode.succeed defaultAdventure
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "image" (Decode.maybe imageDecoder)
+            , Decode.succeed Nothing
             ]
         )
 
@@ -188,6 +194,14 @@ itemDecoder =
         (Decode.field "name" Decode.string)
         (Decode.field "description" Decode.string)
         (Decode.field "foundAt" Decode.string)
+
+
+imageDecoder : Decoder Model.ImageData
+imageDecoder =
+    Decode.map3 Model.ImageData
+        (Decode.field "mimeType" Decode.string)
+        (Decode.field "base64" Decode.string)
+        (Decode.maybe (Decode.field "prompt" Decode.string))
 
 
 encodeCompletedAdventure : Model.CompletedAdventure -> Encode.Value

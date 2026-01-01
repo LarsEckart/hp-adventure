@@ -203,6 +203,7 @@ applyStoryResponse save response state =
                     , suggestedActions = response.assistant.suggestedActions
                     , newItems = response.assistant.newItems
                     , adventureCompleted = response.assistant.adventure.completed
+                    , image = response.assistant.image
                     }
 
                 updatedAdventure =

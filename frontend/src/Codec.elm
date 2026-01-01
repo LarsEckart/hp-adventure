@@ -145,12 +145,13 @@ encodeAssistant assistant =
         , ( "suggestedActions", Encode.list Encode.string assistant.suggestedActions )
         , ( "newItems", Encode.list encodeItem assistant.newItems )
         , ( "adventureCompleted", Encode.bool assistant.adventureCompleted )
+        , ( "image", encodeMaybe encodeImage assistant.image )
         ]
 
 
 decodeAssistant : Decoder Model.AssistantTurn
 decodeAssistant =
-    Decode.map4 Model.AssistantTurn
+    Decode.map5 Model.AssistantTurn
         (Decode.field "storyText" Decode.string)
         (Decode.oneOf
             [ Decode.field "suggestedActions" (Decode.list Decode.string)
@@ -165,6 +166,11 @@ decodeAssistant =
         (Decode.oneOf
             [ Decode.field "adventureCompleted" Decode.bool
             , Decode.succeed False
+            ]
+        )
+        (Decode.oneOf
+            [ Decode.field "image" (Decode.maybe decodeImage)
+            , Decode.succeed Nothing
             ]
         )
 
@@ -194,6 +200,23 @@ decodeItem =
         (Decode.field "name" Decode.string)
         (Decode.field "description" Decode.string)
         (Decode.field "foundAt" Decode.string)
+
+
+encodeImage : Model.ImageData -> Encode.Value
+encodeImage image =
+    Encode.object
+        [ ( "mimeType", Encode.string image.mimeType )
+        , ( "base64", Encode.string image.base64 )
+        , ( "prompt", encodeMaybe Encode.string image.prompt )
+        ]
+
+
+decodeImage : Decoder Model.ImageData
+decodeImage =
+    Decode.map3 Model.ImageData
+        (Decode.field "mimeType" Decode.string)
+        (Decode.field "base64" Decode.string)
+        (Decode.maybe (Decode.field "prompt" Decode.string))
 
 
 encodeCompletedAdventure : Model.CompletedAdventure -> Encode.Value

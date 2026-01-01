@@ -3,6 +3,7 @@ module Model exposing
     , AssistantTurn
     , CompletedAdventure
     , GameState
+    , ImageData
     , Item
     , Player
     , Stats
@@ -39,11 +40,19 @@ type alias Player =
     }
 
 
+type alias ImageData =
+    { mimeType : String
+    , base64 : String
+    , prompt : Maybe String
+    }
+
+
 type alias AssistantTurn =
     { storyText : String
     , suggestedActions : List String
     , newItems : List Item
     , adventureCompleted : Bool
+    , image : Maybe ImageData
     }
 
 

@@ -1,8 +1,9 @@
 module View exposing (view)
 
-import Html exposing (Html, button, div, h1, h2, h3, input, li, p, span, text, ul)
-import Html.Attributes exposing (class, disabled, placeholder, type_, value)
+import Html exposing (Html, button, div, h1, h2, h3, img, input, li, p, span, text, ul)
+import Html.Attributes exposing (alt, class, disabled, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput)
+import Maybe
 import Model
 import Msg exposing (Msg(..))
 import String
@@ -153,8 +154,12 @@ adventureView state adventure =
 viewTurn : Model.Turn -> Html Msg
 viewTurn turn =
     div [ class "turn" ]
-        [ userActionView turn.userAction
-        , assistantView turn.assistant
+        [ div [ class "turn-main" ]
+            [ userActionView turn.userAction
+            , assistantView turn.assistant
+            ]
+        , div [ class "turn-image" ]
+            [ assistantImageView turn.assistant ]
         ]
 
 
@@ -176,6 +181,28 @@ assistantView maybeAssistant =
                 , newItemsView assistant.newItems
                 , completionView assistant.adventureCompleted
                 ]
+
+
+assistantImageView : Maybe Model.AssistantTurn -> Html Msg
+assistantImageView maybeAssistant =
+    case maybeAssistant of
+        Nothing ->
+            div [ class "assistant-image pending" ] [ text "Illustration lädt..." ]
+
+        Just assistant ->
+            case assistant.image of
+                Nothing ->
+                    div [ class "assistant-image pending" ] [ text "Illustration wird vorbereitet..." ]
+
+                Just imageData ->
+                    let
+                        imageSrc =
+                            "data:" ++ imageData.mimeType ++ ";base64," ++ imageData.base64
+
+                        description =
+                            Maybe.withDefault "Illustration der Szene" imageData.prompt
+                    in
+                    img [ class "assistant-image", src imageSrc, alt description ] []
 
 
 loadingView : Bool -> Html Msg
