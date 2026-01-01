@@ -29,4 +29,16 @@ class PromptBuilderTest {
         assertTrue(prompt.contains("[OPTION:"));
         assertTrue(prompt.contains("[SZENE:"));
     }
+
+    @Test
+    void includesInventorySectionWhenEmpty() {
+        PromptBuilder builder = new PromptBuilder();
+
+        Dtos.Player player = new Dtos.Player("Harry", "Gryffindor", List.of(), List.of(), new Dtos.Stats(0, 0));
+
+        String prompt = builder.build(player, 1);
+
+        assertTrue(prompt.contains("INVENTAR DES SPIELERS"));
+        assertTrue(prompt.contains("- (keine)"));
+    }
 }
