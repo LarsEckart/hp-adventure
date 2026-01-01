@@ -29,6 +29,7 @@ Developer notes:
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`.
 - Streaming deltas are filtered server-side to strip `[OPTION: ...]`/`[SZENE: ...]`/inventory markers; UI options still arrive with the final response.
 - Story text is sanitized server-side to strip simple Markdown markers (`*`, `_`, `` ` ``) in both streaming deltas and final responses.
+- Title output from Anthropic is sanitized server-side (strip markdown headers, clamp to 5 words, trim trailing stopwords) before being stored/displayed.
 - Streaming deltas may include whitespace-only chunks; do not drop/trim them or words may concatenate.
 - Each assistant turn is expected to include an image; if a turn shows text without an image, check that the SSE `final` event arrived (otherwise the UI keeps `image = Nothing`) and correlate backend OpenAI image logs with the `X-Request-Id`.
 - The UI only shows image placeholders while the latest turn is loading; if image generation fails and an error appears, the image column is hidden for that turn.
@@ -47,3 +48,4 @@ Developer notes:
 - The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText`, `assistant.suggestedActions`, plus `assistant.image` (base64).
 - UI command shortcuts (handled client-side): `inventar`, `geschichte`, `aufgeben`, `start`.
 - Client-side error handling drops the last pending turn on failed story requests to avoid stuck "Die Geschichte schreibt sich..." placeholders (see `frontend/src/Update.elm`).
+- Completed adventures remain visible in the story view; inputs are disabled and a "Neues Abenteuer" button returns to the setup screen.

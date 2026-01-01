@@ -47,7 +47,7 @@ final class StoryServiceTest {
             );
 
             anthropic.enqueue(new MockResponse().setResponseCode(200).setBody(anthropicResponse(rawStory)));
-            anthropic.enqueue(new MockResponse().setResponseCode(200).setBody(anthropicResponse("Der Nordturm")));
+            anthropic.enqueue(new MockResponse().setResponseCode(200).setBody(anthropicResponse("# Ravenclaws Verborgenes Geheimnis Das ist ein spannendes Abenteuer! Der Titel fasst die zentrale Mystery zusammen.")));
             openAi.enqueue(new MockResponse().setResponseCode(200).setBody(openAiResponse("base64data")));
 
             anthropic.start();
@@ -73,7 +73,7 @@ final class StoryServiceTest {
             assertEquals("2026-01-01T10:00:00Z", assistant.newItems().get(0).foundAt());
 
             assertFalse(assistant.adventure().completed());
-            assertEquals("Der Nordturm", assistant.adventure().title());
+            assertEquals("Ravenclaws Verborgenes Geheimnis", assistant.adventure().title());
             assertNull(assistant.adventure().summary());
             assertNull(assistant.adventure().completedAt());
 

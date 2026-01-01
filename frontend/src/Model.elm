@@ -9,6 +9,7 @@ module Model exposing
     , Stats
     , Turn
     , defaultState
+    , isAdventureCompleted
     , isProfileComplete
     )
 
@@ -109,3 +110,18 @@ defaultState =
 isProfileComplete : Player -> Bool
 isProfileComplete player =
     String.trim player.name /= "" && String.trim player.houseName /= ""
+
+
+isAdventureCompleted : Adventure -> Bool
+isAdventureCompleted adventure =
+    case List.reverse adventure.turns of
+        [] ->
+            False
+
+        lastTurn :: _ ->
+            case lastTurn.assistant of
+                Nothing ->
+                    False
+
+                Just assistant ->
+                    assistant.adventureCompleted

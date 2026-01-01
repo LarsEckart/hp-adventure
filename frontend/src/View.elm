@@ -114,36 +114,48 @@ setupView state =
 
 adventureView : Model.GameState -> Model.Adventure -> Html Msg
 adventureView state adventure =
+    let
+        isCompleted =
+            Model.isAdventureCompleted adventure
+    in
     div [ class "story-layout", dataTestId "story-layout" ]
         [ div [ class "story-main" ]
             [ div [ class "story" ]
                 [ div [ class "story-feed", id "story-feed", dataTestId "story-feed" ] (viewTurns state.isLoading adventure.turns)
                 , loadingView state.isLoading
-                , suggestedActionsView state.isLoading state.pendingAbandon state.isOnline (latestSuggestions adventure)
+                , if isCompleted then
+                    text ""
+
+                  else
+                    suggestedActionsView state.isLoading state.pendingAbandon state.isOnline (latestSuggestions adventure)
                 , abandonConfirmView state.pendingAbandon
-                , div [ class "action-bar" ]
-                    [ input
-                        [ type_ "text"
-                        , placeholder "Was tust du?"
-                        , value state.actionInput
-                        , onInput UpdateActionInput
-                        , dataTestId "action-input"
+                , if isCompleted then
+                    completionActionsView
+
+                  else
+                    div [ class "action-bar" ]
+                        [ input
+                            [ type_ "text"
+                            , placeholder "Was tust du?"
+                            , value state.actionInput
+                            , onInput UpdateActionInput
+                            , dataTestId "action-input"
+                            ]
+                            []
+                        , button
+                            [ onClick SendAction
+                            , disabled (state.isLoading || state.pendingAbandon || String.trim state.actionInput == "" || not state.isOnline)
+                            , dataTestId "send-action"
+                            ]
+                            [ text "Senden" ]
+                        , button
+                            [ class "ghost"
+                            , onClick RequestAbandon
+                            , disabled state.isLoading
+                            , dataTestId "abandon-action"
+                            ]
+                            [ text "Aufgeben" ]
                         ]
-                        []
-                    , button
-                        [ onClick SendAction
-                        , disabled (state.isLoading || state.pendingAbandon || String.trim state.actionInput == "" || not state.isOnline)
-                        , dataTestId "send-action"
-                        ]
-                        [ text "Senden" ]
-                    , button
-                        [ class "ghost"
-                        , onClick RequestAbandon
-                        , disabled state.isLoading
-                        , dataTestId "abandon-action"
-                        ]
-                        [ text "Aufgeben" ]
-                    ]
                 ]
             ]
         , div [ class "story-sidebar" ]
@@ -316,6 +328,14 @@ completionView completed =
 
     else
         text ""
+
+
+completionActionsView : Html Msg
+completionActionsView =
+    div [ class "completion-actions", dataTestId "completion-actions" ]
+        [ p [] [ text "Das Abenteuer ist abgeschlossen. Du kannst ein neues starten." ]
+        , button [ class "ghost", onClick FinishAdventure, dataTestId "finish-adventure" ] [ text "Neues Abenteuer" ]
+        ]
 
 
 abandonConfirmView : Bool -> Html Msg

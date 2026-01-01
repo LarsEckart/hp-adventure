@@ -5883,7 +5883,7 @@ var $author$project$Update$newItemNotice = function (items) {
 	}
 };
 var $author$project$Msg$ScrolledToBottom = function (a) {
-	return {$: 17, a: a};
+	return {$: 18, a: a};
 };
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
@@ -6011,7 +6011,7 @@ var $author$project$Update$applyStoryResponse = F3(
 								aQ: A2($elm$core$List$cons, completedAdventure, updatedPlayer.aQ),
 								bf: updatedStats
 							}),
-						$elm$core$Maybe$Nothing,
+						$elm$core$Maybe$Just(updatedAdventure),
 						$elm$core$Maybe$Just('Abenteuer abgeschlossen: ' + title));
 				} else {
 					return _Utils_Tuple3(
@@ -6421,6 +6421,21 @@ var $author$project$Api$encodeStoryRequest = F2(
 					$elm$json$Json$Encode$string(action))
 				]));
 	});
+var $author$project$Model$isAdventureCompleted = function (adventure) {
+	var _v0 = $elm$core$List$reverse(adventure.bm);
+	if (!_v0.b) {
+		return false;
+	} else {
+		var lastTurn = _v0.a;
+		var _v1 = lastTurn.S;
+		if (_v1.$ === 1) {
+			return false;
+		} else {
+			var assistant = _v1.a;
+			return assistant.aJ;
+		}
+	}
+};
 var $author$project$Update$offlineMessage = 'Offline: Du kannst die Geschichte ansehen, aber keine neuen Züge spielen.';
 var $author$project$Update$setError = F3(
 	function (save, message, state) {
@@ -6443,35 +6458,39 @@ var $author$project$Update$sendAction = F4(
 				return A3($author$project$Update$setError, save, 'Starte zuerst ein Abenteuer.', state);
 			} else {
 				var adventure = _v0.a;
-				var newTurn = {S: $elm$core$Maybe$Nothing, aC: action};
-				var updatedAdventure = _Utils_update(
-					adventure,
-					{
-						bm: _Utils_ap(
-							adventure.bm,
+				if ($author$project$Model$isAdventureCompleted(adventure)) {
+					return A3($author$project$Update$setError, save, 'Das Abenteuer ist bereits abgeschlossen.', state);
+				} else {
+					var newTurn = {S: $elm$core$Maybe$Nothing, aC: action};
+					var updatedAdventure = _Utils_update(
+						adventure,
+						{
+							bm: _Utils_ap(
+								adventure.bm,
+								_List_fromArray(
+									[newTurn]))
+						});
+					var next = _Utils_update(
+						state,
+						{
+							Q: '',
+							V: $elm$core$Maybe$Just(updatedAdventure),
+							Y: $elm$core$Maybe$Nothing,
+							ac: true,
+							ah: $elm$core$Maybe$Nothing,
+							ak: false
+						});
+					return _Utils_Tuple2(
+						next,
+						$elm$core$Platform$Cmd$batch(
 							_List_fromArray(
-								[newTurn]))
-					});
-				var next = _Utils_update(
-					state,
-					{
-						Q: '',
-						V: $elm$core$Maybe$Just(updatedAdventure),
-						Y: $elm$core$Maybe$Nothing,
-						ac: true,
-						ah: $elm$core$Maybe$Nothing,
-						ak: false
-					});
-				return _Utils_Tuple2(
-					next,
-					$elm$core$Platform$Cmd$batch(
-						_List_fromArray(
-							[
-								save(next),
-								startStream(
-								A2($author$project$Api$encodeStoryRequest, state, action)),
-								$author$project$Update$scrollToBottom
-							])));
+								[
+									save(next),
+									startStream(
+									A2($author$project$Api$encodeStoryRequest, state, action)),
+									$author$project$Update$scrollToBottom
+								])));
+				}
 			}
 		}
 	});
@@ -6556,6 +6575,15 @@ var $author$project$Api$errorToString = function (error) {
 			return 'Die Antwort konnte nicht gelesen werden.';
 	}
 };
+var $author$project$Update$finishAdventure = F2(
+	function (save, state) {
+		var next = _Utils_update(
+			state,
+			{Q: '', V: $elm$core$Maybe$Nothing, ac: false, ah: $elm$core$Maybe$Nothing, ak: false});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
 var $author$project$Update$requestAbandon = F2(
 	function (save, state) {
 		var _v0 = state.V;
@@ -6964,12 +6992,14 @@ var $author$project$Update$update = F5(
 			case 14:
 				return A2($author$project$Update$cancelAbandon, save, state);
 			case 15:
+				return A2($author$project$Update$finishAdventure, save, state);
+			case 16:
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,
 						{ah: $elm$core$Maybe$Nothing}),
 					$elm$core$Platform$Cmd$none);
-			case 16:
+			case 17:
 				var baseState = $author$project$Model$defaultState;
 				var next = _Utils_update(
 					baseState,
@@ -7048,7 +7078,7 @@ var $author$project$View$headerView = A2(
 					$elm$html$Html$text('Dein interaktives Hogwarts-Abenteuer im Browser.')
 				]))
 		]));
-var $author$project$Msg$DismissNotice = {$: 15};
+var $author$project$Msg$DismissNotice = {$: 16};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
@@ -7176,6 +7206,36 @@ var $author$project$View$abandonConfirmView = function (isVisible) {
 					]))
 			])) : $elm$html$Html$text('');
 };
+var $author$project$Msg$FinishAdventure = {$: 15};
+var $author$project$View$completionActionsView = A2(
+	$elm$html$Html$div,
+	_List_fromArray(
+		[
+			$elm$html$Html$Attributes$class('completion-actions'),
+			$author$project$View$dataTestId('completion-actions')
+		]),
+	_List_fromArray(
+		[
+			A2(
+			$elm$html$Html$p,
+			_List_Nil,
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Das Abenteuer ist abgeschlossen. Du kannst ein neues starten.')
+				])),
+			A2(
+			$elm$html$Html$button,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('ghost'),
+					$elm$html$Html$Events$onClick($author$project$Msg$FinishAdventure),
+					$author$project$View$dataTestId('finish-adventure')
+				]),
+			_List_fromArray(
+				[
+					$elm$html$Html$text('Neues Abenteuer')
+				]))
+		]));
 var $elm$html$Html$h3 = _VirtualDom_node('h3');
 var $author$project$View$currentAdventurePanel = function (adventure) {
 	var titleText = function () {
@@ -7426,7 +7486,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $author$project$Msg$ResetState = {$: 16};
+var $author$project$Msg$ResetState = {$: 17};
 var $author$project$View$resetPanel = function (state) {
 	return A2(
 		$elm$html$Html$div,
@@ -7792,6 +7852,7 @@ var $author$project$View$viewTurns = F2(
 	});
 var $author$project$View$adventureView = F2(
 	function (state, adventure) {
+		var isCompleted = $author$project$Model$isAdventureCompleted(adventure);
 		return A2(
 			$elm$html$Html$div,
 			_List_fromArray(
@@ -7827,14 +7888,14 @@ var $author$project$View$adventureView = F2(
 										]),
 									A2($author$project$View$viewTurns, state.ac, adventure.bm)),
 									$author$project$View$loadingView(state.ac),
-									A4(
+									isCompleted ? $elm$html$Html$text('') : A4(
 									$author$project$View$suggestedActionsView,
 									state.ac,
 									state.ak,
 									state.ad,
 									$author$project$View$latestSuggestions(adventure)),
 									$author$project$View$abandonConfirmView(state.ak),
-									A2(
+									isCompleted ? $author$project$View$completionActionsView : A2(
 									$elm$html$Html$div,
 									_List_fromArray(
 										[

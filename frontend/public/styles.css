@@ -247,6 +247,24 @@ button:disabled {
   color: #6b4a12;
 }
 
+.completion-actions {
+  margin-top: 12px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: rgba(255, 248, 235, 0.85);
+  border: 1px solid rgba(120, 93, 55, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.completion-actions p {
+  margin: 0;
+  font-weight: 600;
+  color: #6b4a12;
+}
+
 .loading {
   margin: 0;
   font-style: italic;

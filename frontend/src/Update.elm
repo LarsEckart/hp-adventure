@@ -101,6 +101,9 @@ update save startStream clearStorage msg state =
         CancelAbandon ->
             cancelAbandon save state
 
+        FinishAdventure ->
+            finishAdventure save state
+
         DismissNotice ->
             ( { state | notice = Nothing }, Cmd.none )
 
@@ -207,30 +210,34 @@ sendAction save startStream action state =
                 setError save "Starte zuerst ein Abenteuer." state
 
             Just adventure ->
-                let
-                    newTurn =
-                        { userAction = action, assistant = Nothing }
+                if Model.isAdventureCompleted adventure then
+                    setError save "Das Abenteuer ist bereits abgeschlossen." state
 
-                    updatedAdventure =
-                        { adventure | turns = adventure.turns ++ [ newTurn ] }
+                else
+                    let
+                        newTurn =
+                            { userAction = action, assistant = Nothing }
 
-                    next =
-                        { state
-                            | currentAdventure = Just updatedAdventure
-                            , actionInput = ""
-                            , isLoading = True
-                            , error = Nothing
-                            , notice = Nothing
-                            , pendingAbandon = False
-                        }
-                in
-                ( next
-                , Cmd.batch
-                    [ save next
-                    , startStream (Api.encodeStoryRequest state action)
-                    , scrollToBottom
-                    ]
-                )
+                        updatedAdventure =
+                            { adventure | turns = adventure.turns ++ [ newTurn ] }
+
+                        next =
+                            { state
+                                | currentAdventure = Just updatedAdventure
+                                , actionInput = ""
+                                , isLoading = True
+                                , error = Nothing
+                                , notice = Nothing
+                                , pendingAbandon = False
+                            }
+                    in
+                    ( next
+                    , Cmd.batch
+                        [ save next
+                        , startStream (Api.encodeStoryRequest state action)
+                        , scrollToBottom
+                        ]
+                    )
 
 
 applyStoryResponse : (Model.GameState -> Cmd Msg) -> Api.StoryResponse -> Model.GameState -> ( Model.GameState, Cmd Msg )
@@ -299,7 +306,7 @@ applyStoryResponse save response state =
                             | completedAdventures = completedAdventure :: updatedPlayer.completedAdventures
                             , stats = updatedStats
                           }
-                        , Nothing
+                        , Just updatedAdventure
                         , Just ("Abenteuer abgeschlossen: " ++ title)
                         )
 
@@ -482,6 +489,21 @@ cancelAbandon save state =
     let
         next =
             { state | pendingAbandon = False, notice = Nothing }
+    in
+    ( next, save next )
+
+
+finishAdventure : (Model.GameState -> Cmd Msg) -> Model.GameState -> ( Model.GameState, Cmd Msg )
+finishAdventure save state =
+    let
+        next =
+            { state
+                | currentAdventure = Nothing
+                , actionInput = ""
+                , notice = Nothing
+                , pendingAbandon = False
+                , isLoading = False
+            }
     in
     ( next, save next )
 

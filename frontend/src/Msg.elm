@@ -21,6 +21,7 @@ type Msg
     | RequestAbandon
     | ConfirmAbandon
     | CancelAbandon
+    | FinishAdventure
     | DismissNotice
     | ResetState
     | ScrolledToBottom (Result Dom.Error ())

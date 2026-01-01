@@ -45,10 +45,11 @@ final class StoryStreamServiceTest {
                 "[SZENE: Dunkler Korridor mit Kerzenlicht]",
                 "[NEUER GEGENSTAND: Schluessel | Ein alter, schwerer Schluessel]"
             );
+            String filteredPartTwo = "Was tust du?\n\n\n\n\n";
 
             String sseBody = buildSseBody(partOne, partTwo);
             anthropic.enqueue(new MockResponse().setResponseCode(200).setHeader("Content-Type", "text/event-stream").setBody(sseBody));
-            anthropic.enqueue(new MockResponse().setResponseCode(200).setBody(anthropicResponse("Der Nordturm")));
+            anthropic.enqueue(new MockResponse().setResponseCode(200).setBody(anthropicResponse("# Ravenclaws Verborgenes Geheimnis Das ist ein spannendes Abenteuer! Der Titel fasst die zentrale Mystery zusammen.")));
             openAi.enqueue(new MockResponse().setResponseCode(200).setBody(openAiResponse("base64data")));
 
             anthropic.start();
@@ -69,7 +70,7 @@ final class StoryStreamServiceTest {
 
             assertEquals(2, deltas.size());
             assertEquals(partOne, deltas.get(0));
-            assertEquals(partTwo, deltas.get(1));
+            assertEquals(filteredPartTwo, deltas.get(1));
 
             assertEquals(
                 "Du trittst in den Gang und hoerst das Knistern der Fackeln.\n\nWas tust du?",
@@ -79,7 +80,7 @@ final class StoryStreamServiceTest {
             assertEquals("Schluessel", assistant.newItems().get(0).name());
             assertEquals("2026-01-01T10:00:00Z", assistant.newItems().get(0).foundAt());
             assertFalse(assistant.adventure().completed());
-            assertEquals("Der Nordturm", assistant.adventure().title());
+            assertEquals("Ravenclaws Verborgenes Geheimnis", assistant.adventure().title());
             assertNotNull(assistant.image());
         }
     }
