@@ -95,13 +95,27 @@ public final class StoryRoutes {
                 }
 
                 try {
-                    Dtos.Assistant assistant = streamHandler.streamTurn(request, delta -> {
+                    StoryStreamHandler.StreamResult result = streamHandler.streamTurn(request, delta -> {
                         if (delta == null || delta.isEmpty()) {
                             return;
                         }
                         client.sendEvent("delta", new Dtos.StreamDelta(delta));
                     });
-                    client.sendEvent("final", new Dtos.StoryResponse(assistant));
+                    client.sendEvent("final_text", new Dtos.StoryResponse(result.assistant()));
+
+                    try {
+                        Dtos.Image image = streamHandler.generateImage(result.imagePrompt());
+                        client.sendEvent("image", new Dtos.StreamImage(image));
+                    } catch (UpstreamException e) {
+                        logger.warn("Story image request upstream failure requestId={} code={} status={} message={}",
+                            requestId, e.code(), e.status(), e.getMessage());
+                        client.sendEvent("image_error",
+                            errorResponse(e.code(), "Illustration konnte nicht geladen werden.", requestId));
+                    } catch (Exception e) {
+                        logger.error("Story image request unexpected failure requestId={}", requestId, e);
+                        client.sendEvent("image_error",
+                            errorResponse("INTERNAL_ERROR", "Illustration konnte nicht geladen werden.", requestId));
+                    }
                 } catch (UpstreamException e) {
                     logger.warn("Story stream request upstream failure requestId={} code={} status={} message={}",
                         requestId, e.code(), e.status(), e.getMessage());

@@ -5970,8 +5970,8 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Update$applyStoryResponse = F4(
-	function (save, speakStory, response, state) {
+var $author$project$Update$applyStoryResponse = F5(
+	function (save, speakStory, loadingComplete, response, state) {
 		var _v0 = state.V;
 		if (_v0.$ === 1) {
 			var next = _Utils_update(
@@ -6031,7 +6031,7 @@ var $author$project$Update$applyStoryResponse = F4(
 			var notice = _v1.c;
 			var next = _Utils_update(
 				state,
-				{V: finalAdventure, Y: $elm$core$Maybe$Nothing, ac: false, ah: notice, ak: false, a8: finalPlayer});
+				{V: finalAdventure, Y: $elm$core$Maybe$Nothing, ac: !loadingComplete, ah: notice, ak: false, a8: finalPlayer});
 			return _Utils_Tuple2(
 				next,
 				$elm$core$Platform$Cmd$batch(
@@ -6692,6 +6692,75 @@ var $author$project$Update$handleAction = F4(
 			}
 		}
 	});
+var $author$project$Update$applyImageError = F3(
+	function (save, message, state) {
+		var nextNotice = function () {
+			var _v0 = state.ah;
+			if (_v0.$ === 1) {
+				return $elm$core$Maybe$Just(message);
+			} else {
+				return state.ah;
+			}
+		}();
+		var next = _Utils_update(
+			state,
+			{ac: false, ah: nextNotice});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
+var $author$project$Update$updateLastTurnWithImage = F2(
+	function (image, adventure) {
+		var _v0 = $elm$core$List$reverse(adventure.bm);
+		if (!_v0.b) {
+			return adventure;
+		} else {
+			var lastTurn = _v0.a;
+			var rest = _v0.b;
+			var updatedAssistant = function () {
+				var _v1 = lastTurn.S;
+				if (_v1.$ === 1) {
+					return $elm$core$Maybe$Nothing;
+				} else {
+					var assistant = _v1.a;
+					return $elm$core$Maybe$Just(
+						_Utils_update(
+							assistant,
+							{
+								a_: $elm$core$Maybe$Just(image)
+							}));
+				}
+			}();
+			var updatedTurn = _Utils_update(
+				lastTurn,
+				{S: updatedAssistant});
+			return _Utils_update(
+				adventure,
+				{
+					bm: $elm$core$List$reverse(
+						A2($elm$core$List$cons, updatedTurn, rest))
+				});
+		}
+	});
+var $author$project$Update$applyStoryImage = F3(
+	function (save, image, state) {
+		var _v0 = state.V;
+		if (_v0.$ === 1) {
+			return _Utils_Tuple2(state, $elm$core$Platform$Cmd$none);
+		} else {
+			var adventure = _v0.a;
+			var updatedAdventure = A2($author$project$Update$updateLastTurnWithImage, image, adventure);
+			var next = _Utils_update(
+				state,
+				{
+					V: $elm$core$Maybe$Just(updatedAdventure),
+					ac: false
+				});
+			return _Utils_Tuple2(
+				next,
+				save(next));
+		}
+	});
 var $author$project$Update$updateLastTurnWithDelta = F2(
 	function (delta, adventure) {
 		var _v0 = $elm$core$List$reverse(adventure.bm);
@@ -6745,10 +6814,19 @@ var $author$project$Api$StreamDelta = function (a) {
 	return {$: 0, a: a};
 };
 var $author$project$Api$StreamError = function (a) {
-	return {$: 2, a: a};
+	return {$: 5, a: a};
 };
 var $author$project$Api$StreamFinal = function (a) {
 	return {$: 1, a: a};
+};
+var $author$project$Api$StreamFinalText = function (a) {
+	return {$: 2, a: a};
+};
+var $author$project$Api$StreamImage = function (a) {
+	return {$: 3, a: a};
+};
+var $author$project$Api$StreamImageError = function (a) {
+	return {$: 4, a: a};
 };
 var $elm$json$Json$Decode$andThen = _Json_andThen;
 var $author$project$Api$StoryResponse = function (assistant) {
@@ -6855,6 +6933,29 @@ var $author$project$Api$decodeStreamEvent = A2(
 					$elm$json$Json$Decode$map,
 					$author$project$Api$StreamFinal,
 					A2($elm$json$Json$Decode$field, 'data', $author$project$Api$decodeStoryResponse));
+			case 'final_text':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Api$StreamFinalText,
+					A2($elm$json$Json$Decode$field, 'data', $author$project$Api$decodeStoryResponse));
+			case 'image':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Api$StreamImage,
+					A2(
+						$elm$json$Json$Decode$field,
+						'data',
+						A2($elm$json$Json$Decode$field, 'image', $author$project$Api$imageDecoder)));
+			case 'image_error':
+				return A2(
+					$elm$json$Json$Decode$map,
+					$author$project$Api$StreamImageError,
+					A2(
+						$elm$json$Json$Decode$field,
+						'data',
+						$elm$json$Json$Decode$oneOf(
+							_List_fromArray(
+								[$author$project$Api$errorMessageDecoder, $elm$json$Json$Decode$string]))));
 			case 'error':
 				return A2(
 					$elm$json$Json$Decode$map,
@@ -6883,7 +6984,16 @@ var $author$project$Update$handleStreamEvent = F4(
 						$elm$core$Platform$Cmd$none);
 				case 1:
 					var response = event.a;
-					return A4($author$project$Update$applyStoryResponse, save, speakStory, response, state);
+					return A5($author$project$Update$applyStoryResponse, save, speakStory, true, response, state);
+				case 2:
+					var response = event.a;
+					return A5($author$project$Update$applyStoryResponse, save, speakStory, false, response, state);
+				case 3:
+					var image = event.a;
+					return A3($author$project$Update$applyStoryImage, save, image, state);
+				case 4:
+					var message = event.a;
+					return A3($author$project$Update$applyImageError, save, message, state);
 				default:
 					var message = event.a;
 					var next = function (updated) {
@@ -6958,7 +7068,7 @@ var $author$project$Update$update = F6(
 				var result = msg.a;
 				if (!result.$) {
 					var response = result.a;
-					return A4($author$project$Update$applyStoryResponse, save, speakStory, response, state);
+					return A5($author$project$Update$applyStoryResponse, save, speakStory, true, response, state);
 				} else {
 					var error = result.a;
 					var next = function (updated) {

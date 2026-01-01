@@ -33,6 +33,9 @@ type alias AdventureMeta =
 type StreamEvent
     = StreamDelta String
     | StreamFinal StoryResponse
+    | StreamFinalText StoryResponse
+    | StreamImage Model.ImageData
+    | StreamImageError String
     | StreamError String
 
 
@@ -58,6 +61,22 @@ decodeStreamEvent =
 
                     "final" ->
                         Decode.map StreamFinal (Decode.field "data" decodeStoryResponse)
+
+                    "final_text" ->
+                        Decode.map StreamFinalText (Decode.field "data" decodeStoryResponse)
+
+                    "image" ->
+                        Decode.map StreamImage (Decode.field "data" (Decode.field "image" imageDecoder))
+
+                    "image_error" ->
+                        Decode.map StreamImageError
+                            (Decode.field "data"
+                                (Decode.oneOf
+                                    [ errorMessageDecoder
+                                    , Decode.string
+                                    ]
+                                )
+                            )
 
                     "error" ->
                         Decode.map StreamError

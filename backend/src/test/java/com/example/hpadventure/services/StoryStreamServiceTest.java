@@ -25,6 +25,7 @@ import java.util.Map;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 final class StoryStreamServiceTest {
     private static final ObjectMapper MAPPER = new ObjectMapper().registerModule(new JavaTimeModule());
@@ -66,7 +67,8 @@ final class StoryStreamServiceTest {
             );
 
             List<String> deltas = new ArrayList<>();
-            Dtos.Assistant assistant = service.streamTurn(request, deltas::add);
+            StoryStreamHandler.StreamResult result = service.streamTurn(request, deltas::add);
+            Dtos.Assistant assistant = result.assistant();
 
             assertEquals(2, deltas.size());
             assertEquals(partOne, deltas.get(0));
@@ -81,7 +83,10 @@ final class StoryStreamServiceTest {
             assertEquals("2026-01-01T10:00:00Z", assistant.newItems().get(0).foundAt());
             assertFalse(assistant.adventure().completed());
             assertEquals("Ravenclaws Verborgenes Geheimnis", assistant.adventure().title());
-            assertNotNull(assistant.image());
+            assertNull(assistant.image());
+
+            Dtos.Image image = service.generateImage(result.imagePrompt());
+            assertNotNull(image);
         }
     }
 

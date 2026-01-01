@@ -47,6 +47,9 @@ public final class Dtos {
     public record StreamDelta(String text) {
     }
 
+    public record StreamImage(Image image) {
+    }
+
     public record Assistant(
         String storyText,
         List<String> suggestedActions,

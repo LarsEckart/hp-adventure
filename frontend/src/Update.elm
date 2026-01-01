@@ -67,7 +67,7 @@ update save startStream speakStory clearStorage msg state =
         GotStoryResponse result ->
             case result of
                 Ok response ->
-                    applyStoryResponse save speakStory response state
+                    applyStoryResponse save speakStory True response state
 
                 Err error ->
                     let
@@ -240,8 +240,8 @@ sendAction save startStream action state =
                     )
 
 
-applyStoryResponse : (Model.GameState -> Cmd Msg) -> (String -> Cmd Msg) -> Api.StoryResponse -> Model.GameState -> ( Model.GameState, Cmd Msg )
-applyStoryResponse save speakStory response state =
+applyStoryResponse : (Model.GameState -> Cmd Msg) -> (String -> Cmd Msg) -> Bool -> Api.StoryResponse -> Model.GameState -> ( Model.GameState, Cmd Msg )
+applyStoryResponse save speakStory loadingComplete response state =
     case state.currentAdventure of
         Nothing ->
             let
@@ -319,7 +319,7 @@ applyStoryResponse save speakStory response state =
                 next =
                     { state
                         | currentAdventure = finalAdventure
-                        , isLoading = False
+                        , isLoading = not loadingComplete
                         , error = Nothing
                         , notice = notice
                         , player = finalPlayer
@@ -344,7 +344,16 @@ handleStreamEvent save speakStory payload state =
                     ( applyStreamDelta delta state, Cmd.none )
 
                 Api.StreamFinal response ->
-                    applyStoryResponse save speakStory response state
+                    applyStoryResponse save speakStory True response state
+
+                Api.StreamFinalText response ->
+                    applyStoryResponse save speakStory False response state
+
+                Api.StreamImage image ->
+                    applyStoryImage save image state
+
+                Api.StreamImageError message ->
+                    applyImageError save message state
 
                 Api.StreamError message ->
                     let
@@ -372,6 +381,40 @@ applyStreamDelta delta state =
                     updateLastTurnWithDelta delta adventure
             in
             { state | currentAdventure = Just updatedAdventure }
+
+
+applyStoryImage : (Model.GameState -> Cmd Msg) -> Model.ImageData -> Model.GameState -> ( Model.GameState, Cmd Msg )
+applyStoryImage save image state =
+    case state.currentAdventure of
+        Nothing ->
+            ( state, Cmd.none )
+
+        Just adventure ->
+            let
+                updatedAdventure =
+                    updateLastTurnWithImage image adventure
+
+                next =
+                    { state | currentAdventure = Just updatedAdventure, isLoading = False }
+            in
+            ( next, save next )
+
+
+applyImageError : (Model.GameState -> Cmd Msg) -> String -> Model.GameState -> ( Model.GameState, Cmd Msg )
+applyImageError save message state =
+    let
+        nextNotice =
+            case state.notice of
+                Nothing ->
+                    Just message
+
+                Just _ ->
+                    state.notice
+
+        next =
+            { state | isLoading = False, notice = nextNotice }
+    in
+    ( next, save next )
 
 
 dropPendingTurn : Model.GameState -> Model.GameState
@@ -435,6 +478,28 @@ updateLastTurnWithDelta delta adventure =
 
                 updatedTurn =
                     { lastTurn | assistant = Just updatedAssistant }
+            in
+            { adventure | turns = List.reverse (updatedTurn :: rest) }
+
+
+updateLastTurnWithImage : Model.ImageData -> Model.Adventure -> Model.Adventure
+updateLastTurnWithImage image adventure =
+    case List.reverse adventure.turns of
+        [] ->
+            adventure
+
+        lastTurn :: rest ->
+            let
+                updatedAssistant =
+                    case lastTurn.assistant of
+                        Nothing ->
+                            Nothing
+
+                        Just assistant ->
+                            Just { assistant | image = Just image }
+
+                updatedTurn =
+                    { lastTurn | assistant = updatedAssistant }
             in
             { adventure | turns = List.reverse (updatedTurn :: rest) }
 

@@ -10,6 +10,7 @@ import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
 import com.example.hpadventure.parsing.SceneParser;
 import com.example.hpadventure.parsing.StreamMarkerFilter;
+import com.example.hpadventure.services.StoryStreamHandler.StreamResult;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -65,11 +66,13 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     public Dtos.Assistant nextTurn(Dtos.StoryRequest request) {
         StoryContext context = buildStoryContext(request);
         String rawStory = anthropicClient.createMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS);
-        return buildAssistant(request, context.history(), rawStory);
+        StreamResult draft = buildAssistantDraft(request, context.history(), rawStory);
+        Dtos.Image image = generateImage(draft.imagePrompt());
+        return attachImage(draft.assistant(), image);
     }
 
     @Override
-    public Dtos.Assistant streamTurn(Dtos.StoryRequest request, Consumer<String> onDelta) {
+    public StreamResult streamTurn(Dtos.StoryRequest request, Consumer<String> onDelta) {
         StoryContext context = buildStoryContext(request);
         StringBuilder rawStory = new StringBuilder();
         StreamMarkerFilter markerFilter = new StreamMarkerFilter();
@@ -85,7 +88,13 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
                 onDelta.accept(sanitized);
             }
         });
-        return buildAssistant(request, context.history(), rawStory.toString());
+        return buildAssistantDraft(request, context.history(), rawStory.toString());
+    }
+
+    @Override
+    public Dtos.Image generateImage(String imagePrompt) {
+        OpenAiImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
+        return new Dtos.Image(imageResult.mimeType(), imageResult.base64(), imagePrompt);
     }
 
     private StoryContext buildStoryContext(Dtos.StoryRequest request) {
@@ -109,7 +118,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         return new StoryContext(history, messages, systemPrompt);
     }
 
-    private Dtos.Assistant buildAssistant(Dtos.StoryRequest request, List<Dtos.ChatMessage> history, String rawStory) {
+    private StreamResult buildAssistantDraft(Dtos.StoryRequest request, List<Dtos.ChatMessage> history, String rawStory) {
         List<Dtos.Item> newItems = itemParser.parse(rawStory);
         boolean completed = completionParser.isComplete(rawStory);
         List<String> suggestedActions = optionsParser.parse(rawStory);
@@ -117,8 +126,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
         String cleanStory = markdownSanitizer.strip(markerCleaner.strip(rawStory));
         String imagePrompt = imagePromptService.buildPrompt(scene, cleanStory);
-        OpenAiImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
-        Dtos.Image image = new Dtos.Image(imageResult.mimeType(), imageResult.base64(), imagePrompt);
 
         Instant now = Instant.now(clock);
         String adventureTitle = request.currentAdventure() != null ? request.currentAdventure().title() : null;
@@ -140,7 +147,18 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         }
 
         Dtos.Adventure adventure = new Dtos.Adventure(adventureTitle, completed, summary, completedAt);
-        return new Dtos.Assistant(cleanStory, suggestedActions, newItems, adventure, image);
+        Dtos.Assistant assistant = new Dtos.Assistant(cleanStory, suggestedActions, newItems, adventure, null);
+        return new StreamResult(assistant, imagePrompt);
+    }
+
+    private Dtos.Assistant attachImage(Dtos.Assistant assistant, Dtos.Image image) {
+        return new Dtos.Assistant(
+            assistant.storyText(),
+            assistant.suggestedActions(),
+            assistant.newItems(),
+            assistant.adventure(),
+            image
+        );
     }
 
     private List<String> collectAssistantMessages(List<Dtos.ChatMessage> history, String latestStory) {
