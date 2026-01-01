@@ -56,7 +56,7 @@ public final class App {
         Integer openAiCompression = parseIntOrNull(System.getenv().getOrDefault("OPENAI_IMAGE_COMPRESSION", "70"));
 
         String elevenLabsApiKey = System.getenv("ELEVENLABS_API_KEY");
-        String elevenLabsVoiceId = System.getenv("ELEVENLABS_VOICE_ID");
+        String elevenLabsVoiceId = System.getenv().getOrDefault("ELEVENLABS_VOICE_ID", "g1jpii0iyvtRs8fqXsd1");
         String elevenLabsModel = System.getenv().getOrDefault("ELEVENLABS_MODEL", "eleven_multilingual_v2");
         String elevenLabsBaseUrl = System.getenv().getOrDefault("ELEVENLABS_BASE_URL", "https://api.elevenlabs.io");
         String elevenLabsOutputFormat = System.getenv("ELEVENLABS_OUTPUT_FORMAT");

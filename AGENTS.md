@@ -27,7 +27,7 @@ Developer notes:
 - Image generation uses OpenAI `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`.
-- TTS endpoint: `POST /api/tts` returns streamed `audio/mpeg` for a story turn. Requires `ELEVENLABS_API_KEY` + `ELEVENLABS_VOICE_ID` (optional: `ELEVENLABS_MODEL`, `ELEVENLABS_BASE_URL`, `ELEVENLABS_OUTPUT_FORMAT`, `ELEVENLABS_OPTIMIZE_STREAMING_LATENCY`). Frontend auto-plays per assistant turn via the `speakStory` port.
+- TTS endpoint: `POST /api/tts` returns streamed `audio/mpeg` for a story turn. Requires `ELEVENLABS_API_KEY`; voice id defaults to `g1jpii0iyvtRs8fqXsd1` (override with `ELEVENLABS_VOICE_ID`, optional: `ELEVENLABS_MODEL`, `ELEVENLABS_BASE_URL`, `ELEVENLABS_OUTPUT_FORMAT`, `ELEVENLABS_OPTIMIZE_STREAMING_LATENCY`). Frontend auto-plays per assistant turn via the `speakStory` port.
 - Streaming deltas are filtered server-side to strip `[OPTION: ...]`/`[SZENE: ...]`/inventory markers; UI options still arrive with the final response.
 - Story text is sanitized server-side to strip simple Markdown markers (`*`, `_`, `` ` ``) in both streaming deltas and final responses.
 - Title output from Anthropic is sanitized server-side (strip markdown headers, clamp to 5 words, trim trailing stopwords) before being stored/displayed.
