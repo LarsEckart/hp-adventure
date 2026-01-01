@@ -4,3 +4,5 @@ backend/.gradle/
 backend/build/
 frontend/elm-stuff/
 frontend/public/elm.js
+*.class
+bin/

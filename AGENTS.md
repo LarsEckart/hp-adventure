@@ -25,6 +25,7 @@ Developer notes:
 - `StoryServiceTest` stubs Anthropic/OpenAI via OkHttp MockWebServer for end-to-end service coverage.
 - `StoryRoutesTest` uses Javalin testtools to cover API validation, rate limiting, and upstream error mapping.
 - E2E smoke tests (Playwright): `npm run test:e2e` (first time: `npx playwright install` to fetch browsers; serves `backend/src/main/resources/public` via `python3 -m http.server`).
+- Playwright uses `playwright.config.js` (base URL `http://localhost:4173`, serves `backend/src/main/resources/public`); E2E selectors target `data-testid` attributes in `frontend/src/View.elm`.
 - If you touch Elm views, rerun `./frontend/build.sh` so the compiled `elm.js` in `frontend/public` and `backend/src/main/resources/public` stays in sync.
 - Elm HTTP support requires `elm/http`; add deps with `elm install` (don’t hand-edit versions).
 - After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.

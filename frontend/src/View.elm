@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Html exposing (Html, button, div, h1, h2, h3, img, input, li, p, span, text, ul)
-import Html.Attributes exposing (alt, class, disabled, placeholder, src, type_, value)
+import Html.Attributes exposing (alt, attribute, class, disabled, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Maybe
 import Model
@@ -10,7 +10,7 @@ import String
 
 view : Model.GameState -> Html Msg
 view state =
-    div [ class "app" ] <|
+    div [ class "app", dataTestId "app" ] <|
         [ headerView
         , offlineView state.isOnline
         , errorView state.error
@@ -33,7 +33,7 @@ offlineView isOnline =
         text ""
 
     else
-        div [ class "offline-banner" ]
+        div [ class "offline-banner", dataTestId "offline-banner" ]
             [ p [] [ text "Offline: Du kannst die Geschichte ansehen, aber keine neuen Züge spielen." ] ]
 
 
@@ -44,7 +44,7 @@ errorView maybeError =
             text ""
 
         Just message ->
-            div [ class "error" ] [ text message ]
+            div [ class "error", dataTestId "error-message" ] [ text message ]
 
 
 noticeView : Maybe String -> Html Msg
@@ -54,7 +54,7 @@ noticeView maybeNotice =
             text ""
 
         Just message ->
-            div [ class "notice" ]
+            div [ class "notice", dataTestId "notice-message" ]
                 [ p [] [ text message ]
                 , button [ class "notice-close", onClick DismissNotice ] [ text "Ok" ]
                 ]
@@ -76,7 +76,7 @@ viewBody state =
 
 setupView : Model.GameState -> Html Msg
 setupView state =
-    div [ class "panel" ]
+    div [ class "panel", dataTestId "setup-panel" ]
         [ h2 [] [ text "Wer bist du?" ]
         , div [ class "field" ]
             [ span [] [ text "Name" ]
@@ -85,6 +85,7 @@ setupView state =
                 , placeholder "Dein Name"
                 , value state.player.name
                 , onInput UpdateName
+                , dataTestId "player-name"
                 ]
                 []
             ]
@@ -95,12 +96,14 @@ setupView state =
                 , placeholder "Gryffindor, Ravenclaw..."
                 , value state.player.houseName
                 , onInput UpdateHouse
+                , dataTestId "player-house"
                 ]
                 []
             ]
         , button
             [ onClick StartAdventure
             , disabled (not (Model.isProfileComplete state.player) || not state.isOnline)
+            , dataTestId "start-adventure"
             ]
             [ text "Abenteuer starten" ]
         ]
@@ -108,11 +111,11 @@ setupView state =
 
 startView : Model.GameState -> Html Msg
 startView state =
-    div [ class "start-layout" ]
+    div [ class "start-layout", dataTestId "start-layout" ]
         [ div [ class "panel" ]
             [ h2 [] [ text "Bereit für Hogwarts?" ]
             , p [] [ text ("Willkommen, " ++ state.player.name ++ " aus " ++ state.player.houseName ++ ".") ]
-            , button [ onClick StartAdventure, disabled (not state.isOnline) ] [ text "Los geht's" ]
+            , button [ onClick StartAdventure, disabled (not state.isOnline), dataTestId "start-adventure" ] [ text "Los geht's" ]
             ]
         , div [ class "meta-grid" ]
             [ statsPanel state.player
@@ -124,10 +127,10 @@ startView state =
 
 adventureView : Model.GameState -> Model.Adventure -> Html Msg
 adventureView state adventure =
-    div [ class "story-layout" ]
+    div [ class "story-layout", dataTestId "story-layout" ]
         [ div [ class "story-main" ]
             [ div [ class "story" ]
-                [ div [ class "story-feed" ] (List.map viewTurn adventure.turns)
+                [ div [ class "story-feed", dataTestId "story-feed" ] (List.map viewTurn adventure.turns)
                 , loadingView state.isLoading
                 , suggestedActionsView state.isLoading state.pendingAbandon state.isOnline (latestSuggestions adventure)
                 , abandonConfirmView state.pendingAbandon
@@ -137,17 +140,20 @@ adventureView state adventure =
                         , placeholder "Was tust du?"
                         , value state.actionInput
                         , onInput UpdateActionInput
+                        , dataTestId "action-input"
                         ]
                         []
                     , button
                         [ onClick SendAction
                         , disabled (state.isLoading || state.pendingAbandon || String.trim state.actionInput == "" || not state.isOnline)
+                        , dataTestId "send-action"
                         ]
                         [ text "Senden" ]
                     , button
                         [ class "ghost"
                         , onClick RequestAbandon
                         , disabled state.isLoading
+                        , dataTestId "abandon-action"
                         ]
                         [ text "Aufgeben" ]
                     ]
@@ -164,7 +170,7 @@ adventureView state adventure =
 
 viewTurn : Model.Turn -> Html Msg
 viewTurn turn =
-    div [ class "turn" ]
+    div [ class "turn", dataTestId "story-turn" ]
         [ div [ class "turn-main" ]
             [ userActionView turn.userAction
             , assistantView turn.assistant
@@ -187,8 +193,8 @@ assistantView maybeAssistant =
             div [ class "assistant pending" ] [ text "Die Geschichte schreibt sich..." ]
 
         Just assistant ->
-            div [ class "assistant" ]
-                [ p [] [ text assistant.storyText ]
+            div [ class "assistant", dataTestId "assistant-turn" ]
+                [ p [ dataTestId "assistant-story" ] [ text assistant.storyText ]
                 , newItemsView assistant.newItems
                 , completionView assistant.adventureCompleted
                 ]
@@ -213,7 +219,7 @@ assistantImageView maybeAssistant =
                         description =
                             Maybe.withDefault "Illustration der Szene" imageData.prompt
                     in
-                    img [ class "assistant-image", src imageSrc, alt description ] []
+                    img [ class "assistant-image", src imageSrc, alt description, dataTestId "assistant-image" ] []
 
 
 loadingView : Bool -> Html Msg
@@ -231,7 +237,7 @@ suggestedActionsView isLoading isAbandoning isOnline actions =
         text ""
 
     else
-        div [ class "suggestions" ]
+        div [ class "suggestions", dataTestId "suggested-actions" ]
             (List.map (suggestedButton isLoading isAbandoning isOnline) actions)
 
 
@@ -302,18 +308,18 @@ abandonConfirmView isVisible =
 
 statsPanel : Model.Player -> Html Msg
 statsPanel player =
-    div [ class "panel panel-side" ]
+    div [ class "panel panel-side", dataTestId "stats-panel" ]
         [ h3 [] [ text "Statistik" ]
         , div [ class "stats-grid" ]
-            [ statItem "Abenteuer" (String.fromInt player.stats.adventuresCompleted)
-            , statItem "Züge" (String.fromInt player.stats.totalTurns)
+            [ statItem "Abenteuer" (String.fromInt player.stats.adventuresCompleted) "stats-adventures"
+            , statItem "Züge" (String.fromInt player.stats.totalTurns) "stats-turns"
             ]
         ]
 
 
-statItem : String -> String -> Html Msg
-statItem label valueText =
-    div [ class "stat-item" ]
+statItem : String -> String -> String -> Html Msg
+statItem label valueText testId =
+    div [ class "stat-item", dataTestId testId ]
         [ span [] [ text label ]
         , p [] [ text valueText ]
         ]
@@ -330,7 +336,7 @@ currentAdventurePanel adventure =
                 Nothing ->
                     "Unbenanntes Abenteuer"
     in
-    div [ class "panel panel-side" ]
+    div [ class "panel panel-side", dataTestId "current-adventure-panel" ]
         [ h3 [] [ text "Aktuelles Abenteuer" ]
         , p [] [ text titleText ]
         ]
@@ -338,7 +344,7 @@ currentAdventurePanel adventure =
 
 inventoryPanel : Model.Player -> Bool -> Html Msg
 inventoryPanel player isVisible =
-    div [ class "panel panel-side" ]
+    div [ class "panel panel-side", dataTestId "inventory-panel" ]
         [ panelHeader "Inventar" ToggleInventory isVisible
         , if isVisible then
             if List.isEmpty player.inventory then
@@ -358,7 +364,7 @@ inventoryPanel player isVisible =
 
 historyPanel : Model.Player -> Bool -> Html Msg
 historyPanel player isVisible =
-    div [ class "panel panel-side" ]
+    div [ class "panel panel-side", dataTestId "history-panel" ]
         [ panelHeader "Abenteuerchronik" ToggleHistory isVisible
         , if isVisible then
             if List.isEmpty player.completedAdventures then
@@ -389,3 +395,8 @@ panelHeader title toggleMsg isOpen =
         , button [ class "ghost", onClick toggleMsg ]
             [ text (if isOpen then "Ausblenden" else "Anzeigen") ]
         ]
+
+
+dataTestId : String -> Html.Attribute msg
+dataTestId value =
+    attribute "data-testid" value
