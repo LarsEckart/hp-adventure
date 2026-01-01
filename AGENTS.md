@@ -28,6 +28,7 @@ Developer notes:
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`.
 - Each assistant turn is expected to include an image; if a turn shows text without an image, check that the SSE `final` event arrived (otherwise the UI keeps `image = Nothing`) and correlate backend OpenAI image logs with the `X-Request-Id`.
+- The service worker caches `elm.js`/`styles.css`; bump `CACHE_NAME` in `frontend/public/sw.js` (and copy to backend public) when UI changes don’t show up.
 - Prompt + parsing live in `backend/src/main/java/com/example/hpadventure/services` and `backend/src/main/java/com/example/hpadventure/parsing`.
 - HTTP routes live in `backend/src/main/java/com/example/hpadventure/api/HealthRoutes.java` and `backend/src/main/java/com/example/hpadventure/api/StoryRoutes.java` (wired from `App.java`).
 - `StoryService` implements `StoryHandler` so routes can be tested with stubs.
