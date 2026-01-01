@@ -11,7 +11,9 @@ Project notes:
 - localStorage key is `hpAdventure:v1` (see `frontend/public/app.js`).
 
 Developer notes:
-- `POST /api/story` is currently a stub endpoint (static response) in `backend/src/main/java/com/example/hpadventure/App.java`.
+- `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
+- Prompt + parsing live in `backend/src/main/java/com/example/hpadventure/services` and `backend/src/main/java/com/example/hpadventure/parsing`.
+- Backend tests: `cd backend && ./gradlew test`.
 - Elm HTTP support requires `elm/http`; add deps with `elm install` (don’t hand-edit versions).
 - After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.
 - The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText` plus `assistant.suggestedActions`.

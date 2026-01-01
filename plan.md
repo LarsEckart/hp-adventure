@@ -12,18 +12,18 @@ This document describes a detailed plan to rebuild the existing **German** Node.
 
 ## Status (2026-01-01)
 
-Milestone 0 is complete and Milestone 1 is underway:
+Milestone 0 is complete and Milestone 1 is partly complete:
 
-- Backend now serves `/health` and a **stubbed** `/api/story` (static response) plus JSON mapper + DTOs.
-- Frontend now has a minimal setup + story flow UI, sends actions to `/api/story`, and renders story responses.
+- Backend serves `/health` and now calls Anthropic `/v1/messages` in `/api/story` (prompt builder + marker parsing + title/summary hooks).
+- Added backend parsing helpers + JUnit coverage (items, completion, options, marker stripping, prompt builder).
+- Frontend still has the minimal setup + story flow UI, sends actions to `/api/story`, and renders story responses.
 - Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
 
 Still missing for Milestone 1:
-- Replace `/api/story` stub with Anthropic story generation (no real AI integration yet).
-- Expand Elm state to full story mechanics (inventory/history/completion).
+- Wire Elm to full story mechanics (inventory/history/completion).
 - Service worker / offline shell caching.
 
-Next up: implement the real `/api/story` backend flow (Anthropic request + parsing), then extend Elm to handle inventory/history and completion.
+Next up: extend Elm state + UI for inventory/history/completion, then add image generation + rendering.
 
 ---
 
