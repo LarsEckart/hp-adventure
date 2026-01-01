@@ -31,6 +31,7 @@ Developer notes:
 - Story text is sanitized server-side to strip simple Markdown markers (`*`, `_`, `` ` ``) in both streaming deltas and final responses.
 - Streaming deltas may include whitespace-only chunks; do not drop/trim them or words may concatenate.
 - Each assistant turn is expected to include an image; if a turn shows text without an image, check that the SSE `final` event arrived (otherwise the UI keeps `image = Nothing`) and correlate backend OpenAI image logs with the `X-Request-Id`.
+- The UI only shows image placeholders while the latest turn is loading; if image generation fails and an error appears, the image column is hidden for that turn.
 - The service worker caches `elm.js`/`styles.css`; bump `CACHE_NAME` in `frontend/public/sw.js` (and copy to backend public) whenever you change frontend assets (Elm output, CSS, app.js, index.html) or the UI doesn’t reflect recent changes in production.
 - Prompt + parsing live in `backend/src/main/java/com/example/hpadventure/services` and `backend/src/main/java/com/example/hpadventure/parsing`.
 - HTTP routes live in `backend/src/main/java/com/example/hpadventure/api/HealthRoutes.java` and `backend/src/main/java/com/example/hpadventure/api/StoryRoutes.java` (wired from `App.java`).

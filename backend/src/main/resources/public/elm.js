@@ -7574,49 +7574,53 @@ var $elm$html$Html$Attributes$src = function (url) {
 		'src',
 		_VirtualDom_noJavaScriptOrHtmlUri(url));
 };
-var $author$project$View$assistantImageView = function (maybeAssistant) {
-	if (maybeAssistant.$ === 1) {
-		return A2(
-			$elm$html$Html$div,
-			_List_fromArray(
-				[
-					$elm$html$Html$Attributes$class('assistant-image pending')
-				]),
-			_List_fromArray(
-				[
-					$elm$html$Html$text('Illustration lädt...')
-				]));
-	} else {
-		var assistant = maybeAssistant.a;
-		var _v1 = assistant.a_;
-		if (_v1.$ === 1) {
-			return A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('assistant-image pending')
-					]),
-				_List_fromArray(
-					[
-						$elm$html$Html$text('Illustration wird vorbereitet...')
-					]));
+var $author$project$View$assistantImageView = F2(
+	function (showPlaceholder, maybeAssistant) {
+		if (maybeAssistant.$ === 1) {
+			return showPlaceholder ? $elm$core$Maybe$Just(
+				A2(
+					$elm$html$Html$div,
+					_List_fromArray(
+						[
+							$elm$html$Html$Attributes$class('assistant-image pending')
+						]),
+					_List_fromArray(
+						[
+							$elm$html$Html$text('Illustration lädt...')
+						]))) : $elm$core$Maybe$Nothing;
 		} else {
-			var imageData = _v1.a;
-			var imageSrc = 'data:' + (imageData.a3 + (';base64,' + imageData.aN));
-			var description = A2($elm$core$Maybe$withDefault, 'Illustration der Szene', imageData.a9);
-			return A2(
-				$elm$html$Html$img,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('assistant-image'),
-						$elm$html$Html$Attributes$src(imageSrc),
-						$elm$html$Html$Attributes$alt(description),
-						$author$project$View$dataTestId('assistant-image')
-					]),
-				_List_Nil);
+			var assistant = maybeAssistant.a;
+			var _v1 = assistant.a_;
+			if (_v1.$ === 1) {
+				return showPlaceholder ? $elm$core$Maybe$Just(
+					A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('assistant-image pending')
+							]),
+						_List_fromArray(
+							[
+								$elm$html$Html$text('Illustration wird vorbereitet...')
+							]))) : $elm$core$Maybe$Nothing;
+			} else {
+				var imageData = _v1.a;
+				var imageSrc = 'data:' + (imageData.a3 + (';base64,' + imageData.aN));
+				var description = A2($elm$core$Maybe$withDefault, 'Illustration der Szene', imageData.a9);
+				return $elm$core$Maybe$Just(
+					A2(
+						$elm$html$Html$img,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('assistant-image'),
+								$elm$html$Html$Attributes$src(imageSrc),
+								$elm$html$Html$Attributes$alt(description),
+								$author$project$View$dataTestId('assistant-image')
+							]),
+						_List_Nil));
+			}
 		}
-	}
-};
+	});
 var $author$project$View$completionView = function (completed) {
 	return completed ? A2(
 		$elm$html$Html$p,
@@ -7716,39 +7720,76 @@ var $author$project$View$userActionView = function (action) {
 				$elm$html$Html$text('Du: ' + action)
 			]));
 };
-var $author$project$View$viewTurn = function (turn) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('turn'),
-				$author$project$View$dataTestId('story-turn')
-			]),
-		_List_fromArray(
-			[
-				A2(
+var $author$project$View$viewTurn = F3(
+	function (isLoading, isLast, turn) {
+		var showPlaceholder = isLoading && isLast;
+		var maybeImage = A2($author$project$View$assistantImageView, showPlaceholder, turn.S);
+		var turnClass = function () {
+			if (maybeImage.$ === 1) {
+				return 'turn no-image';
+			} else {
+				return 'turn';
+			}
+		}();
+		var mainView = A2(
+			$elm$html$Html$div,
+			_List_fromArray(
+				[
+					$elm$html$Html$Attributes$class('turn-main')
+				]),
+			_List_fromArray(
+				[
+					$author$project$View$userActionView(turn.aC),
+					$author$project$View$assistantView(turn.S)
+				]));
+		if (maybeImage.$ === 1) {
+			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('turn-main')
+						$elm$html$Html$Attributes$class(turnClass),
+						$author$project$View$dataTestId('story-turn')
 					]),
 				_List_fromArray(
-					[
-						$author$project$View$userActionView(turn.aC),
-						$author$project$View$assistantView(turn.S)
-					])),
-				A2(
+					[mainView]));
+		} else {
+			var imageView = maybeImage.a;
+			return A2(
 				$elm$html$Html$div,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('turn-image')
+						$elm$html$Html$Attributes$class(turnClass),
+						$author$project$View$dataTestId('story-turn')
 					]),
 				_List_fromArray(
 					[
-						$author$project$View$assistantImageView(turn.S)
-					]))
-			]));
-};
+						mainView,
+						A2(
+						$elm$html$Html$div,
+						_List_fromArray(
+							[
+								$elm$html$Html$Attributes$class('turn-image')
+							]),
+						_List_fromArray(
+							[imageView]))
+					]));
+		}
+	});
+var $author$project$View$viewTurns = F2(
+	function (isLoading, turns) {
+		var total = $elm$core$List$length(turns);
+		return A2(
+			$elm$core$List$indexedMap,
+			F2(
+				function (index, turn) {
+					return A3(
+						$author$project$View$viewTurn,
+						isLoading,
+						_Utils_eq(index, total - 1),
+						turn);
+				}),
+			turns);
+	});
 var $author$project$View$adventureView = F2(
 	function (state, adventure) {
 		return A2(
@@ -7784,7 +7825,7 @@ var $author$project$View$adventureView = F2(
 											$elm$html$Html$Attributes$id('story-feed'),
 											$author$project$View$dataTestId('story-feed')
 										]),
-									A2($elm$core$List$map, $author$project$View$viewTurn, adventure.bm)),
+									A2($author$project$View$viewTurns, state.ac, adventure.bm)),
 									$author$project$View$loadingView(state.ac),
 									A4(
 									$author$project$View$suggestedActionsView,

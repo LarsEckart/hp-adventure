@@ -117,7 +117,7 @@ adventureView state adventure =
     div [ class "story-layout", dataTestId "story-layout" ]
         [ div [ class "story-main" ]
             [ div [ class "story" ]
-                [ div [ class "story-feed", id "story-feed", dataTestId "story-feed" ] (List.map viewTurn adventure.turns)
+                [ div [ class "story-feed", id "story-feed", dataTestId "story-feed" ] (viewTurns state.isLoading adventure.turns)
                 , loadingView state.isLoading
                 , suggestedActionsView state.isLoading state.pendingAbandon state.isOnline (latestSuggestions adventure)
                 , abandonConfirmView state.pendingAbandon
@@ -156,16 +156,47 @@ adventureView state adventure =
         ]
 
 
-viewTurn : Model.Turn -> Html Msg
-viewTurn turn =
-    div [ class "turn", dataTestId "story-turn" ]
-        [ div [ class "turn-main" ]
-            [ userActionView turn.userAction
-            , assistantView turn.assistant
-            ]
-        , div [ class "turn-image" ]
-            [ assistantImageView turn.assistant ]
-        ]
+viewTurns : Bool -> List Model.Turn -> List (Html Msg)
+viewTurns isLoading turns =
+    let
+        total =
+            List.length turns
+    in
+    List.indexedMap (\index turn -> viewTurn isLoading (index == total - 1) turn) turns
+
+
+viewTurn : Bool -> Bool -> Model.Turn -> Html Msg
+viewTurn isLoading isLast turn =
+    let
+        showPlaceholder =
+            isLoading && isLast
+
+        maybeImage =
+            assistantImageView showPlaceholder turn.assistant
+
+        turnClass =
+            case maybeImage of
+                Nothing ->
+                    "turn no-image"
+
+                Just _ ->
+                    "turn"
+
+        mainView =
+            div [ class "turn-main" ]
+                [ userActionView turn.userAction
+                , assistantView turn.assistant
+                ]
+    in
+    case maybeImage of
+        Nothing ->
+            div [ class turnClass, dataTestId "story-turn" ] [ mainView ]
+
+        Just imageView ->
+            div [ class turnClass, dataTestId "story-turn" ]
+                [ mainView
+                , div [ class "turn-image" ] [ imageView ]
+                ]
 
 
 userActionView : String -> Html Msg
@@ -188,16 +219,24 @@ assistantView maybeAssistant =
                 ]
 
 
-assistantImageView : Maybe Model.AssistantTurn -> Html Msg
-assistantImageView maybeAssistant =
+assistantImageView : Bool -> Maybe Model.AssistantTurn -> Maybe (Html Msg)
+assistantImageView showPlaceholder maybeAssistant =
     case maybeAssistant of
         Nothing ->
-            div [ class "assistant-image pending" ] [ text "Illustration lädt..." ]
+            if showPlaceholder then
+                Just (div [ class "assistant-image pending" ] [ text "Illustration lädt..." ])
+
+            else
+                Nothing
 
         Just assistant ->
             case assistant.image of
                 Nothing ->
-                    div [ class "assistant-image pending" ] [ text "Illustration wird vorbereitet..." ]
+                    if showPlaceholder then
+                        Just (div [ class "assistant-image pending" ] [ text "Illustration wird vorbereitet..." ])
+
+                    else
+                        Nothing
 
                 Just imageData ->
                     let
@@ -207,7 +246,7 @@ assistantImageView maybeAssistant =
                         description =
                             Maybe.withDefault "Illustration der Szene" imageData.prompt
                     in
-                    img [ class "assistant-image", src imageSrc, alt description, dataTestId "assistant-image" ] []
+                    Just (img [ class "assistant-image", src imageSrc, alt description, dataTestId "assistant-image" ] [])
 
 
 loadingView : Bool -> Html Msg
