@@ -18,8 +18,11 @@ Developer notes:
 - Image generation uses OpenAI `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
 - Prompt + parsing live in `backend/src/main/java/com/example/hpadventure/services` and `backend/src/main/java/com/example/hpadventure/parsing`.
+- HTTP routes live in `backend/src/main/java/com/example/hpadventure/api/HealthRoutes.java` and `backend/src/main/java/com/example/hpadventure/api/StoryRoutes.java` (wired from `App.java`).
+- `StoryService` implements `StoryHandler` so routes can be tested with stubs.
 - Backend tests: `cd backend && ./gradlew test`.
 - `StoryServiceTest` stubs Anthropic/OpenAI via OkHttp MockWebServer for end-to-end service coverage.
+- `StoryRoutesTest` uses Javalin testtools to cover API validation, rate limiting, and upstream error mapping.
 - Elm HTTP support requires `elm/http`; add deps with `elm install` (don’t hand-edit versions).
 - After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.
 - The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText`, `assistant.suggestedActions`, plus `assistant.image` (base64).

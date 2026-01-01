@@ -27,6 +27,7 @@ Milestones 0–2 are complete, plus service worker caching:
 - Adventure `startedAt` timestamps are set client-side as ISO strings.
 - Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
 - Added backend StoryService integration coverage using OkHttp MockWebServer for Anthropic/OpenAI stubs (title + summary paths).
+- API routes are now factored into `HealthRoutes` + `StoryRoutes`, with Javalin test coverage for happy path, validation, rate limiting, and upstream errors.
 
 Still missing (optional):
 - Streaming responses (Milestone 6).
@@ -551,8 +552,8 @@ This keeps `main` branch always deployable without manual asset copying.
    - `CompletionParserTest`: marker detection
    - `OptionsParserTest` and `SceneParserTest`: marker parsing and fallback behavior
 2. **Integration tests**
-   - `StoryRoutesTest` with mocked `AnthropicClient` + `OpenAiImageClient`
-   - Validate response JSON shape and that markers are removed from `storyText`
+   - `StoryRoutesTest` uses Javalin testtools + a `StoryHandler` stub to validate HTTP behavior (200, 400, 429, upstream errors).
+   - Keep `StoryServiceTest` for end-to-end Anthropic/OpenAI integration paths.
 3. **Contract tests**
    - Snapshot JSON tests: ensure Elm decoders won’t break
 4. **Resilience**
