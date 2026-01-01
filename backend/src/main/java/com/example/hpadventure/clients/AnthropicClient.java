@@ -8,10 +8,12 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import okio.BufferedSource;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 
 public final class AnthropicClient {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -65,10 +67,79 @@ public final class AnthropicClient {
         }
     }
 
+    public void streamMessage(String systemPrompt, List<Message> messages, int maxTokens, Consumer<String> onDelta) {
+        if (apiKey == null || apiKey.isBlank()) {
+            throw new UpstreamException("MISSING_ANTHROPIC_API_KEY", 500, "ANTHROPIC_API_KEY is not set");
+        }
+        Objects.requireNonNull(onDelta, "onDelta");
+
+        CreateMessageStreamRequest requestBody = new CreateMessageStreamRequest(model, maxTokens, systemPrompt, messages, true);
+
+        try {
+            byte[] payload = mapper.writeValueAsBytes(requestBody);
+            Request request = new Request.Builder()
+                .url(baseUrl + "/v1/messages")
+                .addHeader("x-api-key", apiKey)
+                .addHeader("anthropic-version", VERSION_HEADER)
+                .addHeader("accept", "text/event-stream")
+                .post(RequestBody.create(payload, JSON))
+                .build();
+
+            try (Response response = httpClient.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    String errorBody = response.body() != null ? response.body().string() : "";
+                    throw new UpstreamException("ANTHROPIC_ERROR", response.code(), errorBody);
+                }
+
+                if (response.body() == null) {
+                    throw new UpstreamException("ANTHROPIC_ERROR", response.code(), "Empty response body");
+                }
+
+                BufferedSource source = response.body().source();
+                while (true) {
+                    String line = source.readUtf8Line();
+                    if (line == null) {
+                        break;
+                    }
+                    if (line.isBlank() || !line.startsWith("data:")) {
+                        continue;
+                    }
+                    String data = line.substring(5).trim();
+                    if (data.isEmpty() || "[DONE]".equals(data)) {
+                        continue;
+                    }
+
+                    StreamEvent event = mapper.readValue(data, StreamEvent.class);
+                    if (event == null || !"content_block_delta".equals(event.type()) || event.delta() == null) {
+                        continue;
+                    }
+                    if (!"text_delta".equals(event.delta().type())) {
+                        continue;
+                    }
+                    String text = event.delta().text();
+                    if (text != null && !text.isEmpty()) {
+                        onDelta.accept(text);
+                    }
+                }
+            }
+        } catch (IOException e) {
+            throw new UpstreamException("ANTHROPIC_ERROR", 502, e.getMessage(), e);
+        }
+    }
+
     public record Message(String role, String content) {
     }
 
     public record CreateMessageRequest(String model, int max_tokens, String system, List<Message> messages) {
+    }
+
+    public record CreateMessageStreamRequest(
+        String model,
+        int max_tokens,
+        String system,
+        List<Message> messages,
+        boolean stream
+    ) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -90,5 +161,13 @@ public final class AnthropicClient {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ContentBlock(String type, String text) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record StreamEvent(String type, StreamDelta delta) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record StreamDelta(String type, String text) {
     }
 }

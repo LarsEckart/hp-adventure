@@ -13,8 +13,9 @@ import java.time.Clock;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-public final class StoryService implements StoryHandler {
+public final class StoryService implements StoryHandler, StoryStreamHandler {
     private static final int STORY_MAX_TOKENS = 500;
 
     private final AnthropicClient anthropicClient;
@@ -59,6 +60,26 @@ public final class StoryService implements StoryHandler {
     }
 
     public Dtos.Assistant nextTurn(Dtos.StoryRequest request) {
+        StoryContext context = buildStoryContext(request);
+        String rawStory = anthropicClient.createMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS);
+        return buildAssistant(request, context.history(), rawStory);
+    }
+
+    @Override
+    public Dtos.Assistant streamTurn(Dtos.StoryRequest request, Consumer<String> onDelta) {
+        StoryContext context = buildStoryContext(request);
+        StringBuilder rawStory = new StringBuilder();
+        anthropicClient.streamMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS, delta -> {
+            if (delta == null || delta.isBlank()) {
+                return;
+            }
+            rawStory.append(delta);
+            onDelta.accept(delta);
+        });
+        return buildAssistant(request, context.history(), rawStory.toString());
+    }
+
+    private StoryContext buildStoryContext(Dtos.StoryRequest request) {
         List<Dtos.ChatMessage> history = request == null || request.conversationHistory() == null
             ? List.of()
             : request.conversationHistory();
@@ -73,10 +94,12 @@ public final class StoryService implements StoryHandler {
 
         String action = request.action().trim();
         messages.add(new AnthropicClient.Message("user", action));
-
         String systemPrompt = promptBuilder.build(request.player());
-        String rawStory = anthropicClient.createMessage(systemPrompt, messages, STORY_MAX_TOKENS);
 
+        return new StoryContext(history, messages, systemPrompt);
+    }
+
+    private Dtos.Assistant buildAssistant(Dtos.StoryRequest request, List<Dtos.ChatMessage> history, String rawStory) {
         List<Dtos.Item> newItems = itemParser.parse(rawStory);
         boolean completed = completionParser.isComplete(rawStory);
         List<String> suggestedActions = optionsParser.parse(rawStory);
@@ -122,5 +145,12 @@ public final class StoryService implements StoryHandler {
             assistantMessages.add(latestStory);
         }
         return assistantMessages;
+    }
+
+    private record StoryContext(
+        List<Dtos.ChatMessage> history,
+        List<AnthropicClient.Message> messages,
+        String systemPrompt
+    ) {
     }
 }

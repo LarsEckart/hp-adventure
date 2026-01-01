@@ -1,4 +1,4 @@
-module Api exposing (HttpError, StoryResponse, errorToString, sendStory)
+module Api exposing (HttpError, StoryResponse, StreamEvent(..), decodeStreamEvent, encodeStoryRequest, errorToString, sendStory)
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -30,6 +30,11 @@ type alias AdventureMeta =
     , completedAt : Maybe String
     }
 
+type StreamEvent
+    = StreamDelta String
+    | StreamFinal StoryResponse
+    | StreamError String
+
 
 
 
@@ -40,6 +45,33 @@ sendStory state action toMsg =
         , body = Http.jsonBody (encodeStoryRequest state action)
         , expect = Http.expectJson toMsg decodeStoryResponse
         }
+
+
+decodeStreamEvent : Decoder StreamEvent
+decodeStreamEvent =
+    Decode.field "event" Decode.string
+        |> Decode.andThen
+            (\event ->
+                case event of
+                    "delta" ->
+                        Decode.map StreamDelta (Decode.field "data" (Decode.field "text" Decode.string))
+
+                    "final" ->
+                        Decode.map StreamFinal (Decode.field "data" decodeStoryResponse)
+
+                    "error" ->
+                        Decode.map StreamError
+                            (Decode.field "data"
+                                (Decode.oneOf
+                                    [ errorMessageDecoder
+                                    , Decode.string
+                                    ]
+                                )
+                            )
+
+                    _ ->
+                        Decode.fail "Unknown stream event"
+            )
 
 
 errorToString : HttpError -> String
@@ -59,6 +91,11 @@ errorToString error =
 
         Http.BadBody _ ->
             "Die Antwort konnte nicht gelesen werden."
+
+
+errorMessageDecoder : Decoder String
+errorMessageDecoder =
+    Decode.field "error" (Decode.field "message" Decode.string)
 
 
 encodeStoryRequest : Model.GameState -> String -> Encode.Value

@@ -28,11 +28,10 @@ Milestones 0–2 are complete, plus service worker caching:
 - Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
 - Added backend StoryService integration coverage using OkHttp MockWebServer for Anthropic/OpenAI stubs (title + summary paths).
 - API routes are now factored into `HealthRoutes` + `StoryRoutes`, with Javalin test coverage for happy path, validation, rate limiting, and upstream errors.
+- Added Playwright E2E smoke test with mocked `/api/story` responses and stable `data-testid` hooks.
+- Streaming responses (Milestone 6) are now implemented end-to-end (backend SSE + frontend streaming UI).
 
-Still missing (optional):
-- Streaming responses (Milestone 6).
-
-Next up: optional streaming UX or E2E smoke tests.
+Next up: polish/optimizations if needed.
 
 ---
 
@@ -568,11 +567,9 @@ This keeps `main` branch always deployable without manual asset copying.
      - completion moves into `completedAdventures`
 2. **Decoder tests**
    - Ensure response decoder handles missing optional fields (e.g. no new items)
-3. **E2E smoke tests (optional but valuable)**
-   - Playwright/Cypress:
-     - Start adventure
-     - Click suggested action
-     - Confirm inventory modal shows new item
+3. **E2E smoke tests (Playwright)**
+   - Mock `/api/story` at the browser layer (no API keys required)
+   - Covers onboarding → first story → suggested action → completion → history/stats
 
 ---
 

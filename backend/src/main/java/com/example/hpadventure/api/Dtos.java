@@ -41,6 +41,9 @@ public final class Dtos {
     public record StoryResponse(Assistant assistant) {
     }
 
+    public record StreamDelta(String text) {
+    }
+
     public record Assistant(
         String storyText,
         List<String> suggestedActions,

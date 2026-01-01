@@ -1,6 +1,8 @@
 module Update exposing (update)
 
 import Api
+import Json.Decode as Decode
+import Json.Encode as Encode
 import Model
 import Msg exposing (Msg(..))
 import Maybe
@@ -10,8 +12,8 @@ import Task
 import Time
 import Util
 
-update : (Model.GameState -> Cmd Msg) -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
-update save msg state =
+update : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
+update save startStream msg state =
     case msg of
         UpdateName name ->
             let
@@ -50,16 +52,16 @@ update save msg state =
             ( next, Cmd.none )
 
         StartAdventure ->
-            startAdventure save state
+            startAdventure save startStream state
 
         GotStartTime startedAt ->
-            beginAdventure save startedAt state
+            beginAdventure save startStream startedAt state
 
         SendAction ->
-            handleAction save state.actionInput state
+            handleAction save startStream state.actionInput state
 
         UseSuggestedAction action ->
-            handleAction save action state
+            handleAction save startStream action state
 
         GotStoryResponse result ->
             case result of
@@ -75,6 +77,9 @@ update save msg state =
                             }
                     in
                     ( next, save next )
+
+        GotStoryStreamEvent payload ->
+            handleStreamEvent save payload state
 
         ToggleInventory ->
             ( { state | showInventory = not state.showInventory }, Cmd.none )
@@ -105,8 +110,8 @@ update save msg state =
             ( next, save next )
 
 
-startAdventure : (Model.GameState -> Cmd Msg) -> Model.GameState -> ( Model.GameState, Cmd Msg )
-startAdventure save state =
+startAdventure : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Model.GameState -> ( Model.GameState, Cmd Msg )
+startAdventure save startStream state =
     if not state.isOnline then
         setError save offlineMessage state
 
@@ -126,8 +131,8 @@ startAdventure save state =
                 ( next, Task.perform GotStartTime Time.now )
 
 
-beginAdventure : (Model.GameState -> Cmd Msg) -> Time.Posix -> Model.GameState -> ( Model.GameState, Cmd Msg )
-beginAdventure save startedAt state =
+beginAdventure : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Time.Posix -> Model.GameState -> ( Model.GameState, Cmd Msg )
+beginAdventure save startStream startedAt state =
     let
         adventure =
             { title = Nothing
@@ -138,11 +143,11 @@ beginAdventure save startedAt state =
         next =
             { state | currentAdventure = Just adventure, notice = Nothing }
     in
-    sendAction save "start" next
+    sendAction save startStream "start" next
 
 
-handleAction : (Model.GameState -> Cmd Msg) -> String -> Model.GameState -> ( Model.GameState, Cmd Msg )
-handleAction save rawAction state =
+handleAction : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> String -> Model.GameState -> ( Model.GameState, Cmd Msg )
+handleAction save startStream rawAction state =
     let
         trimmed =
             String.trim rawAction
@@ -171,14 +176,14 @@ handleAction save rawAction state =
         requestAbandon save state
 
     else if command == "start" then
-        startAdventure save state
+        startAdventure save startStream state
 
     else
-        sendAction save trimmed state
+        sendAction save startStream trimmed state
 
 
-sendAction : (Model.GameState -> Cmd Msg) -> String -> Model.GameState -> ( Model.GameState, Cmd Msg )
-sendAction save action state =
+sendAction : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> String -> Model.GameState -> ( Model.GameState, Cmd Msg )
+sendAction save startStream action state =
     if not state.isOnline then
         setError save offlineMessage state
 
@@ -208,7 +213,7 @@ sendAction save action state =
                 ( next
                 , Cmd.batch
                     [ save next
-                    , Api.sendStory state action GotStoryResponse
+                    , startStream (Api.encodeStoryRequest state action)
                     ]
                 )
 
@@ -222,7 +227,6 @@ applyStoryResponse save response state =
                     { state | isLoading = False }
             in
             ( next, save next )
-
         Just adventure ->
             let
                 assistantTurn =
@@ -303,6 +307,42 @@ applyStoryResponse save response state =
             ( next, save next )
 
 
+handleStreamEvent : (Model.GameState -> Cmd Msg) -> Decode.Value -> Model.GameState -> ( Model.GameState, Cmd Msg )
+handleStreamEvent save payload state =
+    case Decode.decodeValue Api.decodeStreamEvent payload of
+        Ok event ->
+            case event of
+                Api.StreamDelta delta ->
+                    ( applyStreamDelta delta state, Cmd.none )
+
+                Api.StreamFinal response ->
+                    applyStoryResponse save response state
+
+                Api.StreamError message ->
+                    let
+                        next =
+                            { state | isLoading = False, error = Just message, pendingAbandon = False }
+                    in
+                    ( next, save next )
+
+        Err _ ->
+            ( state, Cmd.none )
+
+
+applyStreamDelta : String -> Model.GameState -> Model.GameState
+applyStreamDelta delta state =
+    case state.currentAdventure of
+        Nothing ->
+            state
+
+        Just adventure ->
+            let
+                updatedAdventure =
+                    updateLastTurnWithDelta delta adventure
+            in
+            { state | currentAdventure = Just updatedAdventure }
+
+
 updateLastTurn : Model.AssistantTurn -> Model.Adventure -> Model.Adventure
 updateLastTurn assistant adventure =
     case List.reverse adventure.turns of
@@ -313,6 +353,33 @@ updateLastTurn assistant adventure =
             let
                 updatedTurn =
                     { lastTurn | assistant = Just assistant }
+            in
+            { adventure | turns = List.reverse (updatedTurn :: rest) }
+
+
+updateLastTurnWithDelta : String -> Model.Adventure -> Model.Adventure
+updateLastTurnWithDelta delta adventure =
+    case List.reverse adventure.turns of
+        [] ->
+            adventure
+
+        lastTurn :: rest ->
+            let
+                updatedAssistant =
+                    case lastTurn.assistant of
+                        Nothing ->
+                            { storyText = delta
+                            , suggestedActions = []
+                            , newItems = []
+                            , adventureCompleted = False
+                            , image = Nothing
+                            }
+
+                        Just assistant ->
+                            { assistant | storyText = assistant.storyText ++ delta }
+
+                updatedTurn =
+                    { lastTurn | assistant = Just updatedAssistant }
             in
             { adventure | turns = List.reverse (updatedTurn :: rest) }
 

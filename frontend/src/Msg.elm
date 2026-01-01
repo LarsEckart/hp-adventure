@@ -1,6 +1,7 @@
 module Msg exposing (Msg(..))
 
 import Api
+import Json.Decode as Decode
 import Time
 
 type Msg
@@ -13,6 +14,7 @@ type Msg
     | SendAction
     | UseSuggestedAction String
     | GotStoryResponse (Result Api.HttpError Api.StoryResponse)
+    | GotStoryStreamEvent Decode.Value
     | ToggleInventory
     | ToggleHistory
     | RequestAbandon
