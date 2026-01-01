@@ -32,3 +32,4 @@ Developer notes:
 - After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.
 - The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText`, `assistant.suggestedActions`, plus `assistant.image` (base64).
 - UI command shortcuts (handled client-side): `inventar`, `geschichte`, `aufgeben`, `start`.
+- Client-side error handling drops the last pending turn on failed story requests to avoid stuck "Die Geschichte schreibt sich..." placeholders (see `frontend/src/Update.elm`).

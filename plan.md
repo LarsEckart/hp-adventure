@@ -31,6 +31,7 @@ Milestones 0–2 are complete, plus service worker caching:
 - API routes are now factored into `HealthRoutes` + `StoryRoutes`, with Javalin test coverage for happy path, validation, rate limiting, and upstream errors.
 - Added Playwright E2E smoke test with mocked `/api/story` responses and stable `data-testid` hooks.
 - Streaming responses (Milestone 6) are now implemented end-to-end (backend SSE + frontend streaming UI).
+- Frontend now drops the last pending turn when a story request fails (stream or non-stream), so the feed doesn’t get stuck in a “writing…” state.
 
 Next up: polish/optimizations if needed.
 

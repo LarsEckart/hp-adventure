@@ -72,10 +72,14 @@ update save startStream msg state =
                 Err error ->
                     let
                         next =
-                            { state
-                                | isLoading = False
-                                , error = Just (Api.errorToString error)
-                            }
+                            dropPendingTurn state
+                                |> (\updated ->
+                                        { updated
+                                            | isLoading = False
+                                            , error = Just (Api.errorToString error)
+                                            , pendingAbandon = False
+                                        }
+                                   )
                     in
                     ( next, save next )
 
@@ -326,7 +330,10 @@ handleStreamEvent save payload state =
                 Api.StreamError message ->
                     let
                         next =
-                            { state | isLoading = False, error = Just message, pendingAbandon = False }
+                            dropPendingTurn state
+                                |> (\updated ->
+                                        { updated | isLoading = False, error = Just message, pendingAbandon = False }
+                                   )
                     in
                     ( next, save next )
 
@@ -346,6 +353,30 @@ applyStreamDelta delta state =
                     updateLastTurnWithDelta delta adventure
             in
             { state | currentAdventure = Just updatedAdventure }
+
+
+dropPendingTurn : Model.GameState -> Model.GameState
+dropPendingTurn state =
+    case state.currentAdventure of
+        Nothing ->
+            state
+
+        Just adventure ->
+            case List.reverse adventure.turns of
+                [] ->
+                    state
+
+                lastTurn :: rest ->
+                    case lastTurn.assistant of
+                        Nothing ->
+                            let
+                                updatedAdventure =
+                                    { adventure | turns = List.reverse rest }
+                            in
+                            { state | currentAdventure = Just updatedAdventure }
+
+                        Just _ ->
+                            state
 
 
 updateLastTurn : Model.AssistantTurn -> Model.Adventure -> Model.Adventure

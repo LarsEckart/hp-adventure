@@ -6473,6 +6473,36 @@ var $author$project$Update$confirmAbandon = F2(
 			next,
 			save(next));
 	});
+var $author$project$Update$dropPendingTurn = function (state) {
+	var _v0 = state.V;
+	if (_v0.$ === 1) {
+		return state;
+	} else {
+		var adventure = _v0.a;
+		var _v1 = $elm$core$List$reverse(adventure.bm);
+		if (!_v1.b) {
+			return state;
+		} else {
+			var lastTurn = _v1.a;
+			var rest = _v1.b;
+			var _v2 = lastTurn.S;
+			if (_v2.$ === 1) {
+				var updatedAdventure = _Utils_update(
+					adventure,
+					{
+						bm: $elm$core$List$reverse(rest)
+					});
+				return _Utils_update(
+					state,
+					{
+						V: $elm$core$Maybe$Just(updatedAdventure)
+					});
+			} else {
+				return state;
+			}
+		}
+	}
+};
 var $author$project$Api$errorToString = function (error) {
 	switch (error.$) {
 		case 0:
@@ -6783,13 +6813,16 @@ var $author$project$Update$handleStreamEvent = F3(
 					return A3($author$project$Update$applyStoryResponse, save, response, state);
 				default:
 					var message = event.a;
-					var next = _Utils_update(
-						state,
-						{
-							Y: $elm$core$Maybe$Just(message),
-							ac: false,
-							ak: false
-						});
+					var next = function (updated) {
+						return _Utils_update(
+							updated,
+							{
+								Y: $elm$core$Maybe$Just(message),
+								ac: false,
+								ak: false
+							});
+					}(
+						$author$project$Update$dropPendingTurn(state));
 					return _Utils_Tuple2(
 						next,
 						save(next));
@@ -6855,13 +6888,17 @@ var $author$project$Update$update = F4(
 					return A3($author$project$Update$applyStoryResponse, save, response, state);
 				} else {
 					var error = result.a;
-					var next = _Utils_update(
-						state,
-						{
-							Y: $elm$core$Maybe$Just(
-								$author$project$Api$errorToString(error)),
-							ac: false
-						});
+					var next = function (updated) {
+						return _Utils_update(
+							updated,
+							{
+								Y: $elm$core$Maybe$Just(
+									$author$project$Api$errorToString(error)),
+								ac: false,
+								ak: false
+							});
+					}(
+						$author$project$Update$dropPendingTurn(state));
 					return _Utils_Tuple2(
 						next,
 						save(next));
