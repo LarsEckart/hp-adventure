@@ -38,7 +38,7 @@ public final class AnthropicClient {
             throw new UpstreamException("MISSING_ANTHROPIC_API_KEY", 500, "ANTHROPIC_API_KEY is not set");
         }
 
-        CreateMessageRequest requestBody = new CreateMessageRequest(model, maxTokens, systemPrompt, messages);
+        CreateMessageRequest requestBody = new CreateMessageRequest(model, maxTokens, systemFrom(systemPrompt), messages);
 
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
@@ -73,7 +73,13 @@ public final class AnthropicClient {
         }
         Objects.requireNonNull(onDelta, "onDelta");
 
-        CreateMessageStreamRequest requestBody = new CreateMessageStreamRequest(model, maxTokens, systemPrompt, messages, true);
+        CreateMessageStreamRequest requestBody = new CreateMessageStreamRequest(
+            model,
+            maxTokens,
+            systemFrom(systemPrompt),
+            messages,
+            true
+        );
 
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
@@ -130,16 +136,19 @@ public final class AnthropicClient {
     public record Message(String role, String content) {
     }
 
-    public record CreateMessageRequest(String model, int max_tokens, String system, List<Message> messages) {
+    public record CreateMessageRequest(String model, int max_tokens, List<SystemContent> system, List<Message> messages) {
     }
 
     public record CreateMessageStreamRequest(
         String model,
         int max_tokens,
-        String system,
+        List<SystemContent> system,
         List<Message> messages,
         boolean stream
     ) {
+    }
+
+    public record SystemContent(String type, String text) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
@@ -169,5 +178,12 @@ public final class AnthropicClient {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record StreamDelta(String type, String text) {
+    }
+
+    private static List<SystemContent> systemFrom(String systemPrompt) {
+        if (systemPrompt == null || systemPrompt.isBlank()) {
+            return List.of();
+        }
+        return List.of(new SystemContent("text", systemPrompt));
     }
 }
