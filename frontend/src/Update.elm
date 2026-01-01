@@ -142,14 +142,20 @@ startAdventure save startStream state =
 beginAdventure : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Time.Posix -> Model.GameState -> ( Model.GameState, Cmd Msg )
 beginAdventure save startStream startedAt state =
     let
+        startedAtIso =
+            Util.posixToIso startedAt
+
+        updatedPlayer =
+            ensureStarterItems startedAtIso state.player
+
         adventure =
             { title = Nothing
-            , startedAt = Util.posixToIso startedAt
+            , startedAt = startedAtIso
             , turns = []
             }
 
         next =
-            { state | currentAdventure = Just adventure, notice = Nothing }
+            { state | currentAdventure = Just adventure, notice = Nothing, player = updatedPlayer }
     in
     sendAction save startStream "start" next
 
@@ -493,6 +499,28 @@ addItems newItems player =
                 |> List.filter (\item -> not (Set.member (String.toLower item.name) existingNames))
     in
     { player | inventory = player.inventory ++ uniqueNewItems }
+
+
+ensureStarterItems : String -> Model.Player -> Model.Player
+ensureStarterItems startedAtIso player =
+    let
+        hasWand =
+            player.inventory
+                |> List.any (\item -> String.toLower item.name == "zauberstab")
+
+        wandItem =
+            { name = "Zauberstab"
+            , description = "Ein einfacher Schulzauberstab."
+            , foundAt = startedAtIso
+            }
+
+        nextInventory =
+            if hasWand then
+                player.inventory
+            else
+                wandItem :: player.inventory
+    in
+    { player | inventory = nextInventory }
 
 
 incrementTurns : Model.Player -> Model.Player
