@@ -9,8 +9,11 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.BufferedSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
@@ -18,6 +21,7 @@ import java.util.function.Consumer;
 public final class AnthropicClient {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String VERSION_HEADER = "2023-06-01";
+    private static final Logger logger = LoggerFactory.getLogger(AnthropicClient.class);
 
     private final OkHttpClient httpClient;
     private final ObjectMapper mapper;
@@ -42,6 +46,7 @@ public final class AnthropicClient {
 
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
+            logPromptPayload("Anthropic request payload", payload);
             Request request = new Request.Builder()
                 .url(baseUrl + "/v1/messages")
                 .addHeader("x-api-key", apiKey)
@@ -83,6 +88,7 @@ public final class AnthropicClient {
 
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
+            logPromptPayload("Anthropic stream request payload", payload);
             Request request = new Request.Builder()
                 .url(baseUrl + "/v1/messages")
                 .addHeader("x-api-key", apiKey)
@@ -185,5 +191,14 @@ public final class AnthropicClient {
             return List.of();
         }
         return List.of(new SystemContent("text", systemPrompt));
+    }
+
+    private static void logPromptPayload(String label, byte[] payload) {
+        if (payload == null || payload.length == 0) {
+            logger.info("{}: <empty>", label);
+            return;
+        }
+        String body = new String(payload, StandardCharsets.UTF_8);
+        logger.info("{}: {}", label, body);
     }
 }
