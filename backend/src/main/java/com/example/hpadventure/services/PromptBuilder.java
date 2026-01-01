@@ -77,8 +77,9 @@ public final class PromptBuilder {
 
         prompt.append("AUSGABEFORMAT (am Ende jeder Antwort):\n");
         prompt.append("- Schreibe \"Was tust du?\"\n");
-        prompt.append("- Füge 2-3 Zeilen hinzu, jeweils \"[OPTION: ...]\"\n");
+        prompt.append("- Füge IMMER 2-3 Zeilen hinzu, jeweils exakt im Format \"[OPTION: ...]\" (keine anderen Aufzählungen)\n");
         prompt.append("- Füge eine Zeile hinzu: \"[SZENE: ...]\" mit einer kurzen visuellen Beschreibung\n\n");
+        prompt.append("WICHTIG: Wenn du \"Was tust du?\" schreibst, MÜSSEN direkt danach 2-3 \"[OPTION: ...]\"-Zeilen folgen.\n\n");
 
         prompt.append("Beginne mit einer interessanten Eröffnungsszene, wenn der Spieler \"start\" sagt.");
 
