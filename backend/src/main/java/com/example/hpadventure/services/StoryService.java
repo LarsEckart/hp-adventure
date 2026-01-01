@@ -2,10 +2,12 @@ package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.clients.AnthropicClient;
+import com.example.hpadventure.clients.OpenAiImageClient;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
+import com.example.hpadventure.parsing.SceneParser;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -20,9 +22,12 @@ public final class StoryService {
     private final ItemParser itemParser;
     private final CompletionParser completionParser;
     private final OptionsParser optionsParser;
+    private final SceneParser sceneParser;
     private final MarkerCleaner markerCleaner;
     private final TitleService titleService;
     private final SummaryService summaryService;
+    private final ImagePromptService imagePromptService;
+    private final OpenAiImageClient imageClient;
     private final Clock clock;
 
     public StoryService(
@@ -31,9 +36,12 @@ public final class StoryService {
         ItemParser itemParser,
         CompletionParser completionParser,
         OptionsParser optionsParser,
+        SceneParser sceneParser,
         MarkerCleaner markerCleaner,
         TitleService titleService,
         SummaryService summaryService,
+        ImagePromptService imagePromptService,
+        OpenAiImageClient imageClient,
         Clock clock
     ) {
         this.anthropicClient = anthropicClient;
@@ -41,9 +49,12 @@ public final class StoryService {
         this.itemParser = itemParser;
         this.completionParser = completionParser;
         this.optionsParser = optionsParser;
+        this.sceneParser = sceneParser;
         this.markerCleaner = markerCleaner;
         this.titleService = titleService;
         this.summaryService = summaryService;
+        this.imagePromptService = imagePromptService;
+        this.imageClient = imageClient;
         this.clock = clock;
     }
 
@@ -69,7 +80,11 @@ public final class StoryService {
         List<Dtos.Item> newItems = itemParser.parse(rawStory);
         boolean completed = completionParser.isComplete(rawStory);
         List<String> suggestedActions = optionsParser.parse(rawStory);
+        String scene = sceneParser.parse(rawStory);
         String cleanStory = markerCleaner.strip(rawStory);
+        String imagePrompt = imagePromptService.buildPrompt(scene, cleanStory);
+        OpenAiImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
+        Dtos.Image image = new Dtos.Image(imageResult.mimeType(), imageResult.base64(), imagePrompt);
 
         Instant now = Instant.now(clock);
         String adventureTitle = request.currentAdventure() != null ? request.currentAdventure().title() : null;
@@ -91,7 +106,7 @@ public final class StoryService {
         }
 
         Dtos.Adventure adventure = new Dtos.Adventure(adventureTitle, completed, summary, completedAt);
-        return new Dtos.Assistant(cleanStory, suggestedActions, newItems, adventure, null);
+        return new Dtos.Assistant(cleanStory, suggestedActions, newItems, adventure, image);
     }
 
     private List<String> collectAssistantMessages(List<Dtos.ChatMessage> history, String latestStory) {

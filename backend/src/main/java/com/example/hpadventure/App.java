@@ -2,10 +2,13 @@ package com.example.hpadventure;
 
 import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.clients.AnthropicClient;
+import com.example.hpadventure.clients.OpenAiImageClient;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
+import com.example.hpadventure.parsing.SceneParser;
+import com.example.hpadventure.services.ImagePromptService;
 import com.example.hpadventure.services.PromptBuilder;
 import com.example.hpadventure.services.StoryService;
 import com.example.hpadventure.services.SummaryService;
@@ -41,23 +44,47 @@ public final class App {
         String anthropicModel = System.getenv().getOrDefault("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001");
         String anthropicBaseUrl = System.getenv().getOrDefault("ANTHROPIC_BASE_URL", "https://api.anthropic.com");
 
+        String openAiApiKey = System.getenv("OPENAI_API_KEY");
+        String openAiBaseUrl = System.getenv().getOrDefault("OPENAI_BASE_URL", "https://api.openai.com");
+        String openAiModel = System.getenv().getOrDefault("OPENAI_IMAGE_MODEL", "gpt-image-1");
+        String openAiFormat = System.getenv().getOrDefault("OPENAI_IMAGE_FORMAT", "webp");
+        String openAiQuality = System.getenv().getOrDefault("OPENAI_IMAGE_QUALITY", "low");
+        String openAiSize = System.getenv().getOrDefault("OPENAI_IMAGE_SIZE", "1024x1024");
+        Integer openAiCompression = parseIntOrNull(System.getenv().getOrDefault("OPENAI_IMAGE_COMPRESSION", "70"));
+
         AnthropicClient anthropicClient = new AnthropicClient(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
+        OpenAiImageClient openAiImageClient = new OpenAiImageClient(
+            httpClient,
+            mapper,
+            openAiApiKey,
+            openAiModel,
+            openAiBaseUrl,
+            openAiFormat,
+            openAiCompression,
+            openAiQuality,
+            openAiSize
+        );
         PromptBuilder promptBuilder = new PromptBuilder();
         ItemParser itemParser = new ItemParser(Clock.systemUTC());
         CompletionParser completionParser = new CompletionParser();
         OptionsParser optionsParser = new OptionsParser();
+        SceneParser sceneParser = new SceneParser();
         MarkerCleaner markerCleaner = new MarkerCleaner();
         TitleService titleService = new TitleService(anthropicClient);
         SummaryService summaryService = new SummaryService(anthropicClient);
+        ImagePromptService imagePromptService = new ImagePromptService();
         StoryService storyService = new StoryService(
             anthropicClient,
             promptBuilder,
             itemParser,
             completionParser,
             optionsParser,
+            sceneParser,
             markerCleaner,
             titleService,
             summaryService,
+            imagePromptService,
+            openAiImageClient,
             Clock.systemUTC()
         );
 
@@ -98,5 +125,16 @@ public final class App {
 
     private static Dtos.ErrorResponse errorResponse(String code, String message, String requestId) {
         return new Dtos.ErrorResponse(new Dtos.ErrorResponse.Error(code, message, requestId));
+    }
+
+    private static Integer parseIntOrNull(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 }
