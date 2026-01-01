@@ -3,7 +3,9 @@ package com.example.hpadventure.services;
 public final class ImagePromptService {
     private static final String STYLE_PREFIX =
         "Stimmungsvolle, detailreiche Fantasy-Illustration im Stil klassischer Buchkunst. "
-            + "Weiches Licht, klare Komposition, keine Texte oder Logos. Szene: ";
+            + "Weiches Licht, klare Komposition, keine Texte oder Logos. "
+            + "Keine Personen oder Charaktere zeigen; keine Porträts. "
+            + "Zeige nur Landschaften, Orte, Gegenstände oder Gegner/Kreaturen/Tiere. Szene: ";
 
     private static final int FALLBACK_LIMIT = 220;
 

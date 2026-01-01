@@ -19,6 +19,7 @@ Developer notes:
 - Anthropic Messages API expects `system` as a list of content blocks; client wraps the system prompt in `{ type: "text", text: ... }`.
 - Anthropic request payloads (system + messages) are logged in `AnthropicClient` for debugging.
 - Prompt now explicitly requires 2-3 `[OPTION: ...]` lines after "Was tust du?" to keep UI options populated.
+- Image prompts now instruct "no characters/portraits"; scenes only (locations, objects, enemies/creatures/animals).
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
 - Image generation uses OpenAI `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
