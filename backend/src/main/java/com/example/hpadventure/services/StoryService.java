@@ -8,6 +8,7 @@ import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
 import com.example.hpadventure.parsing.SceneParser;
+import com.example.hpadventure.parsing.StreamMarkerFilter;
 
 import java.time.Clock;
 import java.time.Instant;
@@ -70,12 +71,16 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     public Dtos.Assistant streamTurn(Dtos.StoryRequest request, Consumer<String> onDelta) {
         StoryContext context = buildStoryContext(request);
         StringBuilder rawStory = new StringBuilder();
+        StreamMarkerFilter markerFilter = new StreamMarkerFilter();
         anthropicClient.streamMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS, delta -> {
             if (delta == null || delta.isBlank()) {
                 return;
             }
             rawStory.append(delta);
-            onDelta.accept(delta);
+            String cleaned = markerFilter.apply(delta);
+            if (!cleaned.isEmpty()) {
+                onDelta.accept(cleaned);
+            }
         });
         return buildAssistant(request, context.history(), rawStory.toString());
     }
