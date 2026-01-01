@@ -2,8 +2,10 @@ package com.example.hpadventure;
 
 import com.example.hpadventure.api.HealthRoutes;
 import com.example.hpadventure.api.StoryRoutes;
+import com.example.hpadventure.api.TtsRoutes;
 import com.example.hpadventure.config.RateLimiter;
 import com.example.hpadventure.clients.AnthropicClient;
+import com.example.hpadventure.clients.ElevenLabsClient;
 import com.example.hpadventure.clients.OpenAiImageClient;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
@@ -14,6 +16,7 @@ import com.example.hpadventure.services.ImagePromptService;
 import com.example.hpadventure.services.PromptBuilder;
 import com.example.hpadventure.services.StoryService;
 import com.example.hpadventure.services.SummaryService;
+import com.example.hpadventure.services.TtsService;
 import com.example.hpadventure.services.TitleService;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -41,7 +44,7 @@ public final class App {
             .build();
 
         String anthropicApiKey = System.getenv("ANTHROPIC_API_KEY");
-        String anthropicModel = System.getenv().getOrDefault("ANTHROPIC_MODEL", "claude-haiku-4-5-20251001");
+        String anthropicModel = System.getenv().getOrDefault("ANTHROPIC_MODEL", "claude-sonnet-4-5");
         String anthropicBaseUrl = System.getenv().getOrDefault("ANTHROPIC_BASE_URL", "https://api.anthropic.com");
 
         String openAiApiKey = System.getenv("OPENAI_API_KEY");
@@ -51,6 +54,13 @@ public final class App {
         String openAiQuality = System.getenv().getOrDefault("OPENAI_IMAGE_QUALITY", "low");
         String openAiSize = System.getenv().getOrDefault("OPENAI_IMAGE_SIZE", "1024x1024");
         Integer openAiCompression = parseIntOrNull(System.getenv().getOrDefault("OPENAI_IMAGE_COMPRESSION", "70"));
+
+        String elevenLabsApiKey = System.getenv("ELEVENLABS_API_KEY");
+        String elevenLabsVoiceId = System.getenv("ELEVENLABS_VOICE_ID");
+        String elevenLabsModel = System.getenv().getOrDefault("ELEVENLABS_MODEL", "eleven_multilingual_v2");
+        String elevenLabsBaseUrl = System.getenv().getOrDefault("ELEVENLABS_BASE_URL", "https://api.elevenlabs.io");
+        String elevenLabsOutputFormat = System.getenv("ELEVENLABS_OUTPUT_FORMAT");
+        Integer elevenLabsOptimizeLatency = parseIntOrNull(System.getenv("ELEVENLABS_OPTIMIZE_STREAMING_LATENCY"));
 
         AnthropicClient anthropicClient = new AnthropicClient(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
         OpenAiImageClient openAiImageClient = new OpenAiImageClient(
@@ -63,6 +73,16 @@ public final class App {
             openAiCompression,
             openAiQuality,
             openAiSize
+        );
+        ElevenLabsClient elevenLabsClient = new ElevenLabsClient(
+            httpClient,
+            mapper,
+            elevenLabsApiKey,
+            elevenLabsVoiceId,
+            elevenLabsModel,
+            elevenLabsBaseUrl,
+            elevenLabsOutputFormat,
+            elevenLabsOptimizeLatency
         );
         Integer rateLimitPerMinute = parseIntOrNull(System.getenv("RATE_LIMIT_PER_MINUTE"));
         if (rateLimitPerMinute == null) {
@@ -94,6 +114,7 @@ public final class App {
             openAiImageClient,
             Clock.systemUTC()
         );
+        TtsService ttsService = new TtsService(elevenLabsClient);
 
         Javalin app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson(mapper, false));
@@ -107,6 +128,7 @@ public final class App {
 
         HealthRoutes.register(app);
         StoryRoutes.register(app, storyService, rateLimiter);
+        TtsRoutes.register(app, ttsService);
 
         app.start(port);
     }

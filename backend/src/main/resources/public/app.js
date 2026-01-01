@@ -41,6 +41,190 @@
     window.addEventListener("offline", reportStatus);
   }
 
+  let ttsController = null;
+  let ttsAudio = null;
+  let ttsObjectUrl = null;
+  let ttsRequestId = 0;
+
+  const ensureAudio = () => {
+    if (!ttsAudio) {
+      ttsAudio = new Audio();
+      ttsAudio.autoplay = true;
+    }
+    return ttsAudio;
+  };
+
+  const stopTts = () => {
+    if (ttsController) {
+      ttsController.abort();
+      ttsController = null;
+    }
+    if (ttsAudio) {
+      ttsAudio.pause();
+      ttsAudio.src = "";
+    }
+    if (ttsObjectUrl) {
+      URL.revokeObjectURL(ttsObjectUrl);
+      ttsObjectUrl = null;
+    }
+  };
+
+  const logTtsError = async (response) => {
+    try {
+      const payload = await response.json();
+      console.warn("TTS failed", payload);
+    } catch (_) {
+      console.warn("TTS failed with status", response.status);
+    }
+  };
+
+  const playTts = async (text) => {
+    if (!text || !text.trim()) {
+      return;
+    }
+
+    stopTts();
+    ttsRequestId += 1;
+    const requestId = ttsRequestId;
+    const controller = new AbortController();
+    ttsController = controller;
+
+    let response = null;
+    try {
+      response = await fetch("/api/tts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "audio/mpeg" },
+        body: JSON.stringify({ text }),
+        signal: controller.signal
+      });
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        return;
+      }
+      console.warn("TTS request failed", error);
+      return;
+    }
+
+    if (requestId !== ttsRequestId) {
+      return;
+    }
+
+    if (!response.ok) {
+      await logTtsError(response);
+      return;
+    }
+
+    const audio = ensureAudio();
+    const canStream =
+      typeof MediaSource !== "undefined" && MediaSource.isTypeSupported && MediaSource.isTypeSupported("audio/mpeg");
+
+    if (!response.body || !canStream) {
+      try {
+        const blob = await response.blob();
+        if (requestId !== ttsRequestId) {
+          return;
+        }
+        if (ttsObjectUrl) {
+          URL.revokeObjectURL(ttsObjectUrl);
+        }
+        ttsObjectUrl = URL.createObjectURL(blob);
+        audio.src = ttsObjectUrl;
+        audio.currentTime = 0;
+        audio.play().catch(() => {});
+      } catch (error) {
+        console.warn("TTS playback failed", error);
+      }
+      return;
+    }
+
+    const mediaSource = new MediaSource();
+    ttsObjectUrl = URL.createObjectURL(mediaSource);
+    audio.src = ttsObjectUrl;
+    audio.currentTime = 0;
+    audio.play().catch(() => {});
+
+    const sourceOpen = new Promise((resolve, reject) => {
+      mediaSource.addEventListener("sourceopen", resolve, { once: true });
+      mediaSource.addEventListener("error", reject, { once: true });
+    });
+
+    try {
+      await sourceOpen;
+    } catch (error) {
+      console.warn("TTS source failed", error);
+      return;
+    }
+
+    if (requestId !== ttsRequestId) {
+      return;
+    }
+
+    let sourceBuffer = null;
+    try {
+      sourceBuffer = mediaSource.addSourceBuffer("audio/mpeg");
+    } catch (error) {
+      console.warn("TTS codec not supported", error);
+      return;
+    }
+
+    const queue = [];
+    let done = false;
+
+    const maybeFlush = () => {
+      if (sourceBuffer.updating || queue.length > 0) {
+        return;
+      }
+      if (done && mediaSource.readyState === "open") {
+        try {
+          mediaSource.endOfStream();
+        } catch (_) {}
+      }
+    };
+
+    sourceBuffer.addEventListener("updateend", () => {
+      if (queue.length > 0 && !sourceBuffer.updating) {
+        sourceBuffer.appendBuffer(queue.shift());
+      } else {
+        maybeFlush();
+      }
+    });
+
+    const reader = response.body.getReader();
+    try {
+      while (true) {
+        const { value, done: streamDone } = await reader.read();
+        if (requestId !== ttsRequestId) {
+          return;
+        }
+        if (streamDone) {
+          done = true;
+          break;
+        }
+        if (value && value.byteLength > 0) {
+          if (sourceBuffer.updating || queue.length > 0) {
+            queue.push(value);
+          } else {
+            sourceBuffer.appendBuffer(value);
+          }
+        }
+      }
+    } catch (error) {
+      if (error && error.name === "AbortError") {
+        return;
+      }
+      console.warn("TTS stream interrupted", error);
+    } finally {
+      done = true;
+      maybeFlush();
+    }
+  };
+
+  if (app.ports && app.ports.speakStory) {
+    app.ports.speakStory.subscribe((text) => {
+      playTts(text);
+    });
+  }
+
   if (app.ports && app.ports.startStoryStream && app.ports.storyStream) {
     let activeController = null;
 
@@ -149,6 +333,8 @@
       if (activeController) {
         activeController.abort();
       }
+
+      stopTts();
 
       const controller = new AbortController();
       activeController = controller;

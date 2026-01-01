@@ -13,8 +13,8 @@ import Task
 import Time
 import Util
 
-update : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Cmd Msg -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
-update save startStream clearStorage msg state =
+update : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> (String -> Cmd Msg) -> Cmd Msg -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
+update save startStream speakStory clearStorage msg state =
     case msg of
         UpdateName name ->
             let
@@ -67,7 +67,7 @@ update save startStream clearStorage msg state =
         GotStoryResponse result ->
             case result of
                 Ok response ->
-                    applyStoryResponse save response state
+                    applyStoryResponse save speakStory response state
 
                 Err error ->
                     let
@@ -84,7 +84,7 @@ update save startStream clearStorage msg state =
                     ( next, save next )
 
         GotStoryStreamEvent payload ->
-            handleStreamEvent save payload state
+            handleStreamEvent save speakStory payload state
 
         ToggleInventory ->
             ( { state | showInventory = not state.showInventory }, Cmd.none )
@@ -240,8 +240,8 @@ sendAction save startStream action state =
                     )
 
 
-applyStoryResponse : (Model.GameState -> Cmd Msg) -> Api.StoryResponse -> Model.GameState -> ( Model.GameState, Cmd Msg )
-applyStoryResponse save response state =
+applyStoryResponse : (Model.GameState -> Cmd Msg) -> (String -> Cmd Msg) -> Api.StoryResponse -> Model.GameState -> ( Model.GameState, Cmd Msg )
+applyStoryResponse save speakStory response state =
     case state.currentAdventure of
         Nothing ->
             let
@@ -326,11 +326,17 @@ applyStoryResponse save response state =
                         , pendingAbandon = False
                     }
             in
-            ( next, Cmd.batch [ save next, scrollToBottom ] )
+            ( next
+            , Cmd.batch
+                [ save next
+                , scrollToBottom
+                , speakIfPossible speakStory response.assistant.storyText
+                ]
+            )
 
 
-handleStreamEvent : (Model.GameState -> Cmd Msg) -> Decode.Value -> Model.GameState -> ( Model.GameState, Cmd Msg )
-handleStreamEvent save payload state =
+handleStreamEvent : (Model.GameState -> Cmd Msg) -> (String -> Cmd Msg) -> Decode.Value -> Model.GameState -> ( Model.GameState, Cmd Msg )
+handleStreamEvent save speakStory payload state =
     case Decode.decodeValue Api.decodeStreamEvent payload of
         Ok event ->
             case event of
@@ -338,7 +344,7 @@ handleStreamEvent save payload state =
                     ( applyStreamDelta delta state, Cmd.none )
 
                 Api.StreamFinal response ->
-                    applyStoryResponse save response state
+                    applyStoryResponse save speakStory response state
 
                 Api.StreamError message ->
                     let
@@ -441,6 +447,14 @@ updateAdventureTitle maybeTitle adventure =
 
         _ ->
             adventure
+
+
+speakIfPossible : (String -> Cmd Msg) -> String -> Cmd Msg
+speakIfPossible speakStory text =
+    if String.trim text == "" then
+        Cmd.none
+    else
+        speakStory text
 
 
 setError : (Model.GameState -> Cmd Msg) -> String -> Model.GameState -> ( Model.GameState, Cmd Msg )

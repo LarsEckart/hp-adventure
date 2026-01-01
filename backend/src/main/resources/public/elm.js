@@ -5650,6 +5650,7 @@ var $author$project$Main$save = function (state) {
 	return $author$project$Main$saveState(
 		$author$project$Codec$encodeGameState(state));
 };
+var $author$project$Main$speakStory = _Platform_outgoingPort('speakStory', $elm$json$Json$Encode$string);
 var $author$project$Main$startStoryStream = _Platform_outgoingPort('startStoryStream', $elm$core$Basics$identity);
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$storyStream = _Platform_incomingPort('storyStream', $elm$json$Json$Decode$value);
@@ -5919,6 +5920,11 @@ var $author$project$Update$scrollToBottom = A2(
 			return A3($elm$browser$Browser$Dom$setViewportOf, 'story-feed', 0, info.bc.aX);
 		},
 		$elm$browser$Browser$Dom$getViewportOf('story-feed')));
+var $elm$core$String$trim = _String_trim;
+var $author$project$Update$speakIfPossible = F2(
+	function (speakStory, text) {
+		return ($elm$core$String$trim(text) === '') ? $elm$core$Platform$Cmd$none : speakStory(text);
+	});
 var $author$project$Update$updateAdventureTitle = F2(
 	function (maybeTitle, adventure) {
 		var _v0 = _Utils_Tuple2(adventure.G, maybeTitle);
@@ -5964,8 +5970,8 @@ var $elm$core$Maybe$withDefault = F2(
 			return _default;
 		}
 	});
-var $author$project$Update$applyStoryResponse = F3(
-	function (save, response, state) {
+var $author$project$Update$applyStoryResponse = F4(
+	function (save, speakStory, response, state) {
 		var _v0 = state.V;
 		if (_v0.$ === 1) {
 			var next = _Utils_update(
@@ -6032,7 +6038,8 @@ var $author$project$Update$applyStoryResponse = F3(
 					_List_fromArray(
 						[
 							save(next),
-							$author$project$Update$scrollToBottom
+							$author$project$Update$scrollToBottom,
+							A2($author$project$Update$speakIfPossible, speakStory, response.S.ay)
 						])));
 		}
 	});
@@ -6606,7 +6613,6 @@ var $author$project$Msg$GotStartTime = function (a) {
 	return {$: 5, a: a};
 };
 var $elm$core$Basics$neq = _Utils_notEqual;
-var $elm$core$String$trim = _String_trim;
 var $author$project$Model$isProfileComplete = function (player) {
 	return ($elm$core$String$trim(player.ag) !== '') && ($elm$core$String$trim(player.aZ) !== '');
 };
@@ -6864,8 +6870,8 @@ var $author$project$Api$decodeStreamEvent = A2(
 		}
 	},
 	A2($elm$json$Json$Decode$field, 'event', $elm$json$Json$Decode$string));
-var $author$project$Update$handleStreamEvent = F3(
-	function (save, payload, state) {
+var $author$project$Update$handleStreamEvent = F4(
+	function (save, speakStory, payload, state) {
 		var _v0 = A2($elm$json$Json$Decode$decodeValue, $author$project$Api$decodeStreamEvent, payload);
 		if (!_v0.$) {
 			var event = _v0.a;
@@ -6877,7 +6883,7 @@ var $author$project$Update$handleStreamEvent = F3(
 						$elm$core$Platform$Cmd$none);
 				case 1:
 					var response = event.a;
-					return A3($author$project$Update$applyStoryResponse, save, response, state);
+					return A4($author$project$Update$applyStoryResponse, save, speakStory, response, state);
 				default:
 					var message = event.a;
 					var next = function (updated) {
@@ -6898,8 +6904,8 @@ var $author$project$Update$handleStreamEvent = F3(
 			return _Utils_Tuple2(state, $elm$core$Platform$Cmd$none);
 		}
 	});
-var $author$project$Update$update = F5(
-	function (save, startStream, clearStorage, msg, state) {
+var $author$project$Update$update = F6(
+	function (save, startStream, speakStory, clearStorage, msg, state) {
 		switch (msg.$) {
 			case 0:
 				var name = msg.a;
@@ -6952,7 +6958,7 @@ var $author$project$Update$update = F5(
 				var result = msg.a;
 				if (!result.$) {
 					var response = result.a;
-					return A3($author$project$Update$applyStoryResponse, save, response, state);
+					return A4($author$project$Update$applyStoryResponse, save, speakStory, response, state);
 				} else {
 					var error = result.a;
 					var next = function (updated) {
@@ -6972,7 +6978,7 @@ var $author$project$Update$update = F5(
 				}
 			case 9:
 				var payload = msg.a;
-				return A3($author$project$Update$handleStreamEvent, save, payload, state);
+				return A4($author$project$Update$handleStreamEvent, save, speakStory, payload, state);
 			case 10:
 				return _Utils_Tuple2(
 					_Utils_update(
@@ -8109,10 +8115,11 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 						$author$project$Main$onlineStatus($author$project$Msg$OnlineStatusChanged),
 						$author$project$Main$storyStream($author$project$Msg$GotStoryStreamEvent)
 					]))),
-		bn: A3(
+		bn: A4(
 			$author$project$Update$update,
 			$author$project$Main$save,
 			$author$project$Main$startStoryStream,
+			$author$project$Main$speakStory,
 			$author$project$Main$clearState(0)),
 		bp: $author$project$View$view
 	});

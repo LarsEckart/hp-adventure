@@ -14,6 +14,9 @@ public final class Dtos {
     ) {
     }
 
+    public record TtsRequest(String text) {
+    }
+
     public record Player(
         String name,
         String houseName,
