@@ -1,11 +1,14 @@
 package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public final class PromptBuilder {
     private static final int STORY_ARC_TOTAL_STEPS = 15;
+    private static final Logger logger = LoggerFactory.getLogger(PromptBuilder.class);
 
     public String build(Dtos.Player player, int storyStep) {
         StringBuilder prompt = new StringBuilder();
@@ -91,6 +94,7 @@ public final class PromptBuilder {
 
         prompt.append("Beginne mit einer interessanten Eröffnungsszene, wenn der Spieler \"start\" sagt.");
 
+        logger.info("Story system prompt (step {}):\n{}", storyStep, prompt);
         return prompt.toString();
     }
 

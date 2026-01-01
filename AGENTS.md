@@ -17,7 +17,7 @@ Project notes:
 Developer notes:
 - Backend logs via slf4j-simple to stdout; `/api/story` + `/api/story/stream` emit `requestId` in logs and `X-Request-Id` response header for correlation.
 - Anthropic Messages API expects `system` as a list of content blocks; client wraps the system prompt in `{ type: "text", text: ... }`.
-- Anthropic request payloads (system + messages) are logged in `AnthropicClient` for debugging.
+- Story system prompts plus title/summary prompts are logged where they are built (`PromptBuilder`, `TitleService`, `SummaryService`) to keep logs lean.
 - Prompt now explicitly requires 2-3 `[OPTION: ...]` lines after "Was tust du?" to keep UI options populated.
 - Image prompts now instruct "no characters/portraits"; scenes only (locations, objects, enemies/creatures/animals).
 - New adventures auto-add a starter item ("Zauberstab") to the player inventory; prompt always includes an inventory section.
