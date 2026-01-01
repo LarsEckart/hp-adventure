@@ -62,16 +62,12 @@ noticeView maybeNotice =
 
 viewBody : Model.GameState -> List (Html Msg)
 viewBody state =
-    if not (Model.isProfileComplete state.player) then
-        [ setupView state ]
+    case state.currentAdventure of
+        Nothing ->
+            [ setupView state ]
 
-    else
-        case state.currentAdventure of
-            Nothing ->
-                [ startView state ]
-
-            Just adventure ->
-                [ adventureView state adventure ]
+        Just adventure ->
+            [ adventureView state adventure ]
 
 
 setupView : Model.GameState -> Html Msg
@@ -106,23 +102,13 @@ setupView state =
             , dataTestId "start-adventure"
             ]
             [ text "Abenteuer starten" ]
-        ]
-
-
-startView : Model.GameState -> Html Msg
-startView state =
-    div [ class "start-layout", dataTestId "start-layout" ]
-        [ div [ class "panel" ]
-            [ h2 [] [ text "Bereit für Hogwarts?" ]
-            , p [] [ text ("Willkommen, " ++ state.player.name ++ " aus " ++ state.player.houseName ++ ".") ]
-            , button [ onClick StartAdventure, disabled (not state.isOnline), dataTestId "start-adventure" ] [ text "Los geht's" ]
+        , button
+            [ class "ghost"
+            , onClick ResetState
+            , disabled state.isLoading
+            , dataTestId "reset-state"
             ]
-        , div [ class "meta-grid" ]
-            [ statsPanel state.player
-            , inventoryPanel state.player state.showInventory
-            , historyPanel state.player state.showHistory
-            , resetPanel state
-            ]
+            [ text "Speicher leeren" ]
         ]
 
 

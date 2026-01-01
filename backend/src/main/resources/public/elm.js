@@ -7948,89 +7948,35 @@ var $author$project$View$setupView = function (state) {
 				_List_fromArray(
 					[
 						$elm$html$Html$text('Abenteuer starten')
-					]))
-			]));
-};
-var $author$project$View$startView = function (state) {
-	return A2(
-		$elm$html$Html$div,
-		_List_fromArray(
-			[
-				$elm$html$Html$Attributes$class('start-layout'),
-				$author$project$View$dataTestId('start-layout')
-			]),
-		_List_fromArray(
-			[
-				A2(
-				$elm$html$Html$div,
-				_List_fromArray(
-					[
-						$elm$html$Html$Attributes$class('panel')
-					]),
-				_List_fromArray(
-					[
-						A2(
-						$elm$html$Html$h2,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Bereit für Hogwarts?')
-							])),
-						A2(
-						$elm$html$Html$p,
-						_List_Nil,
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Willkommen, ' + (state.a8.ag + (' aus ' + (state.a8.aZ + '.'))))
-							])),
-						A2(
-						$elm$html$Html$button,
-						_List_fromArray(
-							[
-								$elm$html$Html$Events$onClick($author$project$Msg$StartAdventure),
-								$elm$html$Html$Attributes$disabled(!state.ad),
-								$author$project$View$dataTestId('start-adventure')
-							]),
-						_List_fromArray(
-							[
-								$elm$html$Html$text('Los geht\'s')
-							]))
 					])),
 				A2(
-				$elm$html$Html$div,
+				$elm$html$Html$button,
 				_List_fromArray(
 					[
-						$elm$html$Html$Attributes$class('meta-grid')
+						$elm$html$Html$Attributes$class('ghost'),
+						$elm$html$Html$Events$onClick($author$project$Msg$ResetState),
+						$elm$html$Html$Attributes$disabled(state.ac),
+						$author$project$View$dataTestId('reset-state')
 					]),
 				_List_fromArray(
 					[
-						$author$project$View$statsPanel(state.a8),
-						A2($author$project$View$inventoryPanel, state.a8, state.aw),
-						A2($author$project$View$historyPanel, state.a8, state.av),
-						$author$project$View$resetPanel(state)
+						$elm$html$Html$text('Speicher leeren')
 					]))
 			]));
 };
 var $author$project$View$viewBody = function (state) {
-	if (!$author$project$Model$isProfileComplete(state.a8)) {
+	var _v0 = state.V;
+	if (_v0.$ === 1) {
 		return _List_fromArray(
 			[
 				$author$project$View$setupView(state)
 			]);
 	} else {
-		var _v0 = state.V;
-		if (_v0.$ === 1) {
-			return _List_fromArray(
-				[
-					$author$project$View$startView(state)
-				]);
-		} else {
-			var adventure = _v0.a;
-			return _List_fromArray(
-				[
-					A2($author$project$View$adventureView, state, adventure)
-				]);
-		}
+		var adventure = _v0.a;
+		return _List_fromArray(
+			[
+				A2($author$project$View$adventureView, state, adventure)
+			]);
 	}
 };
 var $author$project$View$view = function (state) {
