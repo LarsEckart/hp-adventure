@@ -4553,7 +4553,53 @@ function _Http_track(router, xhr, tracker)
 			az: event.lengthComputable ? $elm$core$Maybe$Just(event.total) : $elm$core$Maybe$Nothing
 		}))));
 	});
-}var $author$project$Msg$OnlineStatusChanged = function (a) {
+}
+
+
+function _Time_now(millisToPosix)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(millisToPosix(Date.now())));
+	});
+}
+
+var _Time_setInterval = F2(function(interval, task)
+{
+	return _Scheduler_binding(function(callback)
+	{
+		var id = setInterval(function() { _Scheduler_rawSpawn(task); }, interval);
+		return function() { clearInterval(id); };
+	});
+});
+
+function _Time_here()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		callback(_Scheduler_succeed(
+			A2($elm$time$Time$customZone, -(new Date().getTimezoneOffset()), _List_Nil)
+		));
+	});
+}
+
+
+function _Time_getZoneName()
+{
+	return _Scheduler_binding(function(callback)
+	{
+		try
+		{
+			var name = $elm$time$Time$Name(Intl.DateTimeFormat().resolvedOptions().timeZone);
+		}
+		catch (e)
+		{
+			var name = $elm$time$Time$Offset(new Date().getTimezoneOffset());
+		}
+		callback(_Scheduler_succeed(name));
+	});
+}
+var $author$project$Msg$OnlineStatusChanged = function (a) {
 	return {$: 3, a: a};
 };
 var $elm$core$Basics$always = F2(
@@ -6111,74 +6157,200 @@ var $author$project$Update$applyStoryResponse = F3(
 				save(next));
 		}
 	});
-var $author$project$Update$cancelAbandon = F2(
-	function (save, state) {
-		var next = _Utils_update(
-			state,
-			{ai: $elm$core$Maybe$Nothing, al: false});
-		return _Utils_Tuple2(
-			next,
-			save(next));
-	});
-var $author$project$Update$confirmAbandon = F2(
-	function (save, state) {
-		var next = _Utils_update(
-			state,
-			{
-				V: $elm$core$Maybe$Nothing,
-				ad: false,
-				ai: $elm$core$Maybe$Just('Abenteuer aufgegeben.'),
-				al: false
-			});
-		return _Utils_Tuple2(
-			next,
-			save(next));
-	});
-var $author$project$Api$errorToString = function (error) {
-	switch (error.$) {
+var $author$project$Util$monthToInt = function (month) {
+	switch (month) {
 		case 0:
-			return 'Die Anfrage war ungültig.';
+			return 1;
 		case 1:
-			return 'Die Anfrage hat zu lange gedauert.';
+			return 2;
 		case 2:
-			return 'Netzwerkfehler. Bitte prüfe deine Verbindung.';
+			return 3;
 		case 3:
-			return 'Der Server hat mit einem Fehler geantwortet.';
+			return 4;
+		case 4:
+			return 5;
+		case 5:
+			return 6;
+		case 6:
+			return 7;
+		case 7:
+			return 8;
+		case 8:
+			return 9;
+		case 9:
+			return 10;
+		case 10:
+			return 11;
 		default:
-			return 'Die Antwort konnte nicht gelesen werden.';
+			return 12;
 	}
 };
-var $author$project$Update$setError = F3(
-	function (save, message, state) {
-		var next = _Utils_update(
-			state,
-			{
-				Y: $elm$core$Maybe$Just(message)
-			});
-		return _Utils_Tuple2(
-			next,
-			save(next));
+var $author$project$Util$pad2 = function (value) {
+	var text = $elm$core$String$fromInt(value);
+	return ($elm$core$String$length(text) < 2) ? ('0' + text) : text;
+};
+var $elm$time$Time$flooredDiv = F2(
+	function (numerator, denominator) {
+		return $elm$core$Basics$floor(numerator / denominator);
 	});
-var $author$project$Update$requestAbandon = F2(
-	function (save, state) {
-		var _v0 = state.V;
-		if (_v0.$ === 1) {
-			return A3($author$project$Update$setError, save, 'Es gibt kein Abenteuer zum Aufgeben.', state);
-		} else {
-			var next = _Utils_update(
-				state,
-				{
-					Q: '',
-					ai: $elm$core$Maybe$Just('Möchtest du das Abenteuer wirklich aufgeben?'),
-					al: true
-				});
-			return _Utils_Tuple2(
-				next,
-				save(next));
+var $elm$time$Time$posixToMillis = function (_v0) {
+	var millis = _v0;
+	return millis;
+};
+var $elm$time$Time$toAdjustedMinutesHelp = F3(
+	function (defaultOffset, posixMinutes, eras) {
+		toAdjustedMinutesHelp:
+		while (true) {
+			if (!eras.b) {
+				return posixMinutes + defaultOffset;
+			} else {
+				var era = eras.a;
+				var olderEras = eras.b;
+				if (_Utils_cmp(era.N, posixMinutes) < 0) {
+					return posixMinutes + era.aj;
+				} else {
+					var $temp$defaultOffset = defaultOffset,
+						$temp$posixMinutes = posixMinutes,
+						$temp$eras = olderEras;
+					defaultOffset = $temp$defaultOffset;
+					posixMinutes = $temp$posixMinutes;
+					eras = $temp$eras;
+					continue toAdjustedMinutesHelp;
+				}
+			}
 		}
 	});
+var $elm$time$Time$toAdjustedMinutes = F2(
+	function (_v0, time) {
+		var defaultOffset = _v0.a;
+		var eras = _v0.b;
+		return A3(
+			$elm$time$Time$toAdjustedMinutesHelp,
+			defaultOffset,
+			A2(
+				$elm$time$Time$flooredDiv,
+				$elm$time$Time$posixToMillis(time),
+				60000),
+			eras);
+	});
+var $elm$core$Basics$ge = _Utils_ge;
+var $elm$core$Basics$negate = function (n) {
+	return -n;
+};
+var $elm$time$Time$toCivil = function (minutes) {
+	var rawDay = A2($elm$time$Time$flooredDiv, minutes, 60 * 24) + 719468;
+	var era = (((rawDay >= 0) ? rawDay : (rawDay - 146096)) / 146097) | 0;
+	var dayOfEra = rawDay - (era * 146097);
+	var yearOfEra = ((((dayOfEra - ((dayOfEra / 1460) | 0)) + ((dayOfEra / 36524) | 0)) - ((dayOfEra / 146096) | 0)) / 365) | 0;
+	var dayOfYear = dayOfEra - (((365 * yearOfEra) + ((yearOfEra / 4) | 0)) - ((yearOfEra / 100) | 0));
+	var mp = (((5 * dayOfYear) + 2) / 153) | 0;
+	var month = mp + ((mp < 10) ? 3 : (-9));
+	var year = yearOfEra + (era * 400);
+	return {
+		W: (dayOfYear - ((((153 * mp) + 2) / 5) | 0)) + 1,
+		ag: month,
+		aJ: year + ((month <= 2) ? 1 : 0)
+	};
+};
+var $elm$time$Time$toDay = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).W;
+	});
+var $elm$core$Basics$modBy = _Basics_modBy;
+var $elm$time$Time$toHour = F2(
+	function (zone, time) {
+		return A2(
+			$elm$core$Basics$modBy,
+			24,
+			A2(
+				$elm$time$Time$flooredDiv,
+				A2($elm$time$Time$toAdjustedMinutes, zone, time),
+				60));
+	});
+var $elm$time$Time$toMinute = F2(
+	function (zone, time) {
+		return A2(
+			$elm$core$Basics$modBy,
+			60,
+			A2($elm$time$Time$toAdjustedMinutes, zone, time));
+	});
+var $elm$time$Time$Apr = 3;
+var $elm$time$Time$Aug = 7;
+var $elm$time$Time$Dec = 11;
+var $elm$time$Time$Feb = 1;
+var $elm$time$Time$Jan = 0;
+var $elm$time$Time$Jul = 6;
+var $elm$time$Time$Jun = 5;
+var $elm$time$Time$Mar = 2;
+var $elm$time$Time$May = 4;
+var $elm$time$Time$Nov = 10;
+var $elm$time$Time$Oct = 9;
+var $elm$time$Time$Sep = 8;
+var $elm$time$Time$toMonth = F2(
+	function (zone, time) {
+		var _v0 = $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).ag;
+		switch (_v0) {
+			case 1:
+				return 0;
+			case 2:
+				return 1;
+			case 3:
+				return 2;
+			case 4:
+				return 3;
+			case 5:
+				return 4;
+			case 6:
+				return 5;
+			case 7:
+				return 6;
+			case 8:
+				return 7;
+			case 9:
+				return 8;
+			case 10:
+				return 9;
+			case 11:
+				return 10;
+			default:
+				return 11;
+		}
+	});
+var $elm$time$Time$toSecond = F2(
+	function (_v0, time) {
+		return A2(
+			$elm$core$Basics$modBy,
+			60,
+			A2(
+				$elm$time$Time$flooredDiv,
+				$elm$time$Time$posixToMillis(time),
+				1000));
+	});
+var $elm$time$Time$toYear = F2(
+	function (zone, time) {
+		return $elm$time$Time$toCivil(
+			A2($elm$time$Time$toAdjustedMinutes, zone, time)).aJ;
+	});
+var $elm$time$Time$Zone = F2(
+	function (a, b) {
+		return {$: 0, a: a, b: b};
+	});
+var $elm$time$Time$utc = A2($elm$time$Time$Zone, 0, _List_Nil);
+var $author$project$Util$posixToIso = function (posix) {
+	var zone = $elm$time$Time$utc;
+	var year = A2($elm$time$Time$toYear, zone, posix);
+	var second = A2($elm$time$Time$toSecond, zone, posix);
+	var month = $author$project$Util$monthToInt(
+		A2($elm$time$Time$toMonth, zone, posix));
+	var minute = A2($elm$time$Time$toMinute, zone, posix);
+	var hour = A2($elm$time$Time$toHour, zone, posix);
+	var day = A2($elm$time$Time$toDay, zone, posix);
+	return $elm$core$String$fromInt(year) + ('-' + ($author$project$Util$pad2(month) + ('-' + ($author$project$Util$pad2(day) + ('T' + ($author$project$Util$pad2(hour) + (':' + ($author$project$Util$pad2(minute) + (':' + ($author$project$Util$pad2(second) + 'Z'))))))))));
+};
 var $author$project$Msg$GotStoryResponse = function (a) {
-	return {$: 7, a: a};
+	return {$: 8, a: a};
 };
 var $author$project$Update$offlineMessage = 'Offline: Du kannst die Geschichte ansehen, aber keine neuen Züge spielen.';
 var $author$project$Api$StoryResponse = function (assistant) {
@@ -7081,6 +7253,17 @@ var $author$project$Api$sendStory = F3(
 				bo: '/api/story'
 			});
 	});
+var $author$project$Update$setError = F3(
+	function (save, message, state) {
+		var next = _Utils_update(
+			state,
+			{
+				Y: $elm$core$Maybe$Just(message)
+			});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
 var $author$project$Update$sendAction = F3(
 	function (save, action, state) {
 		if (!state.ae) {
@@ -7121,9 +7304,13 @@ var $author$project$Update$sendAction = F3(
 			}
 		}
 	});
-var $author$project$Update$beginAdventure = F2(
-	function (save, state) {
-		var adventure = {be: '', G: $elm$core$Maybe$Nothing, bm: _List_Nil};
+var $author$project$Update$beginAdventure = F3(
+	function (save, startedAt, state) {
+		var adventure = {
+			be: $author$project$Util$posixToIso(startedAt),
+			G: $elm$core$Maybe$Nothing,
+			bm: _List_Nil
+		};
 		var next = _Utils_update(
 			state,
 			{
@@ -7132,11 +7319,79 @@ var $author$project$Update$beginAdventure = F2(
 			});
 		return A3($author$project$Update$sendAction, save, 'start', next);
 	});
+var $author$project$Update$cancelAbandon = F2(
+	function (save, state) {
+		var next = _Utils_update(
+			state,
+			{ai: $elm$core$Maybe$Nothing, al: false});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
+var $author$project$Update$confirmAbandon = F2(
+	function (save, state) {
+		var next = _Utils_update(
+			state,
+			{
+				V: $elm$core$Maybe$Nothing,
+				ad: false,
+				ai: $elm$core$Maybe$Just('Abenteuer aufgegeben.'),
+				al: false
+			});
+		return _Utils_Tuple2(
+			next,
+			save(next));
+	});
+var $author$project$Api$errorToString = function (error) {
+	switch (error.$) {
+		case 0:
+			return 'Die Anfrage war ungültig.';
+		case 1:
+			return 'Die Anfrage hat zu lange gedauert.';
+		case 2:
+			return 'Netzwerkfehler. Bitte prüfe deine Verbindung.';
+		case 3:
+			return 'Der Server hat mit einem Fehler geantwortet.';
+		default:
+			return 'Die Antwort konnte nicht gelesen werden.';
+	}
+};
+var $author$project$Update$requestAbandon = F2(
+	function (save, state) {
+		var _v0 = state.V;
+		if (_v0.$ === 1) {
+			return A3($author$project$Update$setError, save, 'Es gibt kein Abenteuer zum Aufgeben.', state);
+		} else {
+			var next = _Utils_update(
+				state,
+				{
+					Q: '',
+					ai: $elm$core$Maybe$Just('Möchtest du das Abenteuer wirklich aufgeben?'),
+					al: true
+				});
+			return _Utils_Tuple2(
+				next,
+				save(next));
+		}
+	});
+var $author$project$Msg$GotStartTime = function (a) {
+	return {$: 5, a: a};
+};
 var $elm$core$Basics$neq = _Utils_notEqual;
 var $elm$core$String$trim = _String_trim;
 var $author$project$Model$isProfileComplete = function (player) {
 	return ($elm$core$String$trim(player.ah) !== '') && ($elm$core$String$trim(player.a_) !== '');
 };
+var $elm$time$Time$Name = function (a) {
+	return {$: 0, a: a};
+};
+var $elm$time$Time$Offset = function (a) {
+	return {$: 1, a: a};
+};
+var $elm$time$Time$customZone = $elm$time$Time$Zone;
+var $elm$time$Time$Posix = $elm$core$Basics$identity;
+var $elm$time$Time$millisToPosix = $elm$core$Basics$identity;
+var $elm$time$Time$now = _Time_now($elm$time$Time$millisToPosix);
 var $author$project$Update$startAdventure = F2(
 	function (save, state) {
 		if (!state.ae) {
@@ -7149,7 +7404,12 @@ var $author$project$Update$startAdventure = F2(
 				if (!_v0.$) {
 					return A3($author$project$Update$setError, save, 'Du bist bereits in einem Abenteuer.', state);
 				} else {
-					return A2($author$project$Update$beginAdventure, save, state);
+					var next = _Utils_update(
+						state,
+						{Y: $elm$core$Maybe$Nothing, ai: $elm$core$Maybe$Nothing});
+					return _Utils_Tuple2(
+						next,
+						A2($elm$core$Task$perform, $author$project$Msg$GotStartTime, $elm$time$Time$now));
 				}
 			}
 		}
@@ -7241,11 +7501,14 @@ var $author$project$Update$update = F3(
 			case 4:
 				return A2($author$project$Update$startAdventure, save, state);
 			case 5:
-				return A3($author$project$Update$handleAction, save, state.Q, state);
+				var startedAt = msg.a;
+				return A3($author$project$Update$beginAdventure, save, startedAt, state);
 			case 6:
+				return A3($author$project$Update$handleAction, save, state.Q, state);
+			case 7:
 				var action = msg.a;
 				return A3($author$project$Update$handleAction, save, action, state);
-			case 7:
+			case 8:
 				var result = msg.a;
 				if (!result.$) {
 					var response = result.a;
@@ -7263,25 +7526,25 @@ var $author$project$Update$update = F3(
 						next,
 						save(next));
 				}
-			case 8:
+			case 9:
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,
 						{ay: !state.ay}),
 					$elm$core$Platform$Cmd$none);
-			case 9:
+			case 10:
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,
 						{ax: !state.ax}),
 					$elm$core$Platform$Cmd$none);
-			case 10:
-				return A2($author$project$Update$requestAbandon, save, state);
 			case 11:
-				return A2($author$project$Update$confirmAbandon, save, state);
+				return A2($author$project$Update$requestAbandon, save, state);
 			case 12:
-				return A2($author$project$Update$cancelAbandon, save, state);
+				return A2($author$project$Update$confirmAbandon, save, state);
 			case 13:
+				return A2($author$project$Update$cancelAbandon, save, state);
+			case 14:
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,
@@ -7351,7 +7614,7 @@ var $author$project$View$headerView = A2(
 					$elm$html$Html$text('Dein interaktives Hogwarts-Abenteuer im Browser.')
 				]))
 		]));
-var $author$project$Msg$DismissNotice = {$: 13};
+var $author$project$Msg$DismissNotice = {$: 14};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
@@ -7422,13 +7685,13 @@ var $author$project$View$offlineView = function (isOnline) {
 					]))
 			]));
 };
-var $author$project$Msg$RequestAbandon = {$: 10};
-var $author$project$Msg$SendAction = {$: 5};
+var $author$project$Msg$RequestAbandon = {$: 11};
+var $author$project$Msg$SendAction = {$: 6};
 var $author$project$Msg$UpdateActionInput = function (a) {
 	return {$: 2, a: a};
 };
-var $author$project$Msg$CancelAbandon = {$: 12};
-var $author$project$Msg$ConfirmAbandon = {$: 11};
+var $author$project$Msg$CancelAbandon = {$: 13};
+var $author$project$Msg$ConfirmAbandon = {$: 12};
 var $author$project$View$abandonConfirmView = function (isVisible) {
 	return isVisible ? A2(
 		$elm$html$Html$div,
@@ -7520,7 +7783,7 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 			$elm$json$Json$Encode$bool(bool));
 	});
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
-var $author$project$Msg$ToggleHistory = {$: 9};
+var $author$project$Msg$ToggleHistory = {$: 10};
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $author$project$View$historyItemView = function (adventure) {
 	return A2(
@@ -7626,7 +7889,7 @@ var $author$project$View$historyPanel = F2(
 				]));
 	});
 var $elm$html$Html$input = _VirtualDom_node('input');
-var $author$project$Msg$ToggleInventory = {$: 8};
+var $author$project$Msg$ToggleInventory = {$: 9};
 var $author$project$View$inventoryPanel = F2(
 	function (player, isVisible) {
 		return A2(
@@ -7786,7 +8049,7 @@ var $author$project$View$statsPanel = function (player) {
 			]));
 };
 var $author$project$Msg$UseSuggestedAction = function (a) {
-	return {$: 6, a: a};
+	return {$: 7, a: a};
 };
 var $author$project$View$suggestedButton = F4(
 	function (isLoading, isAbandoning, isOnline, action) {

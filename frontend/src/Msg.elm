@@ -1,6 +1,7 @@
 module Msg exposing (Msg(..))
 
 import Api
+import Time
 
 type Msg
     = UpdateName String
@@ -8,6 +9,7 @@ type Msg
     | UpdateActionInput String
     | OnlineStatusChanged Bool
     | StartAdventure
+    | GotStartTime Time.Posix
     | SendAction
     | UseSuggestedAction String
     | GotStoryResponse (Result Api.HttpError Api.StoryResponse)

@@ -6,6 +6,9 @@ import Msg exposing (Msg(..))
 import Maybe
 import Set
 import String
+import Task
+import Time
+import Util
 
 update : (Model.GameState -> Cmd Msg) -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
 update save msg state =
@@ -48,6 +51,9 @@ update save msg state =
 
         StartAdventure ->
             startAdventure save state
+
+        GotStartTime startedAt ->
+            beginAdventure save startedAt state
 
         SendAction ->
             handleAction save state.actionInput state
@@ -113,15 +119,19 @@ startAdventure save state =
                 setError save "Du bist bereits in einem Abenteuer." state
 
             Nothing ->
-                beginAdventure save state
+                let
+                    next =
+                        { state | error = Nothing, notice = Nothing }
+                in
+                ( next, Task.perform GotStartTime Time.now )
 
 
-beginAdventure : (Model.GameState -> Cmd Msg) -> Model.GameState -> ( Model.GameState, Cmd Msg )
-beginAdventure save state =
+beginAdventure : (Model.GameState -> Cmd Msg) -> Time.Posix -> Model.GameState -> ( Model.GameState, Cmd Msg )
+beginAdventure save startedAt state =
     let
         adventure =
             { title = Nothing
-            , startedAt = ""
+            , startedAt = Util.posixToIso startedAt
             , turns = []
             }
 

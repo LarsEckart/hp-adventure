@@ -1,6 +1,7 @@
 package com.example.hpadventure;
 
 import com.example.hpadventure.api.Dtos;
+import com.example.hpadventure.config.RateLimiter;
 import com.example.hpadventure.clients.AnthropicClient;
 import com.example.hpadventure.clients.OpenAiImageClient;
 import com.example.hpadventure.parsing.CompletionParser;
@@ -64,6 +65,13 @@ public final class App {
             openAiQuality,
             openAiSize
         );
+        Integer rateLimitPerMinute = parseIntOrNull(System.getenv("RATE_LIMIT_PER_MINUTE"));
+        if (rateLimitPerMinute == null) {
+            rateLimitPerMinute = 30;
+        }
+        RateLimiter rateLimiter = rateLimitPerMinute > 0
+            ? new RateLimiter(Clock.systemUTC(), rateLimitPerMinute, Duration.ofMinutes(1))
+            : null;
         PromptBuilder promptBuilder = new PromptBuilder();
         ItemParser itemParser = new ItemParser(Clock.systemUTC());
         CompletionParser completionParser = new CompletionParser();
@@ -101,6 +109,10 @@ public final class App {
         app.get("/health", ctx -> ctx.result("ok"));
         app.post("/api/story", ctx -> {
             String requestId = UUID.randomUUID().toString();
+            if (rateLimiter != null && !rateLimiter.allow(ctx.ip())) {
+                ctx.status(429).json(errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
+                return;
+            }
             Dtos.StoryRequest request = ctx.bodyAsClass(Dtos.StoryRequest.class);
             String action = request == null ? null : request.action();
 
