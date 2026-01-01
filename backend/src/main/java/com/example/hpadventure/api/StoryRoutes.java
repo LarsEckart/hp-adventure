@@ -96,7 +96,7 @@ public final class StoryRoutes {
 
                 try {
                     Dtos.Assistant assistant = streamHandler.streamTurn(request, delta -> {
-                        if (delta == null || delta.isBlank()) {
+                        if (delta == null || delta.isEmpty()) {
                             return;
                         }
                         client.sendEvent("delta", new Dtos.StreamDelta(delta));

@@ -75,7 +75,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         StreamMarkerFilter markerFilter = new StreamMarkerFilter();
         MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
         anthropicClient.streamMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS, delta -> {
-            if (delta == null || delta.isBlank()) {
+            if (delta == null || delta.isEmpty()) {
                 return;
             }
             rawStory.append(delta);

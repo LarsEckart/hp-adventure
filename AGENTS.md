@@ -29,6 +29,7 @@ Developer notes:
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`.
 - Streaming deltas are filtered server-side to strip `[OPTION: ...]`/`[SZENE: ...]`/inventory markers; UI options still arrive with the final response.
 - Story text is sanitized server-side to strip simple Markdown markers (`*`, `_`, `` ` ``) in both streaming deltas and final responses.
+- Streaming deltas may include whitespace-only chunks; do not drop/trim them or words may concatenate.
 - Each assistant turn is expected to include an image; if a turn shows text without an image, check that the SSE `final` event arrived (otherwise the UI keeps `image = Nothing`) and correlate backend OpenAI image logs with the `X-Request-Id`.
 - The service worker caches `elm.js`/`styles.css`; bump `CACHE_NAME` in `frontend/public/sw.js` (and copy to backend public) whenever you change frontend assets (Elm output, CSS, app.js, index.html) or the UI doesn’t reflect recent changes in production.
 - Prompt + parsing live in `backend/src/main/java/com/example/hpadventure/services` and `backend/src/main/java/com/example/hpadventure/parsing`.
