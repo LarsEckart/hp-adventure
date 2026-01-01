@@ -6,6 +6,8 @@ import io.javalin.Javalin;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FilterOutputStream;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
@@ -42,8 +44,13 @@ public final class TtsRoutes {
             try {
                 ctx.contentType("audio/mpeg");
                 ctx.status(200);
-                OutputStream outputStream = ctx.outputStream();
+                long startedAt = System.nanoTime();
+                CountingOutputStream outputStream = new CountingOutputStream(ctx.outputStream());
                 ttsHandler.stream(text, outputStream);
+                outputStream.flush();
+                long durationMs = (System.nanoTime() - startedAt) / 1_000_000;
+                logger.info("TTS request completed requestId={} ip={} bytes={} durationMs={}",
+                    requestId, ctx.ip(), outputStream.bytesWritten(), durationMs);
             } catch (UpstreamException e) {
                 logger.warn("TTS request upstream failure requestId={} code={} status={} message={}",
                     requestId, e.code(), e.status(), e.getMessage());
@@ -66,5 +73,29 @@ public final class TtsRoutes {
 
     private static Dtos.ErrorResponse errorResponse(String code, String message, String requestId) {
         return new Dtos.ErrorResponse(new Dtos.ErrorResponse.Error(code, message, requestId));
+    }
+
+    private static final class CountingOutputStream extends FilterOutputStream {
+        private long count;
+
+        private CountingOutputStream(OutputStream out) {
+            super(out);
+        }
+
+        @Override
+        public void write(int b) throws IOException {
+            super.write(b);
+            count += 1;
+        }
+
+        @Override
+        public void write(byte[] b, int off, int len) throws IOException {
+            super.write(b, off, len);
+            count += len;
+        }
+
+        private long bytesWritten() {
+            return count;
+        }
     }
 }
