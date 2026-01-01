@@ -6031,6 +6031,41 @@ var $author$project$Update$applyStoryResponse = F3(
 						])));
 		}
 	});
+var $elm$core$List$any = F2(
+	function (isOkay, list) {
+		any:
+		while (true) {
+			if (!list.b) {
+				return false;
+			} else {
+				var x = list.a;
+				var xs = list.b;
+				if (isOkay(x)) {
+					return true;
+				} else {
+					var $temp$isOkay = isOkay,
+						$temp$list = xs;
+					isOkay = $temp$isOkay;
+					list = $temp$list;
+					continue any;
+				}
+			}
+		}
+	});
+var $author$project$Update$ensureStarterItems = F2(
+	function (startedAtIso, player) {
+		var wandItem = {aR: 'Ein einfacher Schulzauberstab.', aW: startedAtIso, ag: 'Zauberstab'};
+		var hasWand = A2(
+			$elm$core$List$any,
+			function (item) {
+				return $elm$core$String$toLower(item.ag) === 'zauberstab';
+			},
+			player.a1);
+		var nextInventory = hasWand ? player.a1 : A2($elm$core$List$cons, wandItem, player.a1);
+		return _Utils_update(
+			player,
+			{a1: nextInventory});
+	});
 var $author$project$Util$monthToInt = function (month) {
 	switch (month) {
 		case 0:
@@ -6437,16 +6472,15 @@ var $author$project$Update$sendAction = F4(
 	});
 var $author$project$Update$beginAdventure = F4(
 	function (save, startStream, startedAt, state) {
-		var adventure = {
-			be: $author$project$Util$posixToIso(startedAt),
-			G: $elm$core$Maybe$Nothing,
-			bm: _List_Nil
-		};
+		var startedAtIso = $author$project$Util$posixToIso(startedAt);
+		var updatedPlayer = A2($author$project$Update$ensureStarterItems, startedAtIso, state.a8);
+		var adventure = {be: startedAtIso, G: $elm$core$Maybe$Nothing, bm: _List_Nil};
 		var next = _Utils_update(
 			state,
 			{
 				V: $elm$core$Maybe$Just(adventure),
-				ah: $elm$core$Maybe$Nothing
+				ah: $elm$core$Maybe$Nothing,
+				a8: updatedPlayer
 			});
 		return A4($author$project$Update$sendAction, save, startStream, 'start', next);
 	});
