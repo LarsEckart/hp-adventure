@@ -26,6 +26,7 @@ Milestones 0–2 are complete, plus service worker caching:
 - `POST /api/story` now has in-memory rate limiting (configurable via `RATE_LIMIT_PER_MINUTE`).
 - Adventure `startedAt` timestamps are set client-side as ISO strings.
 - Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
+- Added backend StoryService integration coverage using OkHttp MockWebServer for Anthropic/OpenAI stubs (title + summary paths).
 
 Still missing (optional):
 - Streaming responses (Milestone 6).

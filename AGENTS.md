@@ -19,6 +19,7 @@ Developer notes:
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
 - Prompt + parsing live in `backend/src/main/java/com/example/hpadventure/services` and `backend/src/main/java/com/example/hpadventure/parsing`.
 - Backend tests: `cd backend && ./gradlew test`.
+- `StoryServiceTest` stubs Anthropic/OpenAI via OkHttp MockWebServer for end-to-end service coverage.
 - Elm HTTP support requires `elm/http`; add deps with `elm install` (don’t hand-edit versions).
 - After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.
 - The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText`, `assistant.suggestedActions`, plus `assistant.image` (base64).
