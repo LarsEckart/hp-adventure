@@ -6,6 +6,7 @@ type Msg
     = UpdateName String
     | UpdateHouse String
     | UpdateActionInput String
+    | OnlineStatusChanged Bool
     | StartAdventure
     | SendAction
     | UseSuggestedAction String

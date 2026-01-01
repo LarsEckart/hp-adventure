@@ -98,6 +98,18 @@ button:disabled {
   border: 1px solid rgba(135, 34, 26, 0.2);
 }
 
+.offline-banner {
+  padding: 12px 14px;
+  background: #f0e0c6;
+  color: #5c4522;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 93, 55, 0.2);
+}
+
+.offline-banner p {
+  margin: 0;
+}
+
 .notice {
   padding: 12px 14px;
   background: #f4e9cf;

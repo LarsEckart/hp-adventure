@@ -24,6 +24,17 @@
     });
   }
 
+  if (app.ports && app.ports.onlineStatus) {
+    const reportStatus = () => {
+      const isOnline = navigator.onLine !== false;
+      app.ports.onlineStatus.send(isOnline);
+    };
+
+    reportStatus();
+    window.addEventListener("online", reportStatus);
+    window.addEventListener("offline", reportStatus);
+  }
+
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
       navigator.serviceWorker.register("/sw.js").catch((error) => {

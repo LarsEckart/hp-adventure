@@ -11,6 +11,7 @@ Project notes:
 - localStorage key is `hpAdventure:v1` (see `frontend/public/app.js`).
 - Frontend schema version is `2` (see `frontend/src/Model.elm` + `frontend/src/Codec.elm`).
 - Service worker lives in `frontend/public/sw.js` and is registered from `frontend/public/app.js`.
+- Online/offline status is sent from `frontend/public/app.js` to Elm via the `onlineStatus` port; Elm stores it in `GameState.isOnline` and uses it to show the offline banner + disable sends (not persisted to localStorage).
 
 Developer notes:
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).

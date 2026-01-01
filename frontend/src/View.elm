@@ -12,6 +12,7 @@ view : Model.GameState -> Html Msg
 view state =
     div [ class "app" ] <|
         [ headerView
+        , offlineView state.isOnline
         , errorView state.error
         , noticeView state.notice
         ]
@@ -24,6 +25,16 @@ headerView =
         [ h1 [] [ text "HP Adventure" ]
         , p [] [ text "Dein interaktives Hogwarts-Abenteuer im Browser." ]
         ]
+
+
+offlineView : Bool -> Html Msg
+offlineView isOnline =
+    if isOnline then
+        text ""
+
+    else
+        div [ class "offline-banner" ]
+            [ p [] [ text "Offline: Du kannst die Geschichte ansehen, aber keine neuen Züge spielen." ] ]
 
 
 errorView : Maybe String -> Html Msg
@@ -89,7 +100,7 @@ setupView state =
             ]
         , button
             [ onClick StartAdventure
-            , disabled (not (Model.isProfileComplete state.player))
+            , disabled (not (Model.isProfileComplete state.player) || not state.isOnline)
             ]
             [ text "Abenteuer starten" ]
         ]
@@ -101,7 +112,7 @@ startView state =
         [ div [ class "panel" ]
             [ h2 [] [ text "Bereit für Hogwarts?" ]
             , p [] [ text ("Willkommen, " ++ state.player.name ++ " aus " ++ state.player.houseName ++ ".") ]
-            , button [ onClick StartAdventure ] [ text "Los geht's" ]
+            , button [ onClick StartAdventure, disabled (not state.isOnline) ] [ text "Los geht's" ]
             ]
         , div [ class "meta-grid" ]
             [ statsPanel state.player
@@ -118,7 +129,7 @@ adventureView state adventure =
             [ div [ class "story" ]
                 [ div [ class "story-feed" ] (List.map viewTurn adventure.turns)
                 , loadingView state.isLoading
-                , suggestedActionsView state.isLoading state.pendingAbandon (latestSuggestions adventure)
+                , suggestedActionsView state.isLoading state.pendingAbandon state.isOnline (latestSuggestions adventure)
                 , abandonConfirmView state.pendingAbandon
                 , div [ class "action-bar" ]
                     [ input
@@ -130,7 +141,7 @@ adventureView state adventure =
                         []
                     , button
                         [ onClick SendAction
-                        , disabled (state.isLoading || state.pendingAbandon || String.trim state.actionInput == "")
+                        , disabled (state.isLoading || state.pendingAbandon || String.trim state.actionInput == "" || not state.isOnline)
                         ]
                         [ text "Senden" ]
                     , button
@@ -214,21 +225,21 @@ loadingView isLoading =
         text ""
 
 
-suggestedActionsView : Bool -> Bool -> List String -> Html Msg
-suggestedActionsView isLoading isAbandoning actions =
+suggestedActionsView : Bool -> Bool -> Bool -> List String -> Html Msg
+suggestedActionsView isLoading isAbandoning isOnline actions =
     if List.isEmpty actions then
         text ""
 
     else
         div [ class "suggestions" ]
-            (List.map (suggestedButton isLoading isAbandoning) actions)
+            (List.map (suggestedButton isLoading isAbandoning isOnline) actions)
 
 
-suggestedButton : Bool -> Bool -> String -> Html Msg
-suggestedButton isLoading isAbandoning action =
+suggestedButton : Bool -> Bool -> Bool -> String -> Html Msg
+suggestedButton isLoading isAbandoning isOnline action =
     button
         [ onClick (UseSuggestedAction action)
-        , disabled (isLoading || isAbandoning)
+        , disabled (isLoading || isAbandoning || not isOnline)
         ]
         [ text action ]
 

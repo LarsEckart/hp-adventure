@@ -22,12 +22,13 @@ Milestones 0–2 are complete, plus service worker caching:
 - Command shortcuts now work in the UI: `inventar`, `geschichte`, `aufgeben`, `start`.
 - Story feed renders per-turn illustrations and persists them locally.
 - Service worker caching is in place for the app shell (`sw.js`).
+- Offline UX is in place (banner + send disabled while offline).
 - Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
 
-Still missing:
-- Offline banner/disable send when offline (optional polish).
+Still missing (optional):
+- Streaming responses (Milestone 6).
 
-Next up: add offline UX (banner + disable send while offline).
+Next up: optional streaming UX or E2E smoke tests.
 
 ---
 

@@ -75,6 +75,7 @@ type alias GameState =
     , currentAdventure : Maybe Adventure
     , actionInput : String
     , isLoading : Bool
+    , isOnline : Bool
     , error : Maybe String
     , notice : Maybe String
     , showInventory : Bool
@@ -96,6 +97,7 @@ defaultState =
     , currentAdventure = Nothing
     , actionInput = ""
     , isLoading = False
+    , isOnline = True
     , error = Nothing
     , notice = Nothing
     , showInventory = True

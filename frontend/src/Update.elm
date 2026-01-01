@@ -39,6 +39,13 @@ update save msg state =
         UpdateActionInput value ->
             ( { state | actionInput = value }, Cmd.none )
 
+        OnlineStatusChanged isOnline ->
+            let
+                next =
+                    { state | isOnline = isOnline }
+            in
+            ( next, Cmd.none )
+
         StartAdventure ->
             startAdventure save state
 
@@ -83,15 +90,21 @@ update save msg state =
 
         ResetState ->
             let
-                next =
+                baseState =
                     Model.defaultState
+
+                next =
+                    { baseState | isOnline = state.isOnline }
             in
             ( next, save next )
 
 
 startAdventure : (Model.GameState -> Cmd Msg) -> Model.GameState -> ( Model.GameState, Cmd Msg )
 startAdventure save state =
-    if not (Model.isProfileComplete state.player) then
+    if not state.isOnline then
+        setError save offlineMessage state
+
+    else if not (Model.isProfileComplete state.player) then
         setError save "Bitte gib deinen Namen und dein Haus an." state
 
     else
@@ -156,34 +169,38 @@ handleAction save rawAction state =
 
 sendAction : (Model.GameState -> Cmd Msg) -> String -> Model.GameState -> ( Model.GameState, Cmd Msg )
 sendAction save action state =
-    case state.currentAdventure of
-        Nothing ->
-            setError save "Starte zuerst ein Abenteuer." state
+    if not state.isOnline then
+        setError save offlineMessage state
 
-        Just adventure ->
-            let
-                newTurn =
-                    { userAction = action, assistant = Nothing }
+    else
+        case state.currentAdventure of
+            Nothing ->
+                setError save "Starte zuerst ein Abenteuer." state
 
-                updatedAdventure =
-                    { adventure | turns = adventure.turns ++ [ newTurn ] }
+            Just adventure ->
+                let
+                    newTurn =
+                        { userAction = action, assistant = Nothing }
 
-                next =
-                    { state
-                        | currentAdventure = Just updatedAdventure
-                        , actionInput = ""
-                        , isLoading = True
-                        , error = Nothing
-                        , notice = Nothing
-                        , pendingAbandon = False
-                    }
-            in
-            ( next
-            , Cmd.batch
-                [ save next
-                , Api.sendStory state action GotStoryResponse
-                ]
-            )
+                    updatedAdventure =
+                        { adventure | turns = adventure.turns ++ [ newTurn ] }
+
+                    next =
+                        { state
+                            | currentAdventure = Just updatedAdventure
+                            , actionInput = ""
+                            , isLoading = True
+                            , error = Nothing
+                            , notice = Nothing
+                            , pendingAbandon = False
+                        }
+                in
+                ( next
+                , Cmd.batch
+                    [ save next
+                    , Api.sendStory state action GotStoryResponse
+                    ]
+                )
 
 
 applyStoryResponse : (Model.GameState -> Cmd Msg) -> Api.StoryResponse -> Model.GameState -> ( Model.GameState, Cmd Msg )
@@ -382,3 +399,8 @@ newItemNotice items =
 
         _ ->
             Just ("Neue Gegenstände: " ++ String.join ", " (List.map .name items))
+
+
+offlineMessage : String
+offlineMessage =
+    "Offline: Du kannst die Geschichte ansehen, aber keine neuen Züge spielen."

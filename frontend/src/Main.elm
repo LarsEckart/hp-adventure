@@ -10,6 +10,7 @@ import Update
 import View
 
 port saveState : Encode.Value -> Cmd msg
+port onlineStatus : (Bool -> msg) -> Sub msg
 
 main : Program Decode.Value Model.GameState Msg
 main =
@@ -17,7 +18,7 @@ main =
         { init = init
         , update = Update.update save
         , view = View.view
-        , subscriptions = always Sub.none
+        , subscriptions = always (onlineStatus Msg.OnlineStatusChanged)
         }
 
 init : Decode.Value -> ( Model.GameState, Cmd Msg )
