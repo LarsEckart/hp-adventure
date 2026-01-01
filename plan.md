@@ -16,17 +16,18 @@ Milestones 0–2 are complete, plus service worker caching:
 
 - Backend serves `/health` and calls Anthropic `/v1/messages` in `/api/story` (prompt builder + marker parsing + title/summary hooks).
 - Backend parsing helpers + JUnit coverage (items, completion, options, marker stripping, prompt builder).
+- OpenAI image generation is wired in (`gpt-image-1`), including scene parsing + prompt templating, and `/api/story` returns base64 images.
 - Frontend now persists full player state: inventory, completed adventures, stats, and per-turn data.
 - Inventory/history UI panels, completion handling, and stats are wired in Elm.
 - Command shortcuts now work in the UI: `inventar`, `geschichte`, `aufgeben`, `start`.
+- Story feed renders per-turn illustrations and persists them locally.
 - Service worker caching is in place for the app shell (`sw.js`).
 - Build script `frontend/build.sh` still compiles Elm and copies assets into `backend/src/main/resources/public`.
 
 Still missing:
-- Image generation + rendering (OpenAI `gpt-image-1` integration).
 - Offline banner/disable send when offline (optional polish).
 
-Next up: implement image generation on the backend and render per-turn illustrations in Elm.
+Next up: add offline UX (banner + disable send while offline).
 
 ---
 
