@@ -12,6 +12,7 @@ Project notes:
 - Frontend schema version is `2` (see `frontend/src/Model.elm` + `frontend/src/Codec.elm`).
 - Service worker lives in `frontend/public/sw.js` and is registered from `frontend/public/app.js`.
 - Online/offline status is sent from `frontend/public/app.js` to Elm via the `onlineStatus` port; Elm stores it in `GameState.isOnline` and uses it to show the offline banner + disable sends (not persisted to localStorage).
+- Story feed auto-scroll uses the `story-feed` element id in `frontend/src/View.elm` (keep it stable if you refactor the layout).
 
 Developer notes:
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).

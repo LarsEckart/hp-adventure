@@ -21,6 +21,7 @@ Milestones 0–2 are complete, plus service worker caching:
 - Inventory/history UI panels, completion handling, and stats are wired in Elm.
 - Command shortcuts now work in the UI: `inventar`, `geschichte`, `aufgeben`, `start`.
 - Story feed renders per-turn illustrations and persists them locally.
+- Story feed now auto-scrolls to the latest turn.
 - Service worker caching is in place for the app shell (`sw.js`).
 - Offline UX is in place (banner + send disabled while offline).
 - `POST /api/story` now has in-memory rate limiting (configurable via `RATE_LIMIT_PER_MINUTE`).

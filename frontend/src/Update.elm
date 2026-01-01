@@ -1,5 +1,6 @@
 module Update exposing (update)
 
+import Browser.Dom as Dom
 import Api
 import Json.Decode as Decode
 import Json.Encode as Encode
@@ -109,6 +110,9 @@ update save startStream msg state =
             in
             ( next, save next )
 
+        ScrolledToBottom _ ->
+            ( state, Cmd.none )
+
 
 startAdventure : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> Model.GameState -> ( Model.GameState, Cmd Msg )
 startAdventure save startStream state =
@@ -214,6 +218,7 @@ sendAction save startStream action state =
                 , Cmd.batch
                     [ save next
                     , startStream (Api.encodeStoryRequest state action)
+                    , scrollToBottom
                     ]
                 )
 
@@ -304,7 +309,7 @@ applyStoryResponse save response state =
                         , pendingAbandon = False
                     }
             in
-            ( next, save next )
+            ( next, Cmd.batch [ save next, scrollToBottom ] )
 
 
 handleStreamEvent : (Model.GameState -> Cmd Msg) -> Decode.Value -> Model.GameState -> ( Model.GameState, Cmd Msg )
@@ -481,3 +486,10 @@ newItemNotice items =
 offlineMessage : String
 offlineMessage =
     "Offline: Du kannst die Geschichte ansehen, aber keine neuen Züge spielen."
+
+
+scrollToBottom : Cmd Msg
+scrollToBottom =
+    Dom.getViewportOf "story-feed"
+        |> Task.andThen (\info -> Dom.setViewportOf "story-feed" 0 info.scene.height)
+        |> Task.attempt ScrolledToBottom

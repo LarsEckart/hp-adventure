@@ -1,5 +1,6 @@
 module Msg exposing (Msg(..))
 
+import Browser.Dom as Dom
 import Api
 import Json.Decode as Decode
 import Time
@@ -22,3 +23,4 @@ type Msg
     | CancelAbandon
     | DismissNotice
     | ResetState
+    | ScrolledToBottom (Result Dom.Error ())

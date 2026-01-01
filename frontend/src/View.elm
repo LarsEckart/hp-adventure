@@ -1,7 +1,7 @@
 module View exposing (view)
 
 import Html exposing (Html, button, div, h1, h2, h3, img, input, li, p, span, text, ul)
-import Html.Attributes exposing (alt, attribute, class, disabled, placeholder, src, type_, value)
+import Html.Attributes exposing (alt, attribute, class, disabled, id, placeholder, src, type_, value)
 import Html.Events exposing (onClick, onInput)
 import Maybe
 import Model
@@ -130,7 +130,7 @@ adventureView state adventure =
     div [ class "story-layout", dataTestId "story-layout" ]
         [ div [ class "story-main" ]
             [ div [ class "story" ]
-                [ div [ class "story-feed", dataTestId "story-feed" ] (List.map viewTurn adventure.turns)
+                [ div [ class "story-feed", id "story-feed", dataTestId "story-feed" ] (List.map viewTurn adventure.turns)
                 , loadingView state.isLoading
                 , suggestedActionsView state.isLoading state.pendingAbandon state.isOnline (latestSuggestions adventure)
                 , abandonConfirmView state.pendingAbandon
