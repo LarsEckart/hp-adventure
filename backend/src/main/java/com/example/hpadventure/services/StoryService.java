@@ -5,6 +5,7 @@ import com.example.hpadventure.clients.AnthropicClient;
 import com.example.hpadventure.clients.OpenAiImageClient;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
+import com.example.hpadventure.parsing.MarkdownSanitizer;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
 import com.example.hpadventure.parsing.SceneParser;
@@ -72,14 +73,16 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         StoryContext context = buildStoryContext(request);
         StringBuilder rawStory = new StringBuilder();
         StreamMarkerFilter markerFilter = new StreamMarkerFilter();
+        MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
         anthropicClient.streamMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS, delta -> {
             if (delta == null || delta.isBlank()) {
                 return;
             }
             rawStory.append(delta);
             String cleaned = markerFilter.apply(delta);
-            if (!cleaned.isEmpty()) {
-                onDelta.accept(cleaned);
+            String sanitized = markdownSanitizer.strip(cleaned);
+            if (!sanitized.isEmpty()) {
+                onDelta.accept(sanitized);
             }
         });
         return buildAssistant(request, context.history(), rawStory.toString());
@@ -111,7 +114,8 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         boolean completed = completionParser.isComplete(rawStory);
         List<String> suggestedActions = optionsParser.parse(rawStory);
         String scene = sceneParser.parse(rawStory);
-        String cleanStory = markerCleaner.strip(rawStory);
+        MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
+        String cleanStory = markdownSanitizer.strip(markerCleaner.strip(rawStory));
         String imagePrompt = imagePromptService.buildPrompt(scene, cleanStory);
         OpenAiImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
         Dtos.Image image = new Dtos.Image(imageResult.mimeType(), imageResult.base64(), imagePrompt);
