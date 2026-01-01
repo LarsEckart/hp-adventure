@@ -10,6 +10,23 @@ This document describes a detailed plan to rebuild the existing **German** Node.
 
 ---
 
+## Status (2026-01-01)
+
+Milestone 0 is underway and the basic scaffold is now in place:
+
+- Backend skeleton added in `backend/` (Java 21 + Javalin) with `/health` and static file hosting.
+- Frontend skeleton added in `frontend/` (Elm 0.19) with a placeholder UI and localStorage wiring.
+- Build script `frontend/build.sh` compiles Elm and copies assets into `backend/src/main/resources/public`.
+
+Still missing for Milestone 0:
+- API routes beyond `/health` (no `/api/story` yet).
+- Proper Elm modules for story flow, inventory, history, etc.
+- Service worker / offline shell caching.
+
+Next up: complete Milestone 0 by wiring a minimal `/api/story` stub and a first Elm screen that can call it, then proceed to Milestone 1.
+
+---
+
 ## 0) Guiding principles & scope
 
 ### Goals

@@ -1,2 +1,6 @@
 node_modules/
 .env
+backend/.gradle/
+backend/build/
+frontend/elm-stuff/
+frontend/public/elm.js
