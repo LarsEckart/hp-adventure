@@ -37,6 +37,10 @@ public final class App {
     private static final Logger logger = LoggerFactory.getLogger(App.class);
 
     public static void main(String[] args) {
+        logger.info("=".repeat(60));
+        logger.info("HP Adventure Server starting...");
+        logger.info("=".repeat(60));
+        
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "7070"));
 
         ObjectMapper mapper = new ObjectMapper()
@@ -80,11 +84,6 @@ public final class App {
             openAiApiKey, openAiModel, openAiBaseUrl, openAiFormat, openAiCompression, openAiQuality, openAiSize,
             openRouterApiKey, openRouterImageModel, openRouterBaseUrl
         );
-
-        logger.info("API keys configured: ANTHROPIC={} IMAGE_PROVIDER={} ELEVENLABS={}",
-            anthropicApiKey != null && !anthropicApiKey.isBlank(),
-            imageClient.isEnabled() ? imageClient.getClass().getSimpleName() : "none",
-            elevenLabsApiKey != null && !elevenLabsApiKey.isBlank());
 
         AnthropicClient anthropicClient = new AnthropicClient(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
         ElevenLabsClient elevenLabsClient = new ElevenLabsClient(
@@ -139,11 +138,34 @@ public final class App {
             config.spaRoot.addFile("/", "/public/index.html");
         });
 
+        // Global exception handler for any uncaught exceptions
+        app.exception(Exception.class, (e, ctx) -> {
+            logger.error("Unhandled exception on {} {}: {}", ctx.method(), ctx.path(), e.getMessage(), e);
+            if (!ctx.res().isCommitted()) {
+                ctx.status(500).json(new com.example.hpadventure.api.Dtos.ErrorResponse(
+                    new com.example.hpadventure.api.Dtos.ErrorResponse.Error(
+                        "INTERNAL_ERROR", 
+                        "Unexpected server error", 
+                        null
+                    )
+                ));
+            }
+        });
+
         HealthRoutes.register(app);
         StoryRoutes.register(app, storyService, rateLimiter);
         TtsRoutes.register(app, ttsService);
 
         app.start(port);
+        
+        logger.info("=".repeat(60));
+        logger.info("HP Adventure Server started successfully");
+        logger.info("Listening on port {}", port);
+        logger.info("Rate limit: {} requests/minute {}", rateLimitPerMinute, rateLimitPerMinute > 0 ? "(enabled)" : "(disabled)");
+        logger.info("Anthropic model: {}", anthropicModel);
+        logger.info("Image provider: {}", imageClient.isEnabled() ? imageClient.getClass().getSimpleName() : "disabled");
+        logger.info("TTS: {}", (elevenLabsApiKey != null && !elevenLabsApiKey.isBlank()) ? "enabled" : "disabled");
+        logger.info("=".repeat(60));
     }
 
     /**

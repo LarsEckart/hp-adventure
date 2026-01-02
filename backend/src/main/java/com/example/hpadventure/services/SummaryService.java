@@ -2,8 +2,6 @@ package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.clients.AnthropicClient;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -15,7 +13,6 @@ public final class SummaryService {
         + "- Wie es endete\n\n"
         + "Schreibe auf Deutsch, in der dritten Person, vergangene Zeit.\n"
         + "Halte es kurz und prägnant (max 50 Wörter).";
-    private static final Logger logger = LoggerFactory.getLogger(SummaryService.class);
 
     private final AnthropicClient anthropicClient;
 
@@ -38,7 +35,6 @@ public final class SummaryService {
         }
 
         String prompt = "Fasse dieses Abenteuer zusammen:\n\n" + storyContent;
-        logger.info("Summary prompt:\n{}", prompt);
         String response = anthropicClient.createMessage(SUMMARY_PROMPT, List.of(new AnthropicClient.Message("user", prompt)), 200);
         return response == null ? null : response.trim();
     }

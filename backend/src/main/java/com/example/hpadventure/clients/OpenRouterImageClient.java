@@ -9,6 +9,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -34,6 +36,7 @@ import java.util.Objects;
  * }
  */
 public final class OpenRouterImageClient implements ImageClient {
+    private static final Logger logger = LoggerFactory.getLogger(OpenRouterImageClient.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final OkHttpClient httpClient;
@@ -75,10 +78,14 @@ public final class OpenRouterImageClient implements ImageClient {
             List.of(new Message("user", prompt))
         );
 
+        String url = baseUrl + "/v1/chat/completions";
+        logger.info("OpenRouter image request: POST {} model={}", url, model);
+        long startTime = System.nanoTime();
+
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
             Request request = new Request.Builder()
-                .url(baseUrl + "/v1/chat/completions")
+                .url(url)
                 .addHeader("Authorization", "Bearer " + apiKey)
                 .addHeader("HTTP-Referer", "https://hp-adventure.example.com")
                 .addHeader("X-Title", "HP Adventure")
@@ -86,8 +93,12 @@ public final class OpenRouterImageClient implements ImageClient {
                 .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
+                long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+                logger.info("OpenRouter image response: status={} durationMs={}", response.code(), durationMs);
+                
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "";
+                    logger.warn("OpenRouter image error: status={} body={}", response.code(), errorBody);
                     throw new UpstreamException("OPENROUTER_IMAGE_ERROR", response.code(), errorBody);
                 }
 
@@ -104,6 +115,8 @@ public final class OpenRouterImageClient implements ImageClient {
                 return new ImageResult(imageData.mimeType(), imageData.base64());
             }
         } catch (IOException e) {
+            long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+            logger.error("OpenRouter image request failed: durationMs={} error={}", durationMs, e.getMessage());
             throw new UpstreamException("OPENROUTER_IMAGE_ERROR", 502, e.getMessage(), e);
         }
     }

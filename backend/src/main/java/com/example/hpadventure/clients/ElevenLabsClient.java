@@ -8,6 +8,8 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,6 +17,7 @@ import java.io.OutputStream;
 import java.util.Objects;
 
 public final class ElevenLabsClient {
+    private static final Logger logger = LoggerFactory.getLogger(ElevenLabsClient.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final OkHttpClient httpClient;
@@ -59,19 +62,26 @@ public final class ElevenLabsClient {
         Objects.requireNonNull(outputStream, "outputStream");
 
         TextToSpeechRequest requestBody = new TextToSpeechRequest(text, modelId);
+        HttpUrl url = buildUrl();
+        logger.info("ElevenLabs TTS request: POST {} model={} textLength={}", url, modelId, text.length());
+        long startTime = System.nanoTime();
 
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
             Request request = new Request.Builder()
-                .url(buildUrl())
+                .url(url)
                 .addHeader("xi-api-key", apiKey)
                 .addHeader("Accept", "audio/mpeg")
                 .post(RequestBody.create(payload, JSON))
                 .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
+                long firstByteMs = (System.nanoTime() - startTime) / 1_000_000;
+                logger.info("ElevenLabs TTS response: status={} timeToFirstByteMs={}", response.code(), firstByteMs);
+                
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "";
+                    logger.warn("ElevenLabs TTS error: status={} body={}", response.code(), errorBody);
                     throw new UpstreamException("ELEVENLABS_ERROR", response.code(), errorBody);
                 }
 
@@ -79,16 +89,23 @@ public final class ElevenLabsClient {
                     throw new UpstreamException("ELEVENLABS_ERROR", response.code(), "Empty response body");
                 }
 
+                long bytesWritten = 0;
                 try (InputStream input = response.body().byteStream()) {
                     byte[] buffer = new byte[8192];
                     int read;
                     while ((read = input.read(buffer)) != -1) {
                         outputStream.write(buffer, 0, read);
                         outputStream.flush();
+                        bytesWritten += read;
                     }
                 }
+                
+                long totalMs = (System.nanoTime() - startTime) / 1_000_000;
+                logger.info("ElevenLabs TTS completed: bytesStreamed={} totalDurationMs={}", bytesWritten, totalMs);
             }
         } catch (IOException e) {
+            long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+            logger.error("ElevenLabs TTS request failed: durationMs={} error={}", durationMs, e.getMessage());
             throw new UpstreamException("ELEVENLABS_ERROR", 502, e.getMessage(), e);
         }
     }

@@ -9,6 +9,8 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 import okio.BufferedSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 public final class AnthropicClient {
+    private static final Logger logger = LoggerFactory.getLogger(AnthropicClient.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String VERSION_HEADER = "2023-06-01";
     private final OkHttpClient httpClient;
@@ -39,18 +42,27 @@ public final class AnthropicClient {
 
         CreateMessageRequest requestBody = new CreateMessageRequest(model, maxTokens, systemFrom(systemPrompt), messages);
 
+        String url = baseUrl + "/v1/messages";
+        logger.info("Anthropic request: POST {} model={} maxTokens={} messagesCount={}", 
+            url, model, maxTokens, messages.size());
+        long startTime = System.nanoTime();
+
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
             Request request = new Request.Builder()
-                .url(baseUrl + "/v1/messages")
+                .url(url)
                 .addHeader("x-api-key", apiKey)
                 .addHeader("anthropic-version", VERSION_HEADER)
                 .post(RequestBody.create(payload, JSON))
                 .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
+                long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+                logger.info("Anthropic response: status={} durationMs={}", response.code(), durationMs);
+                
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "";
+                    logger.warn("Anthropic error: status={} body={}", response.code(), errorBody);
                     throw new UpstreamException("ANTHROPIC_ERROR", response.code(), errorBody);
                 }
 
@@ -62,6 +74,8 @@ public final class AnthropicClient {
                 return responseBody.text();
             }
         } catch (IOException e) {
+            long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+            logger.error("Anthropic request failed: durationMs={} error={}", durationMs, e.getMessage());
             throw new UpstreamException("ANTHROPIC_ERROR", 502, e.getMessage(), e);
         }
     }
@@ -80,10 +94,15 @@ public final class AnthropicClient {
             true
         );
 
+        String url = baseUrl + "/v1/messages";
+        logger.info("Anthropic stream request: POST {} model={} maxTokens={} messagesCount={}",
+            url, model, maxTokens, messages.size());
+        long startTime = System.nanoTime();
+
         try {
             byte[] payload = mapper.writeValueAsBytes(requestBody);
             Request request = new Request.Builder()
-                .url(baseUrl + "/v1/messages")
+                .url(url)
                 .addHeader("x-api-key", apiKey)
                 .addHeader("anthropic-version", VERSION_HEADER)
                 .addHeader("accept", "text/event-stream")
@@ -91,8 +110,12 @@ public final class AnthropicClient {
                 .build();
 
             try (Response response = httpClient.newCall(request).execute()) {
+                long firstByteMs = (System.nanoTime() - startTime) / 1_000_000;
+                logger.info("Anthropic stream response: status={} timeToFirstByteMs={}", response.code(), firstByteMs);
+                
                 if (!response.isSuccessful()) {
                     String errorBody = response.body() != null ? response.body().string() : "";
+                    logger.warn("Anthropic stream error: status={} body={}", response.code(), errorBody);
                     throw new UpstreamException("ANTHROPIC_ERROR", response.code(), errorBody);
                 }
 
@@ -126,8 +149,13 @@ public final class AnthropicClient {
                         onDelta.accept(text);
                     }
                 }
+                
+                long totalMs = (System.nanoTime() - startTime) / 1_000_000;
+                logger.info("Anthropic stream completed: totalDurationMs={}", totalMs);
             }
         } catch (IOException e) {
+            long durationMs = (System.nanoTime() - startTime) / 1_000_000;
+            logger.error("Anthropic stream request failed: durationMs={} error={}", durationMs, e.getMessage());
             throw new UpstreamException("ANTHROPIC_ERROR", 502, e.getMessage(), e);
         }
     }
