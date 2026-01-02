@@ -10,6 +10,7 @@ import com.example.hpadventure.providers.ElevenLabsSpeechProvider;
 import com.example.hpadventure.providers.ImageProvider;
 import com.example.hpadventure.providers.OpenAiImageProvider;
 import com.example.hpadventure.providers.OpenRouterImageProvider;
+import com.example.hpadventure.providers.OpenRouterTextProvider;
 import com.example.hpadventure.providers.SpeechProvider;
 import com.example.hpadventure.providers.TextProvider;
 import com.example.hpadventure.parsing.CompletionParser;
@@ -69,9 +70,10 @@ public final class App {
         String openAiSize = System.getenv().getOrDefault("OPENAI_IMAGE_SIZE", "1024x1024");
         Integer openAiCompression = parseIntOrNull(System.getenv().getOrDefault("OPENAI_IMAGE_COMPRESSION", "70"));
 
-        // OpenRouter image config (alternative to OpenAI)
+        // OpenRouter config (text + image)
         String openRouterApiKey = System.getenv("OPENROUTER_API_KEY");
         String openRouterBaseUrl = System.getenv().getOrDefault("OPENROUTER_BASE_URL", "https://openrouter.ai/api");
+        String openRouterTextModel = System.getenv().getOrDefault("OPENROUTER_TEXT_MODEL", "xiaomi/mimo-v2-flash:free");
         String openRouterImageModel = System.getenv().getOrDefault("OPENROUTER_IMAGE_MODEL", "google/gemini-2.5-flash-image");
 
         String elevenLabsApiKey = System.getenv("ELEVENLABS_API_KEY");
@@ -81,14 +83,19 @@ public final class App {
         String elevenLabsOutputFormat = System.getenv("ELEVENLABS_OUTPUT_FORMAT");
         Integer elevenLabsOptimizeLatency = parseIntOrNull(System.getenv("ELEVENLABS_OPTIMIZE_STREAMING_LATENCY"));
 
-        // Select image provider: prefer OpenAI, fall back to OpenRouter
+        // Select image provider: prefer OpenRouter, fall back to OpenAI
         ImageProvider imageProvider = createImageProvider(
             httpClient, mapper,
-            openAiApiKey, openAiModel, openAiBaseUrl, openAiFormat, openAiCompression, openAiQuality, openAiSize,
-            openRouterApiKey, openRouterImageModel, openRouterBaseUrl
+            openRouterApiKey, openRouterImageModel, openRouterBaseUrl,
+            openAiApiKey, openAiModel, openAiBaseUrl, openAiFormat, openAiCompression, openAiQuality, openAiSize
         );
 
-        TextProvider textProvider = new AnthropicTextProvider(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
+        // Select text provider: prefer OpenRouter, fall back to Anthropic
+        TextProvider textProvider = createTextProvider(
+            httpClient, mapper,
+            openRouterApiKey, openRouterTextModel, openRouterBaseUrl,
+            anthropicApiKey, anthropicModel, anthropicBaseUrl
+        );
         SpeechProvider speechProvider = new ElevenLabsSpeechProvider(
             httpClient,
             mapper,
@@ -187,23 +194,35 @@ public final class App {
 
     /**
      * Create image provider based on available API keys.
-     * Priority: OPENAI_API_KEY > OPENROUTER_API_KEY
+     * Priority: OPENROUTER_API_KEY > OPENAI_API_KEY
      */
     private static ImageProvider createImageProvider(
         OkHttpClient httpClient,
         ObjectMapper mapper,
+        String openRouterApiKey,
+        String openRouterModel,
+        String openRouterBaseUrl,
         String openAiApiKey,
         String openAiModel,
         String openAiBaseUrl,
         String openAiFormat,
         Integer openAiCompression,
         String openAiQuality,
-        String openAiSize,
-        String openRouterApiKey,
-        String openRouterModel,
-        String openRouterBaseUrl
+        String openAiSize
     ) {
-        // Prefer OpenAI if configured
+        // Prefer OpenRouter if configured
+        if (openRouterApiKey != null && !openRouterApiKey.isBlank()) {
+            logger.info("Using OpenRouter for image generation (model={})", openRouterModel);
+            return new OpenRouterImageProvider(
+                httpClient,
+                mapper,
+                openRouterApiKey,
+                openRouterModel,
+                openRouterBaseUrl
+            );
+        }
+        
+        // Fall back to OpenAI
         if (openAiApiKey != null && !openAiApiKey.isBlank()) {
             logger.info("Using OpenAI for image generation (model={})", openAiModel);
             return new OpenAiImageProvider(
@@ -219,10 +238,35 @@ public final class App {
             );
         }
         
-        // Fall back to OpenRouter
+        // Return disabled OpenRouter provider as placeholder
+        logger.warn("No image API key configured (OPENROUTER_API_KEY or OPENAI_API_KEY)");
+        return new OpenRouterImageProvider(
+            httpClient,
+            mapper,
+            null,
+            openRouterModel,
+            openRouterBaseUrl
+        );
+    }
+
+    /**
+     * Create text provider based on available API keys.
+     * Priority: OPENROUTER_API_KEY > ANTHROPIC_API_KEY
+     */
+    private static TextProvider createTextProvider(
+        OkHttpClient httpClient,
+        ObjectMapper mapper,
+        String openRouterApiKey,
+        String openRouterModel,
+        String openRouterBaseUrl,
+        String anthropicApiKey,
+        String anthropicModel,
+        String anthropicBaseUrl
+    ) {
+        // Prefer OpenRouter if configured
         if (openRouterApiKey != null && !openRouterApiKey.isBlank()) {
-            logger.info("Using OpenRouter for image generation (model={})", openRouterModel);
-            return new OpenRouterImageProvider(
+            logger.info("Using OpenRouter for text generation (model={})", openRouterModel);
+            return new OpenRouterTextProvider(
                 httpClient,
                 mapper,
                 openRouterApiKey,
@@ -231,18 +275,26 @@ public final class App {
             );
         }
         
-        // Return disabled OpenAI provider as placeholder
-        logger.warn("No image API key configured (OPENAI_API_KEY or OPENROUTER_API_KEY)");
-        return new OpenAiImageProvider(
+        // Fall back to Anthropic
+        if (anthropicApiKey != null && !anthropicApiKey.isBlank()) {
+            logger.info("Using Anthropic for text generation (model={})", anthropicModel);
+            return new AnthropicTextProvider(
+                httpClient,
+                mapper,
+                anthropicApiKey,
+                anthropicModel,
+                anthropicBaseUrl
+            );
+        }
+        
+        // Return disabled Anthropic provider as placeholder (will fail on use)
+        logger.warn("No text API key configured (OPENROUTER_API_KEY or ANTHROPIC_API_KEY)");
+        return new AnthropicTextProvider(
             httpClient,
             mapper,
             null,
-            openAiModel,
-            openAiBaseUrl,
-            openAiFormat,
-            openAiCompression,
-            openAiQuality,
-            openAiSize
+            anthropicModel,
+            anthropicBaseUrl
         );
     }
 

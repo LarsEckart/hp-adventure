@@ -49,6 +49,7 @@ Developer notes:
 - Backend tests: `cd backend && ./gradlew test`.
 - `StoryServiceTest` stubs Anthropic/OpenAI via OkHttp MockWebServer for end-to-end service coverage.
 - `StoryRoutesTest` uses Javalin testtools to cover API validation, rate limiting, and upstream error mapping.
+- `AnthropicTextProviderSmokeTest` hits the real https://api.anthropic.com endpoint; set `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`) to run and expect real API usage/costs.
 - E2E smoke tests (Playwright): `npm run test:e2e` (first time: `npx playwright install` to fetch browsers; serves `backend/src/main/resources/public` via `python3 -m http.server`).
 - Playwright uses `playwright.config.js` (base URL `http://localhost:4173`, serves `backend/src/main/resources/public`); E2E selectors target `data-testid` attributes in `frontend/src/View.elm`.
 - If you touch Elm views, rerun `./frontend/build.sh` so the compiled `elm.js` in `frontend/public` and `backend/src/main/resources/public` stays in sync.
