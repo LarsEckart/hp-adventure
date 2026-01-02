@@ -25,11 +25,15 @@ import io.javalin.Javalin;
 import io.javalin.http.staticfiles.Location;
 import io.javalin.json.JavalinJackson;
 import okhttp3.OkHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
 import java.time.Duration;
 
 public final class App {
+    private static final Logger logger = LoggerFactory.getLogger(App.class);
+
     public static void main(String[] args) {
         int port = Integer.parseInt(System.getenv().getOrDefault("PORT", "7070"));
 
@@ -61,6 +65,11 @@ public final class App {
         String elevenLabsBaseUrl = System.getenv().getOrDefault("ELEVENLABS_BASE_URL", "https://api.elevenlabs.io");
         String elevenLabsOutputFormat = System.getenv("ELEVENLABS_OUTPUT_FORMAT");
         Integer elevenLabsOptimizeLatency = parseIntOrNull(System.getenv("ELEVENLABS_OPTIMIZE_STREAMING_LATENCY"));
+
+        logger.info("API keys configured: ANTHROPIC={} OPENAI={} ELEVENLABS={}",
+            anthropicApiKey != null && !anthropicApiKey.isBlank(),
+            openAiApiKey != null && !openAiApiKey.isBlank(),
+            elevenLabsApiKey != null && !elevenLabsApiKey.isBlank());
 
         AnthropicClient anthropicClient = new AnthropicClient(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
         OpenAiImageClient openAiImageClient = new OpenAiImageClient(
