@@ -5,11 +5,13 @@ import com.example.hpadventure.api.HealthRoutes;
 import com.example.hpadventure.api.StoryRoutes;
 import com.example.hpadventure.api.TtsRoutes;
 import com.example.hpadventure.config.RateLimiter;
-import com.example.hpadventure.clients.AnthropicClient;
-import com.example.hpadventure.clients.ElevenLabsClient;
-import com.example.hpadventure.clients.ImageClient;
-import com.example.hpadventure.clients.OpenAiImageClient;
-import com.example.hpadventure.clients.OpenRouterImageClient;
+import com.example.hpadventure.providers.AnthropicTextProvider;
+import com.example.hpadventure.providers.ElevenLabsSpeechProvider;
+import com.example.hpadventure.providers.ImageProvider;
+import com.example.hpadventure.providers.OpenAiImageProvider;
+import com.example.hpadventure.providers.OpenRouterImageProvider;
+import com.example.hpadventure.providers.SpeechProvider;
+import com.example.hpadventure.providers.TextProvider;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
@@ -79,15 +81,15 @@ public final class App {
         String elevenLabsOutputFormat = System.getenv("ELEVENLABS_OUTPUT_FORMAT");
         Integer elevenLabsOptimizeLatency = parseIntOrNull(System.getenv("ELEVENLABS_OPTIMIZE_STREAMING_LATENCY"));
 
-        // Select image client: prefer OpenAI, fall back to OpenRouter
-        ImageClient imageClient = createImageClient(
+        // Select image provider: prefer OpenAI, fall back to OpenRouter
+        ImageProvider imageProvider = createImageProvider(
             httpClient, mapper,
             openAiApiKey, openAiModel, openAiBaseUrl, openAiFormat, openAiCompression, openAiQuality, openAiSize,
             openRouterApiKey, openRouterImageModel, openRouterBaseUrl
         );
 
-        AnthropicClient anthropicClient = new AnthropicClient(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
-        ElevenLabsClient elevenLabsClient = new ElevenLabsClient(
+        TextProvider textProvider = new AnthropicTextProvider(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
+        SpeechProvider speechProvider = new ElevenLabsSpeechProvider(
             httpClient,
             mapper,
             elevenLabsApiKey,
@@ -110,11 +112,11 @@ public final class App {
         OptionsParser optionsParser = new OptionsParser();
         SceneParser sceneParser = new SceneParser();
         MarkerCleaner markerCleaner = new MarkerCleaner();
-        TitleService titleService = new TitleService(anthropicClient);
-        SummaryService summaryService = new SummaryService(anthropicClient);
+        TitleService titleService = new TitleService(textProvider);
+        SummaryService summaryService = new SummaryService(textProvider);
         ImagePromptService imagePromptService = new ImagePromptService();
         StoryService storyService = new StoryService(
-            anthropicClient,
+            textProvider,
             promptBuilder,
             itemParser,
             completionParser,
@@ -124,10 +126,10 @@ public final class App {
             titleService,
             summaryService,
             imagePromptService,
-            imageClient,
+            imageProvider,
             Clock.systemUTC()
         );
-        TtsService ttsService = new TtsService(elevenLabsClient);
+        TtsService ttsService = new TtsService(speechProvider);
 
         // Authentication
         String appPasswords = System.getenv("APP_PASSWORDS");
@@ -177,17 +179,17 @@ public final class App {
         logger.info("Listening on port {}", port);
         logger.info("Rate limit: {} requests/minute {}", rateLimitPerMinute, rateLimitPerMinute > 0 ? "(enabled)" : "(disabled)");
         logger.info("Authentication: {}", authRoutes.isEnabled() ? "enabled" : "disabled");
-        logger.info("Anthropic model: {}", anthropicModel);
-        logger.info("Image provider: {}", imageClient.isEnabled() ? imageClient.getClass().getSimpleName() : "disabled");
-        logger.info("TTS: {}", (elevenLabsApiKey != null && !elevenLabsApiKey.isBlank()) ? "enabled" : "disabled");
+        logger.info("Text provider: {}", textProvider.getClass().getSimpleName());
+        logger.info("Image provider: {}", imageProvider.isEnabled() ? imageProvider.getClass().getSimpleName() : "disabled");
+        logger.info("Speech provider: {}", (elevenLabsApiKey != null && !elevenLabsApiKey.isBlank()) ? speechProvider.getClass().getSimpleName() : "disabled");
         logger.info("=".repeat(60));
     }
 
     /**
-     * Create image client based on available API keys.
+     * Create image provider based on available API keys.
      * Priority: OPENAI_API_KEY > OPENROUTER_API_KEY
      */
-    private static ImageClient createImageClient(
+    private static ImageProvider createImageProvider(
         OkHttpClient httpClient,
         ObjectMapper mapper,
         String openAiApiKey,
@@ -204,7 +206,7 @@ public final class App {
         // Prefer OpenAI if configured
         if (openAiApiKey != null && !openAiApiKey.isBlank()) {
             logger.info("Using OpenAI for image generation (model={})", openAiModel);
-            return new OpenAiImageClient(
+            return new OpenAiImageProvider(
                 httpClient,
                 mapper,
                 openAiApiKey,
@@ -220,7 +222,7 @@ public final class App {
         // Fall back to OpenRouter
         if (openRouterApiKey != null && !openRouterApiKey.isBlank()) {
             logger.info("Using OpenRouter for image generation (model={})", openRouterModel);
-            return new OpenRouterImageClient(
+            return new OpenRouterImageProvider(
                 httpClient,
                 mapper,
                 openRouterApiKey,
@@ -229,9 +231,9 @@ public final class App {
             );
         }
         
-        // Return disabled OpenAI client as placeholder
+        // Return disabled OpenAI provider as placeholder
         logger.warn("No image API key configured (OPENAI_API_KEY or OPENROUTER_API_KEY)");
-        return new OpenAiImageClient(
+        return new OpenAiImageProvider(
             httpClient,
             mapper,
             null,

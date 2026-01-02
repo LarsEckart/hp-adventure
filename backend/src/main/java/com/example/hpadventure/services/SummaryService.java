@@ -1,7 +1,7 @@
 package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
-import com.example.hpadventure.clients.AnthropicClient;
+import com.example.hpadventure.providers.TextProvider;
 
 import java.util.List;
 
@@ -14,10 +14,10 @@ public final class SummaryService {
         + "Schreibe auf Deutsch, in der dritten Person, vergangene Zeit.\n"
         + "Halte es kurz und prägnant (max 50 Wörter).";
 
-    private final AnthropicClient anthropicClient;
+    private final TextProvider textProvider;
 
-    public SummaryService(AnthropicClient anthropicClient) {
-        this.anthropicClient = anthropicClient;
+    public SummaryService(TextProvider textProvider) {
+        this.textProvider = textProvider;
     }
 
     public String generateSummary(List<Dtos.ChatMessage> conversationHistory) {
@@ -35,7 +35,7 @@ public final class SummaryService {
         }
 
         String prompt = "Fasse dieses Abenteuer zusammen:\n\n" + storyContent;
-        String response = anthropicClient.createMessage(SUMMARY_PROMPT, List.of(new AnthropicClient.Message("user", prompt)), 200);
+        String response = textProvider.createMessage(SUMMARY_PROMPT, List.of(new TextProvider.Message("user", prompt)), 200);
         return response == null ? null : response.trim();
     }
 }

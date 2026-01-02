@@ -1,6 +1,6 @@
 package com.example.hpadventure.services;
 
-import com.example.hpadventure.clients.AnthropicClient;
+import com.example.hpadventure.providers.TextProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,10 +45,10 @@ public final class TitleService {
         "ohne"
     );
 
-    private final AnthropicClient anthropicClient;
+    private final TextProvider textProvider;
 
-    public TitleService(AnthropicClient anthropicClient) {
-        this.anthropicClient = anthropicClient;
+    public TitleService(TextProvider textProvider) {
+        this.textProvider = textProvider;
     }
 
     public String generateTitle(List<String> assistantMessages) {
@@ -58,7 +58,7 @@ public final class TitleService {
 
         String joined = String.join("\n", assistantMessages);
         String prompt = TITLE_PROMPT + joined;
-        String response = anthropicClient.createMessage(null, List.of(new AnthropicClient.Message("user", prompt)), 50);
+        String response = textProvider.createMessage(null, List.of(new TextProvider.Message("user", prompt)), 50);
         return sanitizeTitle(response);
     }
 

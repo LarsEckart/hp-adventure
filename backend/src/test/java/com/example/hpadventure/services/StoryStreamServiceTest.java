@@ -1,8 +1,8 @@
 package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
-import com.example.hpadventure.clients.AnthropicClient;
-import com.example.hpadventure.clients.OpenAiImageClient;
+import com.example.hpadventure.providers.AnthropicTextProvider;
+import com.example.hpadventure.providers.OpenAiImageProvider;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
@@ -92,14 +92,14 @@ final class StoryStreamServiceTest {
 
     private StoryService buildService(MockWebServer anthropic, MockWebServer openAi, Clock clock) {
         OkHttpClient httpClient = new OkHttpClient.Builder().build();
-        AnthropicClient anthropicClient = new AnthropicClient(
+        AnthropicTextProvider textProvider = new AnthropicTextProvider(
             httpClient,
             MAPPER,
             "test-key",
             "test-model",
             baseUrl(anthropic)
         );
-        OpenAiImageClient openAiClient = new OpenAiImageClient(
+        OpenAiImageProvider imageProvider = new OpenAiImageProvider(
             httpClient,
             MAPPER,
             "test-key",
@@ -112,17 +112,17 @@ final class StoryStreamServiceTest {
         );
 
         return new StoryService(
-            anthropicClient,
+            textProvider,
             new PromptBuilder(),
             new ItemParser(clock),
             new CompletionParser(),
             new OptionsParser(),
             new SceneParser(),
             new MarkerCleaner(),
-            new TitleService(anthropicClient),
-            new SummaryService(anthropicClient),
+            new TitleService(textProvider),
+            new SummaryService(textProvider),
             new ImagePromptService(),
-            openAiClient,
+            imageProvider,
             clock
         );
     }

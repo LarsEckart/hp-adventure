@@ -1,4 +1,4 @@
-package com.example.hpadventure.clients;
+package com.example.hpadventure.providers;
 
 import com.example.hpadventure.services.UpstreamException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public final class OpenAiImageClient implements ImageClient {
-    private static final Logger logger = LoggerFactory.getLogger(OpenAiImageClient.class);
+public final class OpenAiImageProvider implements ImageProvider {
+    private static final Logger logger = LoggerFactory.getLogger(OpenAiImageProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final OkHttpClient httpClient;
@@ -30,7 +30,7 @@ public final class OpenAiImageClient implements ImageClient {
     private final String quality;
     private final String size;
 
-    public OpenAiImageClient(
+    public OpenAiImageProvider(
         OkHttpClient httpClient,
         ObjectMapper mapper,
         String apiKey,
@@ -52,10 +52,12 @@ public final class OpenAiImageClient implements ImageClient {
         this.size = size;
     }
 
+    @Override
     public boolean isEnabled() {
         return apiKey != null && !apiKey.isBlank();
     }
 
+    @Override
     public ImageResult generateImage(String prompt) {
         if (!isEnabled()) {
             throw new UpstreamException("MISSING_OPENAI_API_KEY", 500, "OPENAI_API_KEY is not set");
@@ -133,9 +135,7 @@ public final class OpenAiImageClient implements ImageClient {
         return "image/" + normalized;
     }
 
-    // Note: ImageResult is now defined in the ImageClient interface
-
-    public record CreateImageRequest(
+    private record CreateImageRequest(
         String model,
         String prompt,
         String size,
@@ -147,7 +147,7 @@ public final class OpenAiImageClient implements ImageClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ImageResponse(List<ImageData> data) {
+    private record ImageResponse(List<ImageData> data) {
         public String firstImage() {
             if (data == null || data.isEmpty()) {
                 return null;
@@ -158,6 +158,6 @@ public final class OpenAiImageClient implements ImageClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ImageData(String b64_json) {
+    private record ImageData(String b64_json) {
     }
 }

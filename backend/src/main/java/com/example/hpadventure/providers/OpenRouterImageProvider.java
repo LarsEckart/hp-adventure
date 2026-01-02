@@ -1,8 +1,7 @@
-package com.example.hpadventure.clients;
+package com.example.hpadventure.providers;
 
 import com.example.hpadventure.services.UpstreamException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -17,7 +16,7 @@ import java.util.List;
 import java.util.Objects;
 
 /**
- * Image generation client using OpenRouter's chat completions API.
+ * Image generation provider using OpenRouter's chat completions API.
  * Works with models like google/gemini-2.5-flash-image that output images
  * via the standard chat completions endpoint.
  * 
@@ -35,8 +34,8 @@ import java.util.Objects;
  *   }]
  * }
  */
-public final class OpenRouterImageClient implements ImageClient {
-    private static final Logger logger = LoggerFactory.getLogger(OpenRouterImageClient.class);
+public final class OpenRouterImageProvider implements ImageProvider {
+    private static final Logger logger = LoggerFactory.getLogger(OpenRouterImageProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final OkHttpClient httpClient;
@@ -45,7 +44,7 @@ public final class OpenRouterImageClient implements ImageClient {
     private final String model;
     private final String baseUrl;
 
-    public OpenRouterImageClient(
+    public OpenRouterImageProvider(
         OkHttpClient httpClient,
         ObjectMapper mapper,
         String apiKey,
@@ -122,13 +121,13 @@ public final class OpenRouterImageClient implements ImageClient {
     }
 
     // Request DTOs
-    public record ChatCompletionRequest(
+    private record ChatCompletionRequest(
         String model,
         List<Message> messages
     ) {
     }
 
-    public record Message(
+    private record Message(
         String role,
         String content
     ) {
@@ -136,7 +135,7 @@ public final class OpenRouterImageClient implements ImageClient {
 
     // Response DTOs
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ChatCompletionResponse(List<Choice> choices) {
+    private record ChatCompletionResponse(List<Choice> choices) {
         public ParsedImage extractImage() {
             if (choices == null || choices.isEmpty()) {
                 return null;
@@ -150,11 +149,11 @@ public final class OpenRouterImageClient implements ImageClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record Choice(ResponseMessage message) {
+    private record Choice(ResponseMessage message) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ResponseMessage(
+    private record ResponseMessage(
         String content,
         List<ImageEntry> images
     ) {
@@ -195,7 +194,7 @@ public final class OpenRouterImageClient implements ImageClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ImageEntry(
+    private record ImageEntry(
         String type,
         ImageUrl image_url,
         Integer index
@@ -203,9 +202,9 @@ public final class OpenRouterImageClient implements ImageClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ImageUrl(String url) {
+    private record ImageUrl(String url) {
     }
 
-    public record ParsedImage(String mimeType, String base64) {
+    private record ParsedImage(String mimeType, String base64) {
     }
 }

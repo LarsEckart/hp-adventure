@@ -1,8 +1,8 @@
 package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
-import com.example.hpadventure.clients.AnthropicClient;
-import com.example.hpadventure.clients.ImageClient;
+import com.example.hpadventure.providers.ImageProvider;
+import com.example.hpadventure.providers.TextProvider;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkdownSanitizer;
@@ -22,7 +22,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     private static final int STORY_MAX_TOKENS = 500;
     private static final int STORY_ARC_TOTAL_STEPS = 15;
 
-    private final AnthropicClient anthropicClient;
+    private final TextProvider textProvider;
     private final PromptBuilder promptBuilder;
     private final ItemParser itemParser;
     private final CompletionParser completionParser;
@@ -32,11 +32,11 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     private final TitleService titleService;
     private final SummaryService summaryService;
     private final ImagePromptService imagePromptService;
-    private final ImageClient imageClient;
+    private final ImageProvider imageProvider;
     private final Clock clock;
 
     public StoryService(
-        AnthropicClient anthropicClient,
+        TextProvider textProvider,
         PromptBuilder promptBuilder,
         ItemParser itemParser,
         CompletionParser completionParser,
@@ -46,10 +46,10 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         TitleService titleService,
         SummaryService summaryService,
         ImagePromptService imagePromptService,
-        ImageClient imageClient,
+        ImageProvider imageProvider,
         Clock clock
     ) {
-        this.anthropicClient = anthropicClient;
+        this.textProvider = textProvider;
         this.promptBuilder = promptBuilder;
         this.itemParser = itemParser;
         this.completionParser = completionParser;
@@ -59,13 +59,13 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         this.titleService = titleService;
         this.summaryService = summaryService;
         this.imagePromptService = imagePromptService;
-        this.imageClient = imageClient;
+        this.imageProvider = imageProvider;
         this.clock = clock;
     }
 
     public Dtos.Assistant nextTurn(Dtos.StoryRequest request) {
         StoryContext context = buildStoryContext(request);
-        String rawStory = anthropicClient.createMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS);
+        String rawStory = textProvider.createMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS);
         StreamResult draft = buildAssistantDraft(request, context.history(), rawStory);
         Dtos.Image image = generateImage(draft.imagePrompt());
         return attachImage(draft.assistant(), image);
@@ -77,7 +77,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         StringBuilder rawStory = new StringBuilder();
         StreamMarkerFilter markerFilter = new StreamMarkerFilter();
         MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
-        anthropicClient.streamMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS, delta -> {
+        textProvider.streamMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS, delta -> {
             if (delta == null || delta.isEmpty()) {
                 return;
             }
@@ -93,10 +93,10 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
 
     @Override
     public Dtos.Image generateImage(String imagePrompt) {
-        if (!imageClient.isEnabled()) {
+        if (!imageProvider.isEnabled()) {
             return new Dtos.Image("text/plain", "disabled", null);
         }
-        ImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
+        ImageProvider.ImageResult imageResult = imageProvider.generateImage(imagePrompt);
         return new Dtos.Image(imageResult.mimeType(), imageResult.base64(), imagePrompt);
     }
 
@@ -105,16 +105,16 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             ? List.of()
             : request.conversationHistory();
 
-        List<AnthropicClient.Message> messages = new ArrayList<>();
+        List<TextProvider.Message> messages = new ArrayList<>();
         for (Dtos.ChatMessage message : history) {
             if (message == null || message.content() == null || message.content().isBlank()) {
                 continue;
             }
-            messages.add(new AnthropicClient.Message(message.role(), message.content()));
+            messages.add(new TextProvider.Message(message.role(), message.content()));
         }
 
         String action = request.action().trim();
-        messages.add(new AnthropicClient.Message("user", action));
+        messages.add(new TextProvider.Message("user", action));
         int arcStep = storyArcStep(history);
         String systemPrompt = promptBuilder.build(request.player(), arcStep);
 
@@ -197,7 +197,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
 
     private record StoryContext(
         List<Dtos.ChatMessage> history,
-        List<AnthropicClient.Message> messages,
+        List<TextProvider.Message> messages,
         String systemPrompt
     ) {
     }

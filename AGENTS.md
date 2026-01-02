@@ -16,7 +16,7 @@ Project notes:
 
 Developer notes:
 - Backend logs via slf4j-simple to stdout; `/api/story` + `/api/story/stream` emit `requestId` in logs and `X-Request-Id` response header for correlation.
-- Anthropic Messages API expects `system` as a list of content blocks; client wraps the system prompt in `{ type: "text", text: ... }`.
+- Anthropic Messages API expects `system` as a list of content blocks; `AnthropicTextProvider` wraps the system prompt in `{ type: "text", text: ... }`.
 - Story system prompts plus title/summary prompts are logged where they are built (`PromptBuilder`, `TitleService`, `SummaryService`) to keep logs lean.
 - Prompt now explicitly requires 2-3 `[OPTION: ...]` lines after "Was tust du?" to keep UI options populated.
 - Image prompts now instruct "no characters/portraits"; scenes only (locations, objects, enemies/creatures/animals).
@@ -24,7 +24,11 @@ Developer notes:
 - Story arc tracking: steps 1-5 intro, 6-13 main arc, 14-15 finale. Server derives step from completed assistant turns and injects it into the prompt.
 - UI includes a reset button that clears the `hpAdventure:v1` localStorage key and resets state to defaults.
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
-- Image generation supports two providers via the `ImageClient` interface: OpenAI (primary) and OpenRouter (fallback).
+- Provider abstractions live in `backend/src/main/java/com/example/hpadventure/providers`:
+  - `TextProvider` interface for text generation (implemented by `AnthropicTextProvider`)
+  - `ImageProvider` interface for image generation (implemented by `OpenAiImageProvider`, `OpenRouterImageProvider`)
+  - `SpeechProvider` interface for text-to-speech (implemented by `ElevenLabsSpeechProvider`)
+- Image generation supports two providers via the `ImageProvider` interface: OpenAI (primary) and OpenRouter (fallback).
   - **OpenAI**: Uses `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
   - **OpenRouter**: Uses `/v1/chat/completions` with image-generating models like `google/gemini-2.5-flash-image`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_IMAGE_MODEL`).
   - Priority: `OPENAI_API_KEY` > `OPENROUTER_API_KEY`. If neither is set, images are disabled.

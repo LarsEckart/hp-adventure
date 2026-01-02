@@ -1,13 +1,13 @@
-package com.example.hpadventure.clients;
+package com.example.hpadventure.providers;
 
 /**
- * Interface for image generation clients.
- * Implementations can use different providers (OpenAI, OpenRouter, etc.)
+ * Interface for image generation providers.
+ * Implementations can use different backends (OpenAI, OpenRouter, etc.)
  */
-public interface ImageClient {
+public interface ImageProvider {
     
     /**
-     * Check if this client is properly configured and ready to use.
+     * Check if this provider is properly configured and ready to use.
      */
     boolean isEnabled();
     

@@ -1,4 +1,4 @@
-package com.example.hpadventure.clients;
+package com.example.hpadventure.providers;
 
 import com.example.hpadventure.services.UpstreamException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -16,8 +16,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 
-public final class ElevenLabsClient {
-    private static final Logger logger = LoggerFactory.getLogger(ElevenLabsClient.class);
+public final class ElevenLabsSpeechProvider implements SpeechProvider {
+    private static final Logger logger = LoggerFactory.getLogger(ElevenLabsSpeechProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final OkHttpClient httpClient;
@@ -29,7 +29,7 @@ public final class ElevenLabsClient {
     private final String outputFormat;
     private final Integer optimizeStreamingLatency;
 
-    public ElevenLabsClient(
+    public ElevenLabsSpeechProvider(
         OkHttpClient httpClient,
         ObjectMapper mapper,
         String apiKey,
@@ -49,6 +49,7 @@ public final class ElevenLabsClient {
         this.optimizeStreamingLatency = optimizeStreamingLatency;
     }
 
+    @Override
     public void streamSpeech(String text, OutputStream outputStream) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new UpstreamException("MISSING_ELEVENLABS_API_KEY", 500, "ELEVENLABS_API_KEY is not set");
@@ -125,6 +126,6 @@ public final class ElevenLabsClient {
         return builder.build();
     }
 
-    public record TextToSpeechRequest(String text, String model_id) {
+    private record TextToSpeechRequest(String text, String model_id) {
     }
 }

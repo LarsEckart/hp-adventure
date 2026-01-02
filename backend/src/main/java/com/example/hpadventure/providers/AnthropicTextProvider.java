@@ -1,4 +1,4 @@
-package com.example.hpadventure.clients;
+package com.example.hpadventure.providers;
 
 import com.example.hpadventure.services.UpstreamException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,8 +17,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public final class AnthropicClient {
-    private static final Logger logger = LoggerFactory.getLogger(AnthropicClient.class);
+public final class AnthropicTextProvider implements TextProvider {
+    private static final Logger logger = LoggerFactory.getLogger(AnthropicTextProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String VERSION_HEADER = "2023-06-01";
     private final OkHttpClient httpClient;
@@ -27,7 +27,7 @@ public final class AnthropicClient {
     private final String model;
     private final String baseUrl;
 
-    public AnthropicClient(OkHttpClient httpClient, ObjectMapper mapper, String apiKey, String model, String baseUrl) {
+    public AnthropicTextProvider(OkHttpClient httpClient, ObjectMapper mapper, String apiKey, String model, String baseUrl) {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
         this.apiKey = apiKey;
@@ -35,12 +35,16 @@ public final class AnthropicClient {
         this.baseUrl = Objects.requireNonNull(baseUrl, "baseUrl");
     }
 
+    @Override
     public String createMessage(String systemPrompt, List<Message> messages, int maxTokens) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new UpstreamException("MISSING_ANTHROPIC_API_KEY", 500, "ANTHROPIC_API_KEY is not set");
         }
 
-        CreateMessageRequest requestBody = new CreateMessageRequest(model, maxTokens, systemFrom(systemPrompt), messages);
+        List<ApiMessage> apiMessages = messages.stream()
+            .map(m -> new ApiMessage(m.role(), m.content()))
+            .toList();
+        CreateMessageRequest requestBody = new CreateMessageRequest(model, maxTokens, systemFrom(systemPrompt), apiMessages);
 
         String url = baseUrl + "/v1/messages";
         logger.info("Anthropic request: POST {} model={} maxTokens={} messagesCount={}", 
@@ -80,17 +84,21 @@ public final class AnthropicClient {
         }
     }
 
+    @Override
     public void streamMessage(String systemPrompt, List<Message> messages, int maxTokens, Consumer<String> onDelta) {
         if (apiKey == null || apiKey.isBlank()) {
             throw new UpstreamException("MISSING_ANTHROPIC_API_KEY", 500, "ANTHROPIC_API_KEY is not set");
         }
         Objects.requireNonNull(onDelta, "onDelta");
 
+        List<ApiMessage> apiMessages = messages.stream()
+            .map(m -> new ApiMessage(m.role(), m.content()))
+            .toList();
         CreateMessageStreamRequest requestBody = new CreateMessageStreamRequest(
             model,
             maxTokens,
             systemFrom(systemPrompt),
-            messages,
+            apiMessages,
             true
         );
 
@@ -160,26 +168,27 @@ public final class AnthropicClient {
         }
     }
 
-    public record Message(String role, String content) {
+    // Internal API message (separate from interface Message to avoid leaking API details)
+    private record ApiMessage(String role, String content) {
     }
 
-    public record CreateMessageRequest(String model, int max_tokens, List<SystemContent> system, List<Message> messages) {
+    private record CreateMessageRequest(String model, int max_tokens, List<SystemContent> system, List<ApiMessage> messages) {
     }
 
-    public record CreateMessageStreamRequest(
+    private record CreateMessageStreamRequest(
         String model,
         int max_tokens,
         List<SystemContent> system,
-        List<Message> messages,
+        List<ApiMessage> messages,
         boolean stream
     ) {
     }
 
-    public record SystemContent(String type, String text) {
+    private record SystemContent(String type, String text) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record CreateMessageResponse(List<ContentBlock> content) {
+    private record CreateMessageResponse(List<ContentBlock> content) {
         public String text() {
             if (content == null || content.isEmpty()) {
                 return "";
@@ -196,15 +205,15 @@ public final class AnthropicClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ContentBlock(String type, String text) {
+    private record ContentBlock(String type, String text) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record StreamEvent(String type, StreamDelta delta) {
+    private record StreamEvent(String type, StreamDelta delta) {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record StreamDelta(String type, String text) {
+    private record StreamDelta(String type, String text) {
     }
 
     private static List<SystemContent> systemFrom(String systemPrompt) {
@@ -213,5 +222,4 @@ public final class AnthropicClient {
         }
         return List.of(new SystemContent("text", systemPrompt));
     }
-
 }
