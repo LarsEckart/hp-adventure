@@ -93,15 +93,9 @@ public final class ImageProviderFactory {
             );
         }
 
-        // Return disabled OpenRouter provider as placeholder
-        logger.warn("No image API key configured (OPENROUTER_API_KEY or OPENAI_API_KEY)");
-        return new OpenRouterImageProvider(
-            httpClient,
-            mapper,
-            null,
-            openRouterModel != null ? openRouterModel : DEFAULT_OPENROUTER_MODEL,
-            openRouterBaseUrl != null ? openRouterBaseUrl : DEFAULT_OPENROUTER_BASE_URL
-        );
+        // Return placeholder provider that generates a static "no provider configured" image
+        logger.warn("No image API key configured (OPENROUTER_API_KEY or OPENAI_API_KEY), using placeholder");
+        return new PlaceholderImageProvider();
     }
 
     private static Integer parseIntOrDefault(String value, int defaultValue) {
