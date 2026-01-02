@@ -47,7 +47,7 @@ Developer notes:
 - HTTP routes live in `backend/src/main/java/com/example/hpadventure/api/HealthRoutes.java` and `backend/src/main/java/com/example/hpadventure/api/StoryRoutes.java` (wired from `App.java`).
 - `StoryService` implements `StoryHandler` so routes can be tested with stubs.
 - Backend tests: `cd backend && ./gradlew test`.
-- `StoryServiceTest` stubs Anthropic/OpenAI via OkHttp MockWebServer for end-to-end service coverage.
+- `StoryServiceTest` uses in-memory `FakeTextProvider`/`FakeImageProvider` in `backend/src/test/java/com/example/hpadventure/services` for deterministic service coverage without HTTP.
 - `StoryStreamServiceTest` uses in-memory `FakeTextProvider`/`FakeImageProvider` in `backend/src/test/java/com/example/hpadventure/services` to drive stream + image paths without HTTP.
 - `StoryRoutesTest` uses Javalin testtools to cover API validation, rate limiting, and upstream error mapping.
 - `AnthropicTextProviderSmokeTest` hits the real https://api.anthropic.com endpoint; set `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`) to run and expect real API usage/costs.
