@@ -1,6 +1,7 @@
 plugins {
     java
     application
+    id("com.gradleup.shadow") version "9.0.0-beta4"
 }
 
 group = "com.example"
@@ -35,4 +36,11 @@ application {
 
 tasks.test {
     useJUnitPlatform()
+}
+
+tasks.shadowJar {
+    archiveBaseName.set("hp-adventure")
+    archiveClassifier.set("")
+    archiveVersion.set("")
+    mergeServiceFiles()
 }
