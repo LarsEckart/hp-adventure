@@ -77,14 +77,9 @@ public final class TextProviderFactory {
             );
         }
 
-        // Return disabled Anthropic provider as placeholder (will fail on use)
-        logger.warn("No text API key configured (OPENROUTER_API_KEY or ANTHROPIC_API_KEY)");
-        return new AnthropicTextProvider(
-            httpClient,
-            mapper,
-            null,
-            anthropicModel != null ? anthropicModel : DEFAULT_ANTHROPIC_MODEL,
-            anthropicBaseUrl != null ? anthropicBaseUrl : DEFAULT_ANTHROPIC_BASE_URL
+        // Text generation is required - fail fast
+        throw new IllegalStateException(
+            "No text API key configured. Set OPENROUTER_API_KEY or ANTHROPIC_API_KEY environment variable."
         );
     }
 }
