@@ -7,7 +7,9 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Factory for creating ImageProvider instances based on environment configuration.
- * Priority: OPENROUTER_API_KEY > OPENAI_API_KEY
+ * 
+ * If IMAGE_PROVIDER is set to "openai" or "openrouter", that provider is used explicitly.
+ * Otherwise, priority is: OPENROUTER_API_KEY > OPENAI_API_KEY
  */
 public final class ImageProviderFactory {
     private static final Logger logger = LoggerFactory.getLogger(ImageProviderFactory.class);
@@ -28,6 +30,8 @@ public final class ImageProviderFactory {
      * Create an ImageProvider from environment variables.
      */
     public static ImageProvider fromEnv(OkHttpClient httpClient, ObjectMapper mapper) {
+        String imageProvider = System.getenv("IMAGE_PROVIDER");
+
         String openRouterApiKey = System.getenv("OPENROUTER_API_KEY");
         String openRouterBaseUrl = System.getenv().getOrDefault("OPENROUTER_BASE_URL", DEFAULT_OPENROUTER_BASE_URL);
         String openRouterModel = System.getenv().getOrDefault("OPENROUTER_IMAGE_MODEL", DEFAULT_OPENROUTER_MODEL);
@@ -42,6 +46,7 @@ public final class ImageProviderFactory {
 
         return create(
             httpClient, mapper,
+            imageProvider,
             openRouterApiKey, openRouterModel, openRouterBaseUrl,
             openAiApiKey, openAiModel, openAiBaseUrl, openAiFormat, openAiCompression, openAiQuality, openAiSize
         );
@@ -49,11 +54,14 @@ public final class ImageProviderFactory {
 
     /**
      * Create an ImageProvider with explicit configuration.
-     * Priority: OpenRouter > OpenAI
+     * 
+     * If imageProvider is "openai" or "openrouter", that provider is used explicitly.
+     * Otherwise, priority is: OpenRouter > OpenAI
      */
     public static ImageProvider create(
         OkHttpClient httpClient,
         ObjectMapper mapper,
+        String imageProvider,
         String openRouterApiKey,
         String openRouterModel,
         String openRouterBaseUrl,
@@ -65,7 +73,40 @@ public final class ImageProviderFactory {
         String openAiQuality,
         String openAiSize
     ) {
-        // Prefer OpenRouter if configured
+        // Explicit provider override
+        if ("openai".equalsIgnoreCase(imageProvider)) {
+            if (openAiApiKey == null || openAiApiKey.isBlank()) {
+                throw new IllegalStateException("IMAGE_PROVIDER=openai but OPENAI_API_KEY is not set");
+            }
+            logger.info("Using OpenAI for image generation (explicit, model={})", openAiModel);
+            return new OpenAiImageProvider(
+                httpClient,
+                mapper,
+                openAiApiKey,
+                openAiModel,
+                openAiBaseUrl,
+                openAiFormat,
+                openAiCompression,
+                openAiQuality,
+                openAiSize
+            );
+        }
+
+        if ("openrouter".equalsIgnoreCase(imageProvider)) {
+            if (openRouterApiKey == null || openRouterApiKey.isBlank()) {
+                throw new IllegalStateException("IMAGE_PROVIDER=openrouter but OPENROUTER_API_KEY is not set");
+            }
+            logger.info("Using OpenRouter for image generation (explicit, model={})", openRouterModel);
+            return new OpenRouterImageProvider(
+                httpClient,
+                mapper,
+                openRouterApiKey,
+                openRouterModel,
+                openRouterBaseUrl
+            );
+        }
+
+        // Default priority: OpenRouter > OpenAI
         if (openRouterApiKey != null && !openRouterApiKey.isBlank()) {
             logger.info("Using OpenRouter for image generation (model={})", openRouterModel);
             return new OpenRouterImageProvider(
@@ -77,7 +118,6 @@ public final class ImageProviderFactory {
             );
         }
 
-        // Fall back to OpenAI
         if (openAiApiKey != null && !openAiApiKey.isBlank()) {
             logger.info("Using OpenAI for image generation (model={})", openAiModel);
             return new OpenAiImageProvider(

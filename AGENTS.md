@@ -36,7 +36,8 @@ Developer notes:
 - Image generation supports two providers via the `ImageProvider` interface: OpenRouter (primary) and OpenAI (fallback).
   - **OpenRouter**: Uses `/v1/chat/completions` with image-generating models like `google/gemini-2.5-flash-image`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_IMAGE_MODEL`).
   - **OpenAI**: Uses `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
-  - Priority: `OPENROUTER_API_KEY` > `OPENAI_API_KEY`. If neither is set, images are disabled.
+  - **Explicit override**: Set `IMAGE_PROVIDER=openai` or `IMAGE_PROVIDER=openrouter` to force a specific provider (useful when both API keys are set).
+  - Default priority (when `IMAGE_PROVIDER` not set): `OPENROUTER_API_KEY` > `OPENAI_API_KEY`. If neither is set, images are disabled.
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
 - Authentication: Set `APP_PASSWORDS` env var with format `name:password,name2:password2,...` to enable password protection. Protected routes: `/api/story`, `/api/story/stream`, `/api/tts`. Validation endpoint: `POST /api/auth/validate`. Frontend shows password screen until validated; password stored in `hpAdventure:password` localStorage and sent via `X-App-Password` header. If `APP_PASSWORDS` is not set, authentication is disabled.
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`. Streaming sends `delta` + `final_text` (story content) first, then an `image` event when image generation completes (or `image_error` on failure).
