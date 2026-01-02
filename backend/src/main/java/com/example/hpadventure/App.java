@@ -6,7 +6,9 @@ import com.example.hpadventure.api.TtsRoutes;
 import com.example.hpadventure.config.RateLimiter;
 import com.example.hpadventure.clients.AnthropicClient;
 import com.example.hpadventure.clients.ElevenLabsClient;
+import com.example.hpadventure.clients.ImageClient;
 import com.example.hpadventure.clients.OpenAiImageClient;
+import com.example.hpadventure.clients.OpenRouterImageClient;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
@@ -51,6 +53,7 @@ public final class App {
         String anthropicModel = System.getenv().getOrDefault("ANTHROPIC_MODEL", "claude-sonnet-4-5");
         String anthropicBaseUrl = System.getenv().getOrDefault("ANTHROPIC_BASE_URL", "https://api.anthropic.com");
 
+        // OpenAI image config
         String openAiApiKey = System.getenv("OPENAI_API_KEY");
         String openAiBaseUrl = System.getenv().getOrDefault("OPENAI_BASE_URL", "https://api.openai.com");
         String openAiModel = System.getenv().getOrDefault("OPENAI_IMAGE_MODEL", "gpt-image-1");
@@ -59,6 +62,11 @@ public final class App {
         String openAiSize = System.getenv().getOrDefault("OPENAI_IMAGE_SIZE", "1024x1024");
         Integer openAiCompression = parseIntOrNull(System.getenv().getOrDefault("OPENAI_IMAGE_COMPRESSION", "70"));
 
+        // OpenRouter image config (alternative to OpenAI)
+        String openRouterApiKey = System.getenv("OPENROUTER_API_KEY");
+        String openRouterBaseUrl = System.getenv().getOrDefault("OPENROUTER_BASE_URL", "https://openrouter.ai/api");
+        String openRouterImageModel = System.getenv().getOrDefault("OPENROUTER_IMAGE_MODEL", "google/gemini-2.5-flash-image");
+
         String elevenLabsApiKey = System.getenv("ELEVENLABS_API_KEY");
         String elevenLabsVoiceId = System.getenv().getOrDefault("ELEVENLABS_VOICE_ID", "g1jpii0iyvtRs8fqXsd1");
         String elevenLabsModel = System.getenv().getOrDefault("ELEVENLABS_MODEL", "eleven_multilingual_v2");
@@ -66,23 +74,19 @@ public final class App {
         String elevenLabsOutputFormat = System.getenv("ELEVENLABS_OUTPUT_FORMAT");
         Integer elevenLabsOptimizeLatency = parseIntOrNull(System.getenv("ELEVENLABS_OPTIMIZE_STREAMING_LATENCY"));
 
-        logger.info("API keys configured: ANTHROPIC={} OPENAI={} ELEVENLABS={}",
+        // Select image client: prefer OpenAI, fall back to OpenRouter
+        ImageClient imageClient = createImageClient(
+            httpClient, mapper,
+            openAiApiKey, openAiModel, openAiBaseUrl, openAiFormat, openAiCompression, openAiQuality, openAiSize,
+            openRouterApiKey, openRouterImageModel, openRouterBaseUrl
+        );
+
+        logger.info("API keys configured: ANTHROPIC={} IMAGE_PROVIDER={} ELEVENLABS={}",
             anthropicApiKey != null && !anthropicApiKey.isBlank(),
-            openAiApiKey != null && !openAiApiKey.isBlank(),
+            imageClient.isEnabled() ? imageClient.getClass().getSimpleName() : "none",
             elevenLabsApiKey != null && !elevenLabsApiKey.isBlank());
 
         AnthropicClient anthropicClient = new AnthropicClient(httpClient, mapper, anthropicApiKey, anthropicModel, anthropicBaseUrl);
-        OpenAiImageClient openAiImageClient = new OpenAiImageClient(
-            httpClient,
-            mapper,
-            openAiApiKey,
-            openAiModel,
-            openAiBaseUrl,
-            openAiFormat,
-            openAiCompression,
-            openAiQuality,
-            openAiSize
-        );
         ElevenLabsClient elevenLabsClient = new ElevenLabsClient(
             httpClient,
             mapper,
@@ -120,7 +124,7 @@ public final class App {
             titleService,
             summaryService,
             imagePromptService,
-            openAiImageClient,
+            imageClient,
             Clock.systemUTC()
         );
         TtsService ttsService = new TtsService(elevenLabsClient);
@@ -140,6 +144,67 @@ public final class App {
         TtsRoutes.register(app, ttsService);
 
         app.start(port);
+    }
+
+    /**
+     * Create image client based on available API keys.
+     * Priority: OPENAI_API_KEY > OPENROUTER_API_KEY
+     */
+    private static ImageClient createImageClient(
+        OkHttpClient httpClient,
+        ObjectMapper mapper,
+        String openAiApiKey,
+        String openAiModel,
+        String openAiBaseUrl,
+        String openAiFormat,
+        Integer openAiCompression,
+        String openAiQuality,
+        String openAiSize,
+        String openRouterApiKey,
+        String openRouterModel,
+        String openRouterBaseUrl
+    ) {
+        // Prefer OpenAI if configured
+        if (openAiApiKey != null && !openAiApiKey.isBlank()) {
+            logger.info("Using OpenAI for image generation (model={})", openAiModel);
+            return new OpenAiImageClient(
+                httpClient,
+                mapper,
+                openAiApiKey,
+                openAiModel,
+                openAiBaseUrl,
+                openAiFormat,
+                openAiCompression,
+                openAiQuality,
+                openAiSize
+            );
+        }
+        
+        // Fall back to OpenRouter
+        if (openRouterApiKey != null && !openRouterApiKey.isBlank()) {
+            logger.info("Using OpenRouter for image generation (model={})", openRouterModel);
+            return new OpenRouterImageClient(
+                httpClient,
+                mapper,
+                openRouterApiKey,
+                openRouterModel,
+                openRouterBaseUrl
+            );
+        }
+        
+        // Return disabled OpenAI client as placeholder
+        logger.warn("No image API key configured (OPENAI_API_KEY or OPENROUTER_API_KEY)");
+        return new OpenAiImageClient(
+            httpClient,
+            mapper,
+            null,
+            openAiModel,
+            openAiBaseUrl,
+            openAiFormat,
+            openAiCompression,
+            openAiQuality,
+            openAiSize
+        );
     }
 
     private static Integer parseIntOrNull(String value) {

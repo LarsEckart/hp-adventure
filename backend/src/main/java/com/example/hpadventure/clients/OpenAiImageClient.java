@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public final class OpenAiImageClient {
+public final class OpenAiImageClient implements ImageClient {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 
     private final OkHttpClient httpClient;
@@ -120,8 +120,7 @@ public final class OpenAiImageClient {
         return "image/" + normalized;
     }
 
-    public record ImageResult(String mimeType, String base64) {
-    }
+    // Note: ImageResult is now defined in the ImageClient interface
 
     public record CreateImageRequest(
         String model,

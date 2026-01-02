@@ -2,7 +2,7 @@ package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.clients.AnthropicClient;
-import com.example.hpadventure.clients.OpenAiImageClient;
+import com.example.hpadventure.clients.ImageClient;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkdownSanitizer;
@@ -32,7 +32,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     private final TitleService titleService;
     private final SummaryService summaryService;
     private final ImagePromptService imagePromptService;
-    private final OpenAiImageClient imageClient;
+    private final ImageClient imageClient;
     private final Clock clock;
 
     public StoryService(
@@ -46,7 +46,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         TitleService titleService,
         SummaryService summaryService,
         ImagePromptService imagePromptService,
-        OpenAiImageClient imageClient,
+        ImageClient imageClient,
         Clock clock
     ) {
         this.anthropicClient = anthropicClient;
@@ -96,7 +96,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         if (!imageClient.isEnabled()) {
             return new Dtos.Image("text/plain", "disabled", null);
         }
-        OpenAiImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
+        ImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
         return new Dtos.Image(imageResult.mimeType(), imageResult.base64(), imagePrompt);
     }
 

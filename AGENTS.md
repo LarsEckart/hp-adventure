@@ -24,7 +24,10 @@ Developer notes:
 - Story arc tracking: steps 1-5 intro, 6-13 main arc, 14-15 finale. Server derives step from completed assistant turns and injects it into the prompt.
 - UI includes a reset button that clears the `hpAdventure:v1` localStorage key and resets state to defaults.
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
-- Image generation uses OpenAI `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
+- Image generation supports two providers via the `ImageClient` interface: OpenAI (primary) and OpenRouter (fallback).
+  - **OpenAI**: Uses `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
+  - **OpenRouter**: Uses `/v1/chat/completions` with image-generating models like `google/gemini-2.5-flash-image`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_IMAGE_MODEL`).
+  - Priority: `OPENAI_API_KEY` > `OPENROUTER_API_KEY`. If neither is set, images are disabled.
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`. Streaming sends `delta` + `final_text` (story content) first, then an `image` event when image generation completes (or `image_error` on failure).
 - TTS endpoint: `POST /api/tts` returns streamed `audio/mpeg` for a story turn. Requires `ELEVENLABS_API_KEY`; voice id defaults to `g1jpii0iyvtRs8fqXsd1` (override with `ELEVENLABS_VOICE_ID`, optional: `ELEVENLABS_MODEL`, `ELEVENLABS_BASE_URL`, `ELEVENLABS_OUTPUT_FORMAT`, `ELEVENLABS_OPTIMIZE_STREAMING_LATENCY`). Frontend auto-plays per assistant turn via the `speakStory` port.
@@ -50,3 +53,15 @@ Developer notes:
 - UI command shortcuts (handled client-side): `inventar`, `geschichte`, `aufgeben`, `start`.
 - Client-side error handling drops the last pending turn on failed story requests to avoid stuck "Die Geschichte schreibt sich..." placeholders (see `frontend/src/Update.elm`).
 - Completed adventures remain visible in the story view; inputs are disabled and a "Neues Abenteuer" button returns to the setup screen.
+
+Deployment (Railway):
+- App is deployed on Railway (https://railway.app).
+- Install Railway CLI: `brew install railway` (macOS) or `npm i -g @railway/cli`.
+- Login: `railway login`.
+- Link project: `railway link` (select existing project or create new).
+- Deploy: `railway up` (pushes current directory, uses Nixpacks to detect Java + build).
+- Logs: `railway logs` (stream live logs).
+- Env vars: `railway variables` (list), `railway variables set KEY=value` (set).
+- Open app: `railway open` (opens deployed URL in browser).
+- Railway auto-detects the Gradle project in `backend/` and runs `./gradlew build` + starts the jar.
+- Set `PORT` env var if needed (Railway provides it automatically).
