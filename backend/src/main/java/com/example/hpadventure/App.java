@@ -86,7 +86,7 @@ public final class App {
         );
         Integer rateLimitPerMinute = parseIntOrNull(System.getenv("RATE_LIMIT_PER_MINUTE"));
         if (rateLimitPerMinute == null) {
-            rateLimitPerMinute = 30;
+            rateLimitPerMinute = 2;
         }
         RateLimiter rateLimiter = rateLimitPerMinute > 0
             ? new RateLimiter(Clock.systemUTC(), rateLimitPerMinute, Duration.ofMinutes(1))
