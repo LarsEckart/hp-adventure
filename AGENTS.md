@@ -48,7 +48,7 @@ Developer notes:
 - `StoryService` implements `StoryHandler` so routes can be tested with stubs.
 - Backend tests: `cd backend && ./gradlew test`.
 - `StoryServiceTest` stubs Anthropic/OpenAI via OkHttp MockWebServer for end-to-end service coverage.
-- `StoryStreamServiceTest` uses `FakeTextProvider`/`FakeImageProvider` in `backend/src/test/java/com/example/hpadventure/services` to exercise SSE + image flows against MockWebServer.
+- `StoryStreamServiceTest` uses in-memory `FakeTextProvider`/`FakeImageProvider` in `backend/src/test/java/com/example/hpadventure/services` to drive stream + image paths without HTTP.
 - `StoryRoutesTest` uses Javalin testtools to cover API validation, rate limiting, and upstream error mapping.
 - `AnthropicTextProviderSmokeTest` hits the real https://api.anthropic.com endpoint; set `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`) to run and expect real API usage/costs.
 - E2E smoke tests (Playwright): `npm run test:e2e` (first time: `npx playwright install` to fetch browsers; serves `backend/src/main/resources/public` via `python3 -m http.server`).
