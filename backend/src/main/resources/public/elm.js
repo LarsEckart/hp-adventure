@@ -7781,19 +7781,33 @@ var $author$project$View$assistantImageView = F2(
 							]))) : $elm$core$Maybe$Nothing;
 			} else {
 				var imageData = _v1.a;
-				var imageSrc = 'data:' + (imageData.a3 + (';base64,' + imageData.aN));
-				var description = A2($elm$core$Maybe$withDefault, 'Illustration der Szene', imageData.a9);
-				return $elm$core$Maybe$Just(
-					A2(
-						$elm$html$Html$img,
-						_List_fromArray(
-							[
-								$elm$html$Html$Attributes$class('assistant-image'),
-								$elm$html$Html$Attributes$src(imageSrc),
-								$elm$html$Html$Attributes$alt(description),
-								$author$project$View$dataTestId('assistant-image')
-							]),
-						_List_Nil));
+				if (imageData.aN === 'disabled') {
+					return $elm$core$Maybe$Just(
+						A2(
+							$elm$html$Html$div,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('assistant-image disabled')
+								]),
+							_List_fromArray(
+								[
+									$elm$html$Html$text('Bilderzeugung deaktiviert')
+								])));
+				} else {
+					var imageSrc = 'data:' + (imageData.a3 + (';base64,' + imageData.aN));
+					var description = A2($elm$core$Maybe$withDefault, 'Illustration der Szene', imageData.a9);
+					return $elm$core$Maybe$Just(
+						A2(
+							$elm$html$Html$img,
+							_List_fromArray(
+								[
+									$elm$html$Html$Attributes$class('assistant-image'),
+									$elm$html$Html$Attributes$src(imageSrc),
+									$elm$html$Html$Attributes$alt(description),
+									$author$project$View$dataTestId('assistant-image')
+								]),
+							_List_Nil));
+				}
 			}
 		}
 	});

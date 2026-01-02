@@ -93,6 +93,9 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
 
     @Override
     public Dtos.Image generateImage(String imagePrompt) {
+        if (!imageClient.isEnabled()) {
+            return new Dtos.Image("text/plain", "disabled", null);
+        }
         OpenAiImageClient.ImageResult imageResult = imageClient.generateImage(imagePrompt);
         return new Dtos.Image(imageResult.mimeType(), imageResult.base64(), imagePrompt);
     }

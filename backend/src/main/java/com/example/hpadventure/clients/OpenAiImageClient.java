@@ -49,8 +49,12 @@ public final class OpenAiImageClient {
         this.size = size;
     }
 
+    public boolean isEnabled() {
+        return apiKey != null && !apiKey.isBlank();
+    }
+
     public ImageResult generateImage(String prompt) {
-        if (apiKey == null || apiKey.isBlank()) {
+        if (!isEnabled()) {
             throw new UpstreamException("MISSING_OPENAI_API_KEY", 500, "OPENAI_API_KEY is not set");
         }
         if (prompt == null || prompt.isBlank()) {

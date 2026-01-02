@@ -251,14 +251,18 @@ assistantImageView showPlaceholder maybeAssistant =
                         Nothing
 
                 Just imageData ->
-                    let
-                        imageSrc =
-                            "data:" ++ imageData.mimeType ++ ";base64," ++ imageData.base64
+                    if imageData.base64 == "disabled" then
+                        Just (div [ class "assistant-image disabled" ] [ text "Bilderzeugung deaktiviert" ])
 
-                        description =
-                            Maybe.withDefault "Illustration der Szene" imageData.prompt
-                    in
-                    Just (img [ class "assistant-image", src imageSrc, alt description, dataTestId "assistant-image" ] [])
+                    else
+                        let
+                            imageSrc =
+                                "data:" ++ imageData.mimeType ++ ";base64," ++ imageData.base64
+
+                            description =
+                                Maybe.withDefault "Illustration der Szene" imageData.prompt
+                        in
+                        Just (img [ class "assistant-image", src imageSrc, alt description, dataTestId "assistant-image" ] [])
 
 
 loadingView : Bool -> Html Msg
