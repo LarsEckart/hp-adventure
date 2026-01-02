@@ -59,9 +59,9 @@ Deployment (Railway):
 - Install Railway CLI: `brew install railway` (macOS) or `npm i -g @railway/cli`.
 - Login: `railway login`.
 - Link project: `railway link` (select existing project or create new).
-- Deploy: `railway up` (pushes current directory, uses Nixpacks to detect Java + build).
+- Deploy: `railway up` (pushes current directory, builds via Dockerfile).
 - Logs: `railway logs` (stream live logs).
 - Env vars: `railway variables` (list), `railway variables set KEY=value` (set).
 - Open app: `railway open` (opens deployed URL in browser).
-- Railway auto-detects the Gradle project in `backend/` and runs `./gradlew build` + starts the jar.
-- Set `PORT` env var if needed (Railway provides it automatically).
+- Build uses multi-stage Dockerfile: (1) builds Elm frontend with Node, (2) builds Java backend with Gradle shadowJar, (3) runs JRE-only image with the fat jar.
+- Railway provides `PORT` env var automatically (defaults to 8080 in Dockerfile).

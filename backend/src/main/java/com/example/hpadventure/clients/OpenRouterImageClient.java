@@ -2,6 +2,7 @@ package com.example.hpadventure.clients;
 
 import com.example.hpadventure.services.UpstreamException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -17,6 +18,20 @@ import java.util.Objects;
  * Image generation client using OpenRouter's chat completions API.
  * Works with models like google/gemini-2.5-flash-image that output images
  * via the standard chat completions endpoint.
+ * 
+ * Response structure:
+ * {
+ *   "choices": [{
+ *     "message": {
+ *       "content": "Sure, here is an image...",
+ *       "images": [{
+ *         "type": "image_url",
+ *         "image_url": {"url": "data:image/png;base64,..."},
+ *         "index": 0
+ *       }]
+ *     }
+ *   }]
+ * }
  */
 public final class OpenRouterImageClient implements ImageClient {
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
@@ -81,7 +96,7 @@ public final class OpenRouterImageClient implements ImageClient {
                 }
 
                 ChatCompletionResponse responseBody = mapper.readValue(response.body().bytes(), ChatCompletionResponse.class);
-                ImageData imageData = responseBody.extractImage();
+                ParsedImage imageData = responseBody.extractImage();
                 if (imageData == null) {
                     throw new UpstreamException("OPENROUTER_IMAGE_ERROR", response.code(), "No image data in response");
                 }
@@ -109,7 +124,7 @@ public final class OpenRouterImageClient implements ImageClient {
     // Response DTOs
     @JsonIgnoreProperties(ignoreUnknown = true)
     public record ChatCompletionResponse(List<Choice> choices) {
-        public ImageData extractImage() {
+        public ParsedImage extractImage() {
             if (choices == null || choices.isEmpty()) {
                 return null;
             }
@@ -126,38 +141,22 @@ public final class OpenRouterImageClient implements ImageClient {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public record ResponseMessage(Object content) {
-        /**
-         * Extract image from content which can be:
-         * - A list of content blocks (standard multimodal format)
-         * - A string (no image)
-         */
-        @SuppressWarnings("unchecked")
-        public ImageData extractImage() {
-            if (content == null) {
+    public record ResponseMessage(
+        String content,
+        List<ImageEntry> images
+    ) {
+        public ParsedImage extractImage() {
+            if (images == null || images.isEmpty()) {
                 return null;
             }
-            
-            // Content is typically a list of content blocks for multimodal responses
-            if (content instanceof List<?> contentList) {
-                for (Object item : contentList) {
-                    if (item instanceof java.util.Map<?, ?> block) {
-                        String type = (String) block.get("type");
-                        if ("image_url".equals(type)) {
-                            Object imageUrlObj = block.get("image_url");
-                            if (imageUrlObj instanceof java.util.Map<?, ?> imageUrl) {
-                                String url = (String) imageUrl.get("url");
-                                return parseDataUrl(url);
-                            }
-                        }
-                    }
-                }
+            ImageEntry first = images.get(0);
+            if (first == null || first.image_url() == null) {
+                return null;
             }
-            
-            return null;
+            return parseDataUrl(first.image_url().url());
         }
         
-        private ImageData parseDataUrl(String dataUrl) {
+        private ParsedImage parseDataUrl(String dataUrl) {
             if (dataUrl == null || !dataUrl.startsWith("data:")) {
                 return null;
             }
@@ -178,10 +177,22 @@ public final class OpenRouterImageClient implements ImageClient {
                 mimeType = header;
             }
             
-            return new ImageData(mimeType, base64);
+            return new ParsedImage(mimeType, base64);
         }
     }
 
-    public record ImageData(String mimeType, String base64) {
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record ImageEntry(
+        String type,
+        ImageUrl image_url,
+        Integer index
+    ) {
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public record ImageUrl(String url) {
+    }
+
+    public record ParsedImage(String mimeType, String base64) {
     }
 }
