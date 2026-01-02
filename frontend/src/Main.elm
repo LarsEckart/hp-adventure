@@ -2,6 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Codec
+import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Model
@@ -11,6 +12,7 @@ import View
 
 port saveState : Encode.Value -> Cmd msg
 port clearState : () -> Cmd msg
+port savePassword : String -> Cmd msg
 port onlineStatus : (Bool -> msg) -> Sub msg
 port startStoryStream : Encode.Value -> Cmd msg
 port storyStream : (Decode.Value -> msg) -> Sub msg
@@ -20,7 +22,7 @@ main : Program Decode.Value Model.GameState Msg
 main =
     Browser.element
         { init = init
-        , update = Update.update save startStoryStream speakStory (clearState ())
+        , update = Update.update save startStoryStream speakStory (clearState ()) validatePassword
         , view = View.view
         , subscriptions = always (Sub.batch [ onlineStatus Msg.OnlineStatusChanged, storyStream Msg.GotStoryStreamEvent ])
         }
@@ -36,4 +38,20 @@ init flags =
 
 save : Model.GameState -> Cmd Msg
 save state =
-    saveState (Codec.encodeGameState state)
+    Cmd.batch
+        [ saveState (Codec.encodeGameState state)
+        , savePassword state.passwordInput
+        ]
+
+
+validatePassword : String -> Cmd Msg
+validatePassword password =
+    Http.request
+        { method = "POST"
+        , headers = [ Http.header "X-App-Password" password ]
+        , url = "/api/auth/validate"
+        , body = Http.emptyBody
+        , expect = Http.expectWhatever Msg.GotAuthResponse
+        , timeout = Just 10000
+        , tracker = Nothing
+        }

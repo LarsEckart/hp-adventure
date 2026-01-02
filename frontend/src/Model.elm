@@ -1,6 +1,7 @@
 module Model exposing
     ( Adventure
     , AssistantTurn
+    , AuthState(..)
     , CompletedAdventure
     , GameState
     , ImageData
@@ -31,6 +32,12 @@ type alias Stats =
     { adventuresCompleted : Int
     , totalTurns : Int
     }
+
+
+type AuthState
+    = NeedsPassword
+    | Validating
+    | Authenticated
 
 type alias Player =
     { name : String
@@ -82,6 +89,8 @@ type alias GameState =
     , showInventory : Bool
     , showHistory : Bool
     , pendingAbandon : Bool
+    , authState : AuthState
+    , passwordInput : String
     }
 
 
@@ -104,6 +113,8 @@ defaultState =
     , showInventory = True
     , showHistory = True
     , pendingAbandon = False
+    , authState = NeedsPassword
+    , passwordInput = ""
     }
 
 

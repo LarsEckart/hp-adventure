@@ -2,6 +2,7 @@ module Update exposing (update)
 
 import Browser.Dom as Dom
 import Api
+import Http
 import Json.Decode as Decode
 import Json.Encode as Encode
 import Model
@@ -13,9 +14,35 @@ import Task
 import Time
 import Util
 
-update : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> (String -> Cmd Msg) -> Cmd Msg -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
-update save startStream speakStory clearStorage msg state =
+update : (Model.GameState -> Cmd Msg) -> (Encode.Value -> Cmd Msg) -> (String -> Cmd Msg) -> Cmd Msg -> (String -> Cmd Msg) -> Msg -> Model.GameState -> ( Model.GameState, Cmd Msg )
+update save startStream speakStory clearStorage validatePassword msg state =
     case msg of
+        UpdatePasswordInput value ->
+            ( { state | passwordInput = value, error = Nothing }, Cmd.none )
+
+        SubmitPassword ->
+            let
+                next =
+                    { state | authState = Model.Validating, error = Nothing }
+            in
+            ( next, validatePassword state.passwordInput )
+
+        GotAuthResponse result ->
+            case result of
+                Ok _ ->
+                    let
+                        next =
+                            { state | authState = Model.Authenticated, error = Nothing }
+                    in
+                    ( next, save next )
+
+                Err _ ->
+                    let
+                        next =
+                            { state | authState = Model.NeedsPassword, error = Just "Ungültiges Passwort.", passwordInput = "" }
+                    in
+                    ( next, Cmd.none )
+
         UpdateName name ->
             let
                 currentPlayer =

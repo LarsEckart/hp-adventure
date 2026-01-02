@@ -8,7 +8,7 @@ Project notes:
 - Backend lives in `backend/` (Java 21, Javalin). Run with `./gradlew run` from `backend/`.
 - Frontend lives in `frontend/` (Elm 0.19). Build with `./frontend/build.sh` (copies assets into `backend/src/main/resources/public`).
 - Static assets served from `backend/src/main/resources/public`.
-- localStorage key is `hpAdventure:v1` (see `frontend/public/app.js`).
+- localStorage key is `hpAdventure:v1` (see `frontend/public/app.js`); password stored separately in `hpAdventure:password`.
 - Frontend schema version is `2` (see `frontend/src/Model.elm` + `frontend/src/Codec.elm`).
 - Service worker lives in `frontend/public/sw.js` and is registered from `frontend/public/app.js`.
 - Online/offline status is sent from `frontend/public/app.js` to Elm via the `onlineStatus` port; Elm stores it in `GameState.isOnline` and uses it to show the offline banner + disable sends (not persisted to localStorage).
@@ -29,6 +29,7 @@ Developer notes:
   - **OpenRouter**: Uses `/v1/chat/completions` with image-generating models like `google/gemini-2.5-flash-image`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_IMAGE_MODEL`).
   - Priority: `OPENAI_API_KEY` > `OPENROUTER_API_KEY`. If neither is set, images are disabled.
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
+- Authentication: Set `APP_PASSWORDS` env var with format `name:password,name2:password2,...` to enable password protection. Protected routes: `/api/story`, `/api/story/stream`, `/api/tts`. Validation endpoint: `POST /api/auth/validate`. Frontend shows password screen until validated; password stored in `hpAdventure:password` localStorage and sent via `X-App-Password` header. If `APP_PASSWORDS` is not set, authentication is disabled.
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`. Streaming sends `delta` + `final_text` (story content) first, then an `image` event when image generation completes (or `image_error` on failure).
 - TTS endpoint: `POST /api/tts` returns streamed `audio/mpeg` for a story turn. Requires `ELEVENLABS_API_KEY`; voice id defaults to `g1jpii0iyvtRs8fqXsd1` (override with `ELEVENLABS_VOICE_ID`, optional: `ELEVENLABS_MODEL`, `ELEVENLABS_BASE_URL`, `ELEVENLABS_OUTPUT_FORMAT`, `ELEVENLABS_OPTIMIZE_STREAMING_LATENCY`). Frontend auto-plays per assistant turn via the `speakStory` port.
 - Streaming deltas are filtered server-side to strip `[OPTION: ...]`/`[SZENE: ...]`/inventory markers; UI options arrive with the `final_text` event (or the non-streaming JSON response).

@@ -1,4 +1,4 @@
-const CACHE_NAME = "hp-adventure-shell-v5";
+const CACHE_NAME = "hp-adventure-shell-v6";
 const APP_SHELL = ["/", "/index.html", "/styles.css", "/app.js", "/elm.js"];
 
 self.addEventListener("install", (event) => {

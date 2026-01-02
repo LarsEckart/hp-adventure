@@ -10,6 +10,7 @@ encodeGameState state =
         [ ( "schemaVersion", Encode.int state.schemaVersion )
         , ( "player", encodePlayer state.player )
         , ( "currentAdventure", encodeMaybe encodeAdventure state.currentAdventure )
+        , ( "passwordInput", Encode.string state.passwordInput )
         ]
 
 
@@ -24,8 +25,16 @@ decodeGameState =
 
 decodeCurrent : Decoder Model.GameState
 decodeCurrent =
-    Decode.map3
-        (\_ player currentAdventure ->
+    Decode.map4
+        (\_ player currentAdventure passwordInput ->
+            let
+                authState =
+                    if String.isEmpty passwordInput then
+                        Model.NeedsPassword
+
+                    else
+                        Model.Authenticated
+            in
             { schemaVersion = 2
             , player = player
             , currentAdventure = currentAdventure
@@ -37,11 +46,18 @@ decodeCurrent =
             , showInventory = True
             , showHistory = True
             , pendingAbandon = False
+            , authState = authState
+            , passwordInput = passwordInput
             }
         )
         (Decode.field "schemaVersion" Decode.int)
         (Decode.field "player" decodePlayer)
         (Decode.maybe (Decode.field "currentAdventure" decodeAdventure))
+        (Decode.oneOf
+            [ Decode.field "passwordInput" Decode.string
+            , Decode.succeed ""
+            ]
+        )
 
 
 decodeLegacy : Decoder Model.GameState
@@ -65,6 +81,8 @@ decodeLegacy =
             , showInventory = True
             , showHistory = True
             , pendingAbandon = False
+            , authState = Model.NeedsPassword
+            , passwordInput = ""
             }
         )
         (Decode.field "playerName" Decode.string)

@@ -1,5 +1,6 @@
 package com.example.hpadventure;
 
+import com.example.hpadventure.api.AuthRoutes;
 import com.example.hpadventure.api.HealthRoutes;
 import com.example.hpadventure.api.StoryRoutes;
 import com.example.hpadventure.api.TtsRoutes;
@@ -128,6 +129,10 @@ public final class App {
         );
         TtsService ttsService = new TtsService(elevenLabsClient);
 
+        // Authentication
+        String appPasswords = System.getenv("APP_PASSWORDS");
+        AuthRoutes authRoutes = new AuthRoutes(appPasswords);
+
         Javalin app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson(mapper, false));
             config.staticFiles.add(staticFiles -> {
@@ -153,6 +158,15 @@ public final class App {
         });
 
         HealthRoutes.register(app);
+        authRoutes.register(app);
+        
+        // Apply auth middleware to protected routes
+        if (authRoutes.isEnabled()) {
+            app.before("/api/story", authRoutes.authMiddleware());
+            app.before("/api/story/*", authRoutes.authMiddleware());
+            app.before("/api/tts", authRoutes.authMiddleware());
+        }
+        
         StoryRoutes.register(app, storyService, rateLimiter);
         TtsRoutes.register(app, ttsService);
 
@@ -162,6 +176,7 @@ public final class App {
         logger.info("HP Adventure Server started successfully");
         logger.info("Listening on port {}", port);
         logger.info("Rate limit: {} requests/minute {}", rateLimitPerMinute, rateLimitPerMinute > 0 ? "(enabled)" : "(disabled)");
+        logger.info("Authentication: {}", authRoutes.isEnabled() ? "enabled" : "disabled");
         logger.info("Anthropic model: {}", anthropicModel);
         logger.info("Image provider: {}", imageClient.isEnabled() ? imageClient.getClass().getSimpleName() : "disabled");
         logger.info("TTS: {}", (elevenLabsApiKey != null && !elevenLabsApiKey.isBlank()) ? "enabled" : "disabled");

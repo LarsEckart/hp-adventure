@@ -10,6 +10,60 @@ import String
 
 view : Model.GameState -> Html Msg
 view state =
+    case state.authState of
+        Model.NeedsPassword ->
+            passwordView state
+
+        Model.Validating ->
+            passwordView state
+
+        Model.Authenticated ->
+            gameView state
+
+
+passwordView : Model.GameState -> Html Msg
+passwordView state =
+    let
+        isValidating =
+            state.authState == Model.Validating
+    in
+    div [ class "app", dataTestId "app" ]
+        [ headerView
+        , errorView state.error
+        , div [ class "panel", dataTestId "password-panel" ]
+            [ h2 [] [ text "Willkommen" ]
+            , p [] [ text "Bitte gib dein Passwort ein, um fortzufahren." ]
+            , div [ class "field" ]
+                [ span [] [ text "Passwort" ]
+                , input
+                    [ type_ "password"
+                    , placeholder "Dein Passwort"
+                    , value state.passwordInput
+                    , onInput UpdatePasswordInput
+                    , disabled isValidating
+                    , dataTestId "password-input"
+                    ]
+                    []
+                ]
+            , button
+                [ onClick SubmitPassword
+                , disabled (String.trim state.passwordInput == "" || isValidating)
+                , dataTestId "submit-password"
+                ]
+                [ text
+                    (if isValidating then
+                        "Prüfe..."
+
+                     else
+                        "Eintreten"
+                    )
+                ]
+            ]
+        ]
+
+
+gameView : Model.GameState -> Html Msg
+gameView state =
     div [ class "app", dataTestId "app" ] <|
         [ headerView
         , offlineView state.isOnline

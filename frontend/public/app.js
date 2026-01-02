@@ -1,22 +1,36 @@
 (() => {
   const STORAGE_KEY = "hpAdventure:v1";
+  const PASSWORD_KEY = "hpAdventure:password";
   const node = document.getElementById("app");
 
   if (!node || !window.Elm || !window.Elm.Main) {
     return;
   }
 
+  // Load stored password and merge into flags
+  const storedPassword = window.localStorage.getItem(PASSWORD_KEY) || "";
+
   let flags = null;
   const raw = window.localStorage.getItem(STORAGE_KEY);
   if (raw) {
     try {
       flags = JSON.parse(raw);
+      // Inject stored password into flags
+      flags.passwordInput = storedPassword;
     } catch (error) {
       console.warn("Failed to parse saved state", error);
     }
   }
 
+  // If no flags but we have a password, create minimal flags
+  if (!flags && storedPassword) {
+    flags = { passwordInput: storedPassword };
+  }
+
   const app = window.Elm.Main.init({ node, flags });
+
+  // Get current password from storage (updated when savePassword is called)
+  const getPassword = () => window.localStorage.getItem(PASSWORD_KEY) || "";
 
   if (app.ports && app.ports.saveState) {
     app.ports.saveState.subscribe((state) => {
@@ -24,9 +38,18 @@
     });
   }
 
+  if (app.ports && app.ports.savePassword) {
+    app.ports.savePassword.subscribe((password) => {
+      if (password) {
+        window.localStorage.setItem(PASSWORD_KEY, password);
+      }
+    });
+  }
+
   if (app.ports && app.ports.clearState) {
     app.ports.clearState.subscribe(() => {
       window.localStorage.removeItem(STORAGE_KEY);
+      window.localStorage.removeItem(PASSWORD_KEY);
     });
   }
 
@@ -93,7 +116,11 @@
     try {
       response = await fetch("/api/tts", {
         method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "audio/mpeg" },
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "audio/mpeg",
+          "X-App-Password": getPassword()
+        },
         body: JSON.stringify({ text }),
         signal: controller.signal
       });
@@ -315,7 +342,10 @@
       try {
         const response = await fetch("/api/story", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "X-App-Password": getPassword()
+          },
           body: JSON.stringify(payload)
         });
         const data = await response.json();
@@ -344,7 +374,8 @@
           method: "POST",
           headers: {
             Accept: "text/event-stream",
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "X-App-Password": getPassword()
           },
           body: JSON.stringify(payload),
           signal: controller.signal
