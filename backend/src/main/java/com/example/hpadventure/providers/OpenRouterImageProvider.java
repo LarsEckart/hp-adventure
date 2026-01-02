@@ -34,7 +34,7 @@ import java.util.Objects;
  *   }]
  * }
  */
-public final class OpenRouterImageProvider implements ImageProvider {
+final class OpenRouterImageProvider implements ImageProvider {
     private static final Logger logger = LoggerFactory.getLogger(OpenRouterImageProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 

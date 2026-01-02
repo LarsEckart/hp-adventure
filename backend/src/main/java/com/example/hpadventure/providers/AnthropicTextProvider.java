@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 
-public final class AnthropicTextProvider implements TextProvider {
+final class AnthropicTextProvider implements TextProvider {
     private static final Logger logger = LoggerFactory.getLogger(AnthropicTextProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String VERSION_HEADER = "2023-06-01";

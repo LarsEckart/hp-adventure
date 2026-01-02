@@ -24,7 +24,7 @@ import java.util.function.Consumer;
  * Compatible with OpenAI-style /v1/chat/completions endpoint.
  * Default model: xiaomi/mimo-v2-flash:free
  */
-public final class OpenRouterTextProvider implements TextProvider {
+final class OpenRouterTextProvider implements TextProvider {
     private static final Logger logger = LoggerFactory.getLogger(OpenRouterTextProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String DEFAULT_BASE_URL = "https://openrouter.ai/api";

@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-public final class OpenAiImageProvider implements ImageProvider {
+final class OpenAiImageProvider implements ImageProvider {
     private static final Logger logger = LoggerFactory.getLogger(OpenAiImageProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 

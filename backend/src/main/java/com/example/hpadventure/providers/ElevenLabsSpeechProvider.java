@@ -16,7 +16,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Objects;
 
-public final class ElevenLabsSpeechProvider implements SpeechProvider {
+final class ElevenLabsSpeechProvider implements SpeechProvider {
     private static final Logger logger = LoggerFactory.getLogger(ElevenLabsSpeechProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
 

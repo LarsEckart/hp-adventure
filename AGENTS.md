@@ -25,13 +25,18 @@ Developer notes:
 - UI includes a reset button that clears the `hpAdventure:v1` localStorage key and resets state to defaults.
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
 - Provider abstractions live in `backend/src/main/java/com/example/hpadventure/providers`:
-  - `TextProvider` interface for text generation (implemented by `AnthropicTextProvider`)
-  - `ImageProvider` interface for image generation (implemented by `OpenAiImageProvider`, `OpenRouterImageProvider`)
+  - `TextProvider` interface for text generation (implemented by `OpenRouterTextProvider`, `AnthropicTextProvider`)
+  - `ImageProvider` interface for image generation (implemented by `OpenRouterImageProvider`, `OpenAiImageProvider`)
   - `SpeechProvider` interface for text-to-speech (implemented by `ElevenLabsSpeechProvider`)
-- Image generation supports two providers via the `ImageProvider` interface: OpenAI (primary) and OpenRouter (fallback).
-  - **OpenAI**: Uses `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
+  - Factory classes (`TextProviderFactory`, `ImageProviderFactory`, `SpeechProviderFactory`) create providers from env vars
+- Text generation supports two providers via the `TextProvider` interface: OpenRouter (primary) and Anthropic (fallback).
+  - **OpenRouter**: Uses `/v1/chat/completions`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_TEXT_MODEL` default `xiaomi/mimo-v2-flash:free`).
+  - **Anthropic**: Uses `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_BASE_URL`, `ANTHROPIC_MODEL`).
+  - Priority: `OPENROUTER_API_KEY` > `ANTHROPIC_API_KEY`.
+- Image generation supports two providers via the `ImageProvider` interface: OpenRouter (primary) and OpenAI (fallback).
   - **OpenRouter**: Uses `/v1/chat/completions` with image-generating models like `google/gemini-2.5-flash-image`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_IMAGE_MODEL`).
-  - Priority: `OPENAI_API_KEY` > `OPENROUTER_API_KEY`. If neither is set, images are disabled.
+  - **OpenAI**: Uses `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
+  - Priority: `OPENROUTER_API_KEY` > `OPENAI_API_KEY`. If neither is set, images are disabled.
 - `POST /api/story` is rate-limited in-memory; configure with `RATE_LIMIT_PER_MINUTE` (set to `0` to disable).
 - Authentication: Set `APP_PASSWORDS` env var with format `name:password,name2:password2,...` to enable password protection. Protected routes: `/api/story`, `/api/story/stream`, `/api/tts`. Validation endpoint: `POST /api/auth/validate`. Frontend shows password screen until validated; password stored in `hpAdventure:password` localStorage and sent via `X-App-Password` header. If `APP_PASSWORDS` is not set, authentication is disabled.
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`. Streaming sends `delta` + `final_text` (story content) first, then an `image` event when image generation completes (or `image_error` on failure).
