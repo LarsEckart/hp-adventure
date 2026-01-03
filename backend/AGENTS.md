@@ -166,6 +166,7 @@ The LLM responses hopefully include special markers that are parsed and stripped
 ```bash
 ./gradlew test
 ```
+Note: when real API keys are present in your environment, the smoke tests run as part of the full test suite and can incur external API costs; unset the keys to skip them.
 
 ### Smoke Tests (real APIs)
 ```bash

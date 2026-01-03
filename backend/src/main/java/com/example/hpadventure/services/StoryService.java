@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.function.Consumer;
 
 public final class StoryService implements StoryHandler, StoryStreamHandler {
+    private static final String ASSISTANT_ROLE = "assistant";
+    private static final String USER_ROLE = "user";
     private static final int STORY_MAX_TOKENS = 500;
     private static final int STORY_ARC_TOTAL_STEPS = 15;
 
@@ -121,7 +123,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             }
             messages.add(new TextProvider.Message(message.role(), message.content()));
         }
-        messages.add(new TextProvider.Message("user", action));
+        messages.add(new TextProvider.Message(USER_ROLE, action));
         return messages;
     }
 
@@ -160,7 +162,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         String completedAt = null;
         if (completed) {
             List<Dtos.ChatMessage> summaryHistory = new ArrayList<>(history);
-            summaryHistory.add(new Dtos.ChatMessage("assistant", cleanStory));
+            summaryHistory.add(new Dtos.ChatMessage(ASSISTANT_ROLE, cleanStory));
             summary = summaryService.generateSummary(summaryHistory);
             completedAt = now.toString();
         }
@@ -210,7 +212,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     }
 
     private boolean isAssistantMessage(Dtos.ChatMessage message) {
-        return message != null && "assistant".equals(message.role());
+        return message != null && ASSISTANT_ROLE.equals(message.role());
     }
 
     private record StoryContext(
