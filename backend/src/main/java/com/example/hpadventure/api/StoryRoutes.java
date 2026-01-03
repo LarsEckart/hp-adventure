@@ -39,7 +39,7 @@ public final class StoryRoutes {
             logger.info("Story request received requestId={} ip={} history={} actionLength={}",
                 requestId, ctx.ip(), meta.historySize(), meta.actionLength());
 
-            if (meta.action() == null || meta.action().isBlank()) {
+            if (isActionMissing(meta)) {
                 logger.warn("Story request missing action requestId={} ip={}", requestId, ctx.ip());
                 ctx.status(400).json(errorResponse("INVALID_REQUEST", "action is required", requestId));
                 return;
@@ -83,7 +83,7 @@ public final class StoryRoutes {
                 logger.info("Story stream request received requestId={} ip={} history={} actionLength={}",
                     requestId, client.ctx().ip(), meta.historySize(), meta.actionLength());
 
-                if (meta.action() == null || meta.action().isBlank()) {
+                if (isActionMissing(meta)) {
                     logger.warn("Story stream request missing action requestId={} ip={}", requestId, client.ctx().ip());
                     client.sendEvent("error", errorResponse("INVALID_REQUEST", "action is required", requestId));
                     client.close();
@@ -140,6 +140,10 @@ public final class StoryRoutes {
     private static RequestMeta requestMeta(Dtos.StoryRequest request) {
         String action = request == null ? null : request.action();
         return new RequestMeta(action, historySize(request), safeLength(action));
+    }
+
+    private static boolean isActionMissing(RequestMeta meta) {
+        return meta.action() == null || meta.action().isBlank();
     }
 
     private static Dtos.ErrorResponse errorResponse(String code, String message, String requestId) {
