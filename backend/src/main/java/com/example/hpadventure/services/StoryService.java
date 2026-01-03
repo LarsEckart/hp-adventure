@@ -26,7 +26,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     private final TextProvider textProvider;
     private final PromptBuilder promptBuilder;
     private final ItemParser itemParser;
-    private final SceneParser sceneParser;
     private final MarkerCleaner markerCleaner;
     private final TitleService titleService;
     private final SummaryService summaryService;
@@ -38,7 +37,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         TextProvider textProvider,
         PromptBuilder promptBuilder,
         ItemParser itemParser,
-        SceneParser sceneParser,
         MarkerCleaner markerCleaner,
         TitleService titleService,
         SummaryService summaryService,
@@ -49,7 +47,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         this.textProvider = textProvider;
         this.promptBuilder = promptBuilder;
         this.itemParser = itemParser;
-        this.sceneParser = sceneParser;
         this.markerCleaner = markerCleaner;
         this.titleService = titleService;
         this.summaryService = summaryService;
@@ -123,7 +120,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         List<Dtos.Item> newItems = itemParser.parse(rawStory);
         boolean completed = CompletionParser.isComplete(rawStory);
         List<String> suggestedActions = OptionsParser.parse(rawStory);
-        String scene = sceneParser.parse(rawStory);
+        String scene = SceneParser.parse(rawStory);
         String cleanStory = sanitizeStory(rawStory);
         String imagePrompt = imagePromptService.buildPrompt(scene, cleanStory);
 

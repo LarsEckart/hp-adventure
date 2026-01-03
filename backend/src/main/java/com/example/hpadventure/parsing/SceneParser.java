@@ -6,7 +6,10 @@ import java.util.regex.Pattern;
 public final class SceneParser {
     private static final Pattern SCENE_PATTERN = Pattern.compile("\\[SZENE:\\s*([^\\]]+)\\]");
 
-    public String parse(String text) {
+    private SceneParser() {
+    }
+
+    public static String parse(String text) {
         if (text == null || text.isBlank()) {
             return null;
         }

@@ -5,7 +5,7 @@ import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 
-import com.example.hpadventure.parsing.SceneParser;
+
 import com.example.hpadventure.providers.ImageProvider;
 import com.example.hpadventure.providers.TextProvider;
 import org.junit.jupiter.api.Test;
@@ -119,7 +119,6 @@ final class StoryServiceTest {
             textProvider,
             new PromptBuilder(),
             new ItemParser(clock),
-            new SceneParser(),
             new MarkerCleaner(),
             new TitleService(textProvider),
             new SummaryService(textProvider),

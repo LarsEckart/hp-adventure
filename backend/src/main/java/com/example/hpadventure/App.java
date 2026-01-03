@@ -16,7 +16,7 @@ import com.example.hpadventure.providers.TextProviderFactory;
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 
-import com.example.hpadventure.parsing.SceneParser;
+
 import com.example.hpadventure.services.ImagePromptService;
 import com.example.hpadventure.services.PromptBuilder;
 import com.example.hpadventure.services.StoryService;
@@ -73,7 +73,6 @@ public final class App {
         // Parsers and services
         PromptBuilder promptBuilder = new PromptBuilder();
         ItemParser itemParser = new ItemParser(Clock.systemUTC());
-        SceneParser sceneParser = new SceneParser();
         MarkerCleaner markerCleaner = new MarkerCleaner();
         TitleService titleService = new TitleService(textProvider);
         SummaryService summaryService = new SummaryService(textProvider);
@@ -82,7 +81,6 @@ public final class App {
             textProvider,
             promptBuilder,
             itemParser,
-            sceneParser,
             markerCleaner,
             titleService,
             summaryService,
