@@ -100,12 +100,10 @@ public final class StoryRoutes {
                     } catch (UpstreamException e) {
                         logger.warn("Story image request upstream failure requestId={} code={} status={} message={}",
                             requestId, e.code(), e.status(), e.getMessage());
-                        client.sendEvent("image_error",
-                            Dtos.errorResponse(e.code(), "Illustration konnte nicht geladen werden.", requestId));
+                        sendImageError(client, requestId, e.code(), "Illustration konnte nicht geladen werden.");
                     } catch (Exception e) {
                         logger.error("Story image request unexpected failure requestId={}", requestId, e);
-                        client.sendEvent("image_error",
-                            Dtos.errorResponse("INTERNAL_ERROR", "Illustration konnte nicht geladen werden.", requestId));
+                        sendImageError(client, requestId, "INTERNAL_ERROR", "Illustration konnte nicht geladen werden.");
                     }
                 } catch (UpstreamException e) {
                     logger.warn("Story stream request upstream failure requestId={} code={} status={} message={}",
@@ -176,6 +174,10 @@ public final class StoryRoutes {
             client.sendEvent("error", error);
             client.close();
         };
+    }
+
+    private static void sendImageError(SseClient client, String requestId, String code, String message) {
+        client.sendEvent("image_error", Dtos.errorResponse(code, message, requestId));
     }
 
     @FunctionalInterface
