@@ -24,20 +24,7 @@ public final class PromptBuilder {
             inventory = player.inventory();
 
             List<Dtos.CompletedAdventure> completedAdventures = player.completedAdventures();
-            if (completedAdventures != null && !completedAdventures.isEmpty()) {
-                prompt.append("\nVERGANGENE ABENTEUER (der Spieler erinnert sich):\n");
-                int startIndex = Math.max(0, completedAdventures.size() - 5);
-                List<Dtos.CompletedAdventure> recentAdventures = completedAdventures.subList(startIndex, completedAdventures.size());
-                for (int i = 0; i < recentAdventures.size(); i++) {
-                    Dtos.CompletedAdventure adventure = recentAdventures.get(i);
-                    if (adventure == null) {
-                        continue;
-                    }
-                    prompt.append(i + 1).append(". \"").append(nullToEmpty(adventure.title())).append("\": ")
-                        .append(nullToEmpty(adventure.summary())).append("\n");
-                }
-                prompt.append("\nDu kannst auf vergangene Abenteuer Bezug nehmen wenn es passt (z.B. \"Nach deinem Erlebnis mit dem Basilisken bist du vorsichtiger geworden...\").\n");
-            }
+            appendCompletedAdventures(prompt, completedAdventures);
         }
 
         prompt.append("\nINVENTAR DES SPIELERS:\n");
@@ -126,5 +113,24 @@ public final class PromptBuilder {
         prompt.append("- Phase: ").append(phase).append("\n");
         prompt.append("- Fokus: ").append(guidance).append("\n");
         prompt.append("- Bis Schritt 15 muss das Abenteuer abgeschlossen sein und [ABENTEUER ABGESCHLOSSEN] enthalten.\n\n");
+    }
+
+    private static void appendCompletedAdventures(StringBuilder prompt, List<Dtos.CompletedAdventure> completedAdventures) {
+        if (completedAdventures == null || completedAdventures.isEmpty()) {
+            return;
+        }
+
+        prompt.append("\nVERGANGENE ABENTEUER (der Spieler erinnert sich):\n");
+        int startIndex = Math.max(0, completedAdventures.size() - 5);
+        List<Dtos.CompletedAdventure> recentAdventures = completedAdventures.subList(startIndex, completedAdventures.size());
+        for (int i = 0; i < recentAdventures.size(); i++) {
+            Dtos.CompletedAdventure adventure = recentAdventures.get(i);
+            if (adventure == null) {
+                continue;
+            }
+            prompt.append(i + 1).append(". \"").append(nullToEmpty(adventure.title())).append("\": ")
+                .append(nullToEmpty(adventure.summary())).append("\n");
+        }
+        prompt.append("\nDu kannst auf vergangene Abenteuer Bezug nehmen wenn es passt (z.B. \"Nach deinem Erlebnis mit dem Basilisken bist du vorsichtiger geworden...\").\n");
     }
 }
