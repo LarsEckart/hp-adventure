@@ -68,13 +68,14 @@ public final class StoryRoutes {
         if (storyHandler instanceof StoryStreamHandler streamHandler) {
             app.post("/api/story/stream", new SseHandler(client -> {
                 String requestId = UUID.randomUUID().toString();
-                client.ctx().header("X-Request-Id", requestId);
-                if (rejectIfRateLimited(rateLimiter, client.ctx().ip(), requestId,
+                var ctx = client.ctx();
+                ctx.header("X-Request-Id", requestId);
+                if (rejectIfRateLimited(rateLimiter, ctx.ip(), requestId,
                     "Story stream request rate limited", streamErrorResponder(client))) {
                     return;
                 }
                 Dtos.StoryRequest request = parseRequest(
-                    () -> client.ctx().bodyAsClass(Dtos.StoryRequest.class),
+                    () -> ctx.bodyAsClass(Dtos.StoryRequest.class),
                     "Story stream request",
                     requestId,
                     streamErrorResponder(client));
@@ -83,9 +84,9 @@ public final class StoryRoutes {
                 }
                 RequestMeta meta = requestMeta(request);
 
-                logRequestReceived("Story stream request received", requestId, client.ctx().ip(), meta);
+                logRequestReceived("Story stream request received", requestId, ctx.ip(), meta);
 
-                if (!validateAction(meta, "Story stream request missing action", requestId, client.ctx().ip(),
+                if (!validateAction(meta, "Story stream request missing action", requestId, ctx.ip(),
                     streamErrorResponder(client))) {
                     return;
                 }
