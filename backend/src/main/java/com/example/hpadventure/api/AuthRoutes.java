@@ -1,6 +1,6 @@
 package com.example.hpadventure.api;
 
-import com.example.hpadventure.auth.UserRepository;
+import com.example.hpadventure.auth.Users;
 import io.javalin.Javalin;
 import io.javalin.http.Context;
 import io.javalin.http.Handler;
@@ -14,11 +14,11 @@ public final class AuthRoutes {
     private static final Logger logger = LoggerFactory.getLogger(AuthRoutes.class);
     private static final String PASSWORD_HEADER = "X-App-Password";
 
-    private final UserRepository userRepository;
+    private final Users users;
 
-    public AuthRoutes(UserRepository userRepository) {
-        this.userRepository = userRepository;
-        logger.info("Configured {} user(s) for authentication", userRepository.userCount());
+    public AuthRoutes(Users users) {
+        this.users = users;
+        logger.info("Configured {} user(s) for authentication", users.count());
     }
 
     /**
@@ -27,7 +27,7 @@ public final class AuthRoutes {
     public Handler authMiddleware() {
         return ctx -> {
             String password = ctx.header(PASSWORD_HEADER);
-            Optional<String> user = userRepository.authenticate(password);
+            Optional<String> user = users.findByPassword(password);
 
             if (user.isEmpty()) {
                 logger.warn("[AUTH] Unauthorized request to {} from {}", ctx.path(), ctx.ip());
@@ -37,7 +37,6 @@ public final class AuthRoutes {
                 return;
             }
 
-            // Store user for logging
             ctx.attribute("authUser", user.get());
             logger.info("[AUTH] {}: {} {}", user.get(), ctx.method(), ctx.path());
         };
@@ -52,7 +51,7 @@ public final class AuthRoutes {
 
     private void handleValidate(Context ctx) {
         String password = ctx.header(PASSWORD_HEADER);
-        Optional<String> user = userRepository.authenticate(password);
+        Optional<String> user = users.findByPassword(password);
 
         if (user.isEmpty()) {
             logger.info("[AUTH] Failed validation attempt from {}", ctx.ip());

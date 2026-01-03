@@ -1,13 +1,12 @@
 package com.example.hpadventure;
 
 import com.example.hpadventure.api.AuthRoutes;
-import com.example.hpadventure.auth.UserRepository;
 import com.example.hpadventure.api.HealthRoutes;
 import com.example.hpadventure.api.StoryRoutes;
 import com.example.hpadventure.api.TtsRoutes;
+import com.example.hpadventure.auth.Users;
 import com.example.hpadventure.config.EnvUtils;
 import com.example.hpadventure.config.RateLimiter;
-import com.example.hpadventure.config.SemicolonSeparatedPairs;
 import com.example.hpadventure.providers.ImageProvider;
 import com.example.hpadventure.providers.ImageProviderFactory;
 import com.example.hpadventure.providers.SpeechProvider;
@@ -95,8 +94,8 @@ public final class App {
         if (appPasswordsEnv == null || appPasswordsEnv.isBlank()) {
             throw new IllegalStateException("APP_PASSWORDS environment variable is required");
         }
-        var userRepository = new UserRepository(SemicolonSeparatedPairs.from(appPasswordsEnv).toMap());
-        AuthRoutes authRoutes = new AuthRoutes(userRepository);
+        Users users = Users.parse(appPasswordsEnv);
+        AuthRoutes authRoutes = new AuthRoutes(users);
 
         Javalin app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson(mapper, false));
@@ -139,7 +138,7 @@ public final class App {
         logger.info("HP Adventure Server started successfully");
         logger.info("Listening on port {}", port);
         logger.info("Rate limit: {} requests/minute {}", rateLimitPerMinute, rateLimitPerMinute > 0 ? "(enabled)" : "(disabled)");
-        logger.info("Authentication: {} user(s)", userRepository.userCount());
+        logger.info("Authentication: {} user(s)", users.count());
         logger.info("Text provider: {}", textProvider.getClass().getSimpleName());
         logger.info("Image provider: {}", imageProvider.isEnabled() ? imageProvider.getClass().getSimpleName() : "disabled");
         logger.info("Speech provider: {}", speechProvider.getClass().getSimpleName());

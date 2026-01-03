@@ -1,23 +1,17 @@
 package com.example.hpadventure.api;
 
-import com.example.hpadventure.auth.UserRepository;
+import com.example.hpadventure.auth.Users;
 import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;
 import org.junit.jupiter.api.Test;
-
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class AuthRoutesTest {
 
-    private static UserRepository repo(Map<String, String> userToPassword) {
-        return new UserRepository(userToPassword);
-    }
-
     @Test
     void validateEndpoint_validPassword() {
-        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
+        AuthRoutes auth = new AuthRoutes(Users.parse("testuser:testpass"));
         Javalin app = Javalin.create();
         auth.register(app);
 
@@ -31,7 +25,7 @@ class AuthRoutesTest {
 
     @Test
     void validateEndpoint_invalidPassword() {
-        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
+        AuthRoutes auth = new AuthRoutes(Users.parse("testuser:testpass"));
         Javalin app = Javalin.create();
         auth.register(app);
 
@@ -45,7 +39,7 @@ class AuthRoutesTest {
 
     @Test
     void validateEndpoint_noPassword() {
-        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
+        AuthRoutes auth = new AuthRoutes(Users.parse("testuser:testpass"));
         Javalin app = Javalin.create();
         auth.register(app);
 
@@ -57,7 +51,7 @@ class AuthRoutesTest {
 
     @Test
     void middleware_blocksUnauthenticated() {
-        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
+        AuthRoutes auth = new AuthRoutes(Users.parse("testuser:testpass"));
         Javalin app = Javalin.create();
         app.before("/api/protected", auth.authMiddleware());
         app.get("/api/protected", ctx -> ctx.result("secret"));
