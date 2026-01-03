@@ -3,7 +3,7 @@ package com.example.hpadventure.services;
 import com.example.hpadventure.api.Dtos;
 
 import com.example.hpadventure.parsing.ItemParser;
-import com.example.hpadventure.parsing.MarkerCleaner;
+
 
 
 import com.example.hpadventure.providers.ImageProvider;
@@ -119,7 +119,6 @@ final class StoryServiceTest {
             textProvider,
             new PromptBuilder(),
             new ItemParser(clock),
-            new MarkerCleaner(),
             new TitleService(textProvider),
             new SummaryService(textProvider),
             new ImagePromptService(),

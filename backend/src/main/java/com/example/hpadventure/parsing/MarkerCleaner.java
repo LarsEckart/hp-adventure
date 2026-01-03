@@ -6,7 +6,10 @@ public final class MarkerCleaner {
     private static final Pattern MARKERS = Pattern.compile("\\[(NEUER GEGENSTAND:[^\\]]+|ABENTEUER ABGESCHLOSSEN|OPTION:[^\\]]+|SZENE:[^\\]]+)\\]");
     private static final Pattern EXTRA_BLANKS = Pattern.compile("\\n{3,}");
 
-    public String strip(String text) {
+    private MarkerCleaner() {
+    }
+
+    public static String strip(String text) {
         if (text == null) {
             return "";
         }

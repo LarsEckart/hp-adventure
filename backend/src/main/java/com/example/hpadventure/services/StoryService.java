@@ -26,7 +26,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     private final TextProvider textProvider;
     private final PromptBuilder promptBuilder;
     private final ItemParser itemParser;
-    private final MarkerCleaner markerCleaner;
     private final TitleService titleService;
     private final SummaryService summaryService;
     private final ImagePromptService imagePromptService;
@@ -37,7 +36,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         TextProvider textProvider,
         PromptBuilder promptBuilder,
         ItemParser itemParser,
-        MarkerCleaner markerCleaner,
         TitleService titleService,
         SummaryService summaryService,
         ImagePromptService imagePromptService,
@@ -47,7 +45,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         this.textProvider = textProvider;
         this.promptBuilder = promptBuilder;
         this.itemParser = itemParser;
-        this.markerCleaner = markerCleaner;
         this.titleService = titleService;
         this.summaryService = summaryService;
         this.imagePromptService = imagePromptService;
@@ -169,7 +166,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     }
 
     private String sanitizeStory(String rawStory) {
-        return MarkdownSanitizer.strip(markerCleaner.strip(rawStory));
+        return MarkdownSanitizer.strip(MarkerCleaner.strip(rawStory));
     }
 
     private List<String> collectAssistantMessages(List<Dtos.ChatMessage> history, String latestStory) {
