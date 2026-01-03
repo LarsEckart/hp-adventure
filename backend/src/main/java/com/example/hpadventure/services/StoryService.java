@@ -77,14 +77,13 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         StoryContext context = buildStoryContext(request);
         StringBuilder rawStory = new StringBuilder();
         StreamMarkerFilter markerFilter = new StreamMarkerFilter();
-        MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
         textProvider.streamMessage(context.systemPrompt(), context.messages(), STORY_MAX_TOKENS, delta -> {
             if (delta == null || delta.isEmpty()) {
                 return;
             }
             rawStory.append(delta);
             String cleaned = markerFilter.apply(delta);
-            String sanitized = markdownSanitizer.strip(cleaned);
+            String sanitized = MarkdownSanitizer.strip(cleaned);
             if (!sanitized.isEmpty()) {
                 onDelta.accept(sanitized);
             }
@@ -179,8 +178,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     }
 
     private String sanitizeStory(String rawStory) {
-        MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
-        return markdownSanitizer.strip(markerCleaner.strip(rawStory));
+        return MarkdownSanitizer.strip(markerCleaner.strip(rawStory));
     }
 
     private List<String> collectAssistantMessages(List<Dtos.ChatMessage> history, String latestStory) {

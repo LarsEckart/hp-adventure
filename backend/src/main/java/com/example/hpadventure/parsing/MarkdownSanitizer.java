@@ -1,7 +1,10 @@
 package com.example.hpadventure.parsing;
 
 public final class MarkdownSanitizer {
-    public String strip(String text) {
+    private MarkdownSanitizer() {
+    }
+
+    public static String strip(String text) {
         if (text == null || text.isEmpty()) {
             return "";
         }
