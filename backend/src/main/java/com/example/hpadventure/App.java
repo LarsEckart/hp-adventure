@@ -1,6 +1,7 @@
 package com.example.hpadventure;
 
 import com.example.hpadventure.api.AuthRoutes;
+import com.example.hpadventure.auth.UserRepository;
 import com.example.hpadventure.api.HealthRoutes;
 import com.example.hpadventure.api.StoryRoutes;
 import com.example.hpadventure.api.TtsRoutes;
@@ -91,7 +92,8 @@ public final class App {
 
         // Authentication
         var appPasswords = SemicolonSeparatedPairs.from(System.getenv("APP_PASSWORDS"));
-        AuthRoutes authRoutes = new AuthRoutes(appPasswords.toMap());
+        var userRepository = new UserRepository(appPasswords.toMap());
+        AuthRoutes authRoutes = new AuthRoutes(userRepository);
 
         Javalin app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson(mapper, false));

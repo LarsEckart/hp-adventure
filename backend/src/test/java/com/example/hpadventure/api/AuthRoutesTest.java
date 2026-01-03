@@ -1,6 +1,6 @@
 package com.example.hpadventure.api;
 
-import com.example.hpadventure.config.SemicolonSeparatedPairs;
+import com.example.hpadventure.auth.UserRepository;
 import io.javalin.Javalin;
 import io.javalin.testtools.JavalinTest;
 import org.junit.jupiter.api.Test;
@@ -11,44 +11,13 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AuthRoutesTest {
 
-    private static Map<String, String> parse(String config) {
-        return SemicolonSeparatedPairs.from(config).toMap();
-    }
-
-    @Test
-    void validConfig() {
-        AuthRoutes auth = new AuthRoutes(parse("anna:secret1,tom:secret2,lisa:magic3"));
-        
-        assertTrue(auth.isEnabled());
-        
-        var result1 = auth.validatePassword("secret1");
-        assertTrue(result1.isValid());
-        assertEquals("anna", result1.user());
-        
-        var result2 = auth.validatePassword("secret2");
-        assertTrue(result2.isValid());
-        assertEquals("tom", result2.user());
-        
-        var result3 = auth.validatePassword("magic3");
-        assertTrue(result3.isValid());
-        assertEquals("lisa", result3.user());
-        
-        assertFalse(auth.validatePassword("wrongpassword").isValid());
-        assertFalse(auth.validatePassword(null).isValid());
-        assertFalse(auth.validatePassword("").isValid());
-    }
-
-    @Test
-    void emptyMap() {
-        AuthRoutes auth = new AuthRoutes(Map.of());
-        
-        assertFalse(auth.isEnabled());
-        assertFalse(auth.validatePassword("anypassword").isValid());
+    private static UserRepository repo(Map<String, String> userToPassword) {
+        return new UserRepository(userToPassword);
     }
 
     @Test
     void validateEndpoint_noAuthConfigured() {
-        AuthRoutes auth = new AuthRoutes(Map.of());
+        AuthRoutes auth = new AuthRoutes(repo(Map.of()));
         Javalin app = Javalin.create();
         auth.register(app);
 
@@ -60,7 +29,7 @@ class AuthRoutesTest {
 
     @Test
     void validateEndpoint_validPassword() {
-        AuthRoutes auth = new AuthRoutes(Map.of("testuser", "testpass"));
+        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
         Javalin app = Javalin.create();
         auth.register(app);
 
@@ -74,7 +43,7 @@ class AuthRoutesTest {
 
     @Test
     void validateEndpoint_invalidPassword() {
-        AuthRoutes auth = new AuthRoutes(Map.of("testuser", "testpass"));
+        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
         Javalin app = Javalin.create();
         auth.register(app);
 
@@ -88,7 +57,7 @@ class AuthRoutesTest {
 
     @Test
     void validateEndpoint_noPassword() {
-        AuthRoutes auth = new AuthRoutes(Map.of("testuser", "testpass"));
+        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
         Javalin app = Javalin.create();
         auth.register(app);
 
@@ -100,7 +69,7 @@ class AuthRoutesTest {
 
     @Test
     void middleware_blocksUnauthenticated() {
-        AuthRoutes auth = new AuthRoutes(Map.of("testuser", "testpass"));
+        AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
         Javalin app = Javalin.create();
         app.before("/api/protected", auth.authMiddleware());
         app.get("/api/protected", ctx -> ctx.result("secret"));
@@ -125,7 +94,7 @@ class AuthRoutesTest {
 
     @Test
     void middleware_allowsAllWhenDisabled() {
-        AuthRoutes auth = new AuthRoutes(Map.of());
+        AuthRoutes auth = new AuthRoutes(repo(Map.of()));
         Javalin app = Javalin.create();
         app.before("/api/protected", auth.authMiddleware());
         app.get("/api/protected", ctx -> ctx.result("secret"));
