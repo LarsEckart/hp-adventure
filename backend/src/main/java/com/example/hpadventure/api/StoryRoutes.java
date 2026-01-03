@@ -22,9 +22,8 @@ public final class StoryRoutes {
         app.post("/api/story", ctx -> {
             String requestId = UUID.randomUUID().toString();
             ctx.header("X-Request-Id", requestId);
-            if (isRateLimited(rateLimiter, ctx.ip())) {
-                logger.warn("Story request rate limited requestId={} ip={}", requestId, ctx.ip());
-                ctx.status(429).json(Dtos.errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
+            if (rejectIfRateLimited(rateLimiter, ctx.ip(), requestId, "Story request rate limited",
+                error -> ctx.status(429).json(error))) {
                 return;
             }
             Dtos.StoryRequest request = parseRequest(
@@ -62,10 +61,8 @@ public final class StoryRoutes {
             app.post("/api/story/stream", new SseHandler(client -> {
                 String requestId = UUID.randomUUID().toString();
                 client.ctx().header("X-Request-Id", requestId);
-                if (isRateLimited(rateLimiter, client.ctx().ip())) {
-                    logger.warn("Story stream request rate limited requestId={} ip={}", requestId, client.ctx().ip());
-                    client.sendEvent("error", Dtos.errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
-                    client.close();
+                if (rejectIfRateLimited(rateLimiter, client.ctx().ip(), requestId,
+                    "Story stream request rate limited", streamErrorResponder(client))) {
                     return;
                 }
                 Dtos.StoryRequest request = parseRequest(
@@ -118,6 +115,16 @@ public final class StoryRoutes {
 
     private static boolean isRateLimited(RateLimiter rateLimiter, String ip) {
         return rateLimiter != null && !rateLimiter.allow(ip);
+    }
+
+    private static boolean rejectIfRateLimited(RateLimiter rateLimiter, String ip, String requestId,
+                                               String logMessage, ErrorResponder errorResponder) {
+        if (!isRateLimited(rateLimiter, ip)) {
+            return false;
+        }
+        logger.warn("{} requestId={} ip={}", logMessage, requestId, ip);
+        errorResponder.respond(Dtos.errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
+        return true;
     }
 
     private static void logRequestReceived(String message, String requestId, String ip, RequestMeta meta) {
