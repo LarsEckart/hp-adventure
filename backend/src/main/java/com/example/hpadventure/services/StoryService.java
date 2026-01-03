@@ -205,9 +205,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             }
         }
         int step = completedTurns + 1;
-        if (step < 1) {
-            return 1;
-        }
         return Math.min(step, STORY_ARC_TOTAL_STEPS);
     }
 
