@@ -131,6 +131,18 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         String imagePrompt = imagePromptService.buildPrompt(scene, cleanStory);
 
         Instant now = Instant.now(clock);
+        Dtos.Adventure adventure = buildAdventure(request, history, cleanStory, completed, now);
+        Dtos.Assistant assistant = new Dtos.Assistant(cleanStory, suggestedActions, newItems, adventure, null);
+        return new StreamResult(assistant, imagePrompt);
+    }
+
+    private Dtos.Adventure buildAdventure(
+        Dtos.StoryRequest request,
+        List<Dtos.ChatMessage> history,
+        String cleanStory,
+        boolean completed,
+        Instant now
+    ) {
         String adventureTitle = request.currentAdventure() != null ? request.currentAdventure().title() : null;
         List<String> assistantMessages = collectAssistantMessages(history, cleanStory);
         if (adventureTitle == null && assistantMessages.size() >= 2) {
@@ -149,9 +161,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             completedAt = now.toString();
         }
 
-        Dtos.Adventure adventure = new Dtos.Adventure(adventureTitle, completed, summary, completedAt);
-        Dtos.Assistant assistant = new Dtos.Assistant(cleanStory, suggestedActions, newItems, adventure, null);
-        return new StreamResult(assistant, imagePrompt);
+        return new Dtos.Adventure(adventureTitle, completed, summary, completedAt);
     }
 
     private Dtos.Assistant attachImage(Dtos.Assistant assistant, Dtos.Image image) {
