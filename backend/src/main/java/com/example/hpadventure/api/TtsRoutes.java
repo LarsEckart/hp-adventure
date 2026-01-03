@@ -27,7 +27,7 @@ public final class TtsRoutes {
                 request = ctx.bodyAsClass(Dtos.TtsRequest.class);
             } catch (Exception e) {
                 logger.warn("TTS request invalid body requestId={} ip={}", requestId, ctx.ip(), e);
-                ctx.status(400).json(errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
+                ctx.status(400).json(Dtos.errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
                 return;
             }
 
@@ -37,7 +37,7 @@ public final class TtsRoutes {
 
             if (text == null || text.isBlank()) {
                 logger.warn("TTS request missing text requestId={} ip={}", requestId, ctx.ip());
-                ctx.status(400).json(errorResponse("INVALID_REQUEST", "text is required", requestId));
+                ctx.status(400).json(Dtos.errorResponse("INVALID_REQUEST", "text is required", requestId));
                 return;
             }
 
@@ -56,12 +56,12 @@ public final class TtsRoutes {
                     requestId, e.code(), e.status(), e.getMessage());
                 if (!ctx.res().isCommitted()) {
                     int status = e.status() >= 400 ? e.status() : 502;
-                    ctx.status(status).json(errorResponse(e.code(), "Upstream error: " + e.getMessage(), requestId));
+                    ctx.status(status).json(Dtos.errorResponse(e.code(), "Upstream error: " + e.getMessage(), requestId));
                 }
             } catch (Exception e) {
                 logger.error("TTS request unexpected failure requestId={}", requestId, e);
                 if (!ctx.res().isCommitted()) {
-                    ctx.status(500).json(errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
+                    ctx.status(500).json(Dtos.errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
                 }
             }
         });
@@ -69,10 +69,6 @@ public final class TtsRoutes {
 
     private static int safeLength(String value) {
         return value == null ? 0 : value.length();
-    }
-
-    private static Dtos.ErrorResponse errorResponse(String code, String message, String requestId) {
-        return new Dtos.ErrorResponse(new Dtos.ErrorResponse.Error(code, message, requestId));
     }
 
     private static final class CountingOutputStream extends FilterOutputStream {

@@ -23,7 +23,7 @@ public final class StoryRoutes {
             ctx.header("X-Request-Id", requestId);
             if (isRateLimited(rateLimiter, ctx.ip())) {
                 logger.warn("Story request rate limited requestId={} ip={}", requestId, ctx.ip());
-                ctx.status(429).json(errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
+                ctx.status(429).json(Dtos.errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
                 return;
             }
             Dtos.StoryRequest request;
@@ -31,7 +31,7 @@ public final class StoryRoutes {
                 request = ctx.bodyAsClass(Dtos.StoryRequest.class);
             } catch (Exception e) {
                 logger.warn("Story request invalid body requestId={} ip={}", requestId, ctx.ip(), e);
-                ctx.status(400).json(errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
+                ctx.status(400).json(Dtos.errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
                 return;
             }
             RequestMeta meta = requestMeta(request);
@@ -40,7 +40,7 @@ public final class StoryRoutes {
 
             if (isActionMissing(meta)) {
                 logMissingAction("Story request missing action", requestId, ctx.ip());
-                ctx.status(400).json(errorResponse("INVALID_REQUEST", "action is required", requestId));
+                ctx.status(400).json(Dtos.errorResponse("INVALID_REQUEST", "action is required", requestId));
                 return;
             }
 
@@ -51,10 +51,10 @@ public final class StoryRoutes {
                 logger.warn("Story request upstream failure requestId={} code={} status={} message={}",
                     requestId, e.code(), e.status(), e.getMessage());
                 int status = e.status() >= 400 ? e.status() : 502;
-                ctx.status(status).json(errorResponse(e.code(), "Upstream error: " + e.getMessage(), requestId));
+                ctx.status(status).json(Dtos.errorResponse(e.code(), "Upstream error: " + e.getMessage(), requestId));
             } catch (Exception e) {
                 logger.error("Story request unexpected failure requestId={}", requestId, e);
-                ctx.status(500).json(errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
+                ctx.status(500).json(Dtos.errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
             }
         });
 
@@ -64,7 +64,7 @@ public final class StoryRoutes {
                 client.ctx().header("X-Request-Id", requestId);
                 if (isRateLimited(rateLimiter, client.ctx().ip())) {
                     logger.warn("Story stream request rate limited requestId={} ip={}", requestId, client.ctx().ip());
-                    client.sendEvent("error", errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
+                    client.sendEvent("error", Dtos.errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
                     client.close();
                     return;
                 }
@@ -73,7 +73,7 @@ public final class StoryRoutes {
                     request = client.ctx().bodyAsClass(Dtos.StoryRequest.class);
                 } catch (Exception e) {
                     logger.warn("Story stream request invalid body requestId={} ip={}", requestId, client.ctx().ip(), e);
-                    client.sendEvent("error", errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
+                    client.sendEvent("error", Dtos.errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
                     client.close();
                     return;
                 }
@@ -83,7 +83,7 @@ public final class StoryRoutes {
 
                 if (isActionMissing(meta)) {
                     logMissingAction("Story stream request missing action", requestId, client.ctx().ip());
-                    client.sendEvent("error", errorResponse("INVALID_REQUEST", "action is required", requestId));
+                    client.sendEvent("error", Dtos.errorResponse("INVALID_REQUEST", "action is required", requestId));
                     client.close();
                     return;
                 }
@@ -104,19 +104,19 @@ public final class StoryRoutes {
                         logger.warn("Story image request upstream failure requestId={} code={} status={} message={}",
                             requestId, e.code(), e.status(), e.getMessage());
                         client.sendEvent("image_error",
-                            errorResponse(e.code(), "Illustration konnte nicht geladen werden.", requestId));
+                            Dtos.errorResponse(e.code(), "Illustration konnte nicht geladen werden.", requestId));
                     } catch (Exception e) {
                         logger.error("Story image request unexpected failure requestId={}", requestId, e);
                         client.sendEvent("image_error",
-                            errorResponse("INTERNAL_ERROR", "Illustration konnte nicht geladen werden.", requestId));
+                            Dtos.errorResponse("INTERNAL_ERROR", "Illustration konnte nicht geladen werden.", requestId));
                     }
                 } catch (UpstreamException e) {
                     logger.warn("Story stream request upstream failure requestId={} code={} status={} message={}",
                         requestId, e.code(), e.status(), e.getMessage());
-                    client.sendEvent("error", errorResponse(e.code(), "Upstream error: " + e.getMessage(), requestId));
+                    client.sendEvent("error", Dtos.errorResponse(e.code(), "Upstream error: " + e.getMessage(), requestId));
                 } catch (Exception e) {
                     logger.error("Story stream request unexpected failure requestId={}", requestId, e);
-                    client.sendEvent("error", errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
+                    client.sendEvent("error", Dtos.errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
                 } finally {
                     client.close();
                 }
@@ -155,10 +155,6 @@ public final class StoryRoutes {
 
     private static boolean isActionMissing(RequestMeta meta) {
         return meta.action() == null || meta.action().isBlank();
-    }
-
-    private static Dtos.ErrorResponse errorResponse(String code, String message, String requestId) {
-        return new Dtos.ErrorResponse(new Dtos.ErrorResponse.Error(code, message, requestId));
     }
 
     private record RequestMeta(String action, int historySize, int actionLength) {

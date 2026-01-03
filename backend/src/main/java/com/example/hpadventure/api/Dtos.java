@@ -69,4 +69,8 @@ public final class Dtos {
         public record Error(String code, String message, String requestId) {
         }
     }
+
+    public static ErrorResponse errorResponse(String code, String message, String requestId) {
+        return new ErrorResponse(new ErrorResponse.Error(code, message, requestId));
+    }
 }
