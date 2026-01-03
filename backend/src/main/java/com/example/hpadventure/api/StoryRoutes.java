@@ -94,17 +94,7 @@ public final class StoryRoutes {
                     });
                     client.sendEvent("final_text", new Dtos.StoryResponse(result.assistant()));
 
-                    try {
-                        Dtos.Image image = streamHandler.generateImage(result.imagePrompt());
-                        client.sendEvent("image", new Dtos.StreamImage(image));
-                    } catch (UpstreamException e) {
-                        logger.warn("Story image request upstream failure requestId={} code={} status={} message={}",
-                            requestId, e.code(), e.status(), e.getMessage());
-                        sendImageError(client, requestId, e.code(), "Illustration konnte nicht geladen werden.");
-                    } catch (Exception e) {
-                        logger.error("Story image request unexpected failure requestId={}", requestId, e);
-                        sendImageError(client, requestId, "INTERNAL_ERROR", "Illustration konnte nicht geladen werden.");
-                    }
+                    sendImage(streamHandler, result, client, requestId);
                 } catch (UpstreamException e) {
                     logger.warn("Story stream request upstream failure requestId={} code={} status={} message={}",
                         requestId, e.code(), e.status(), e.getMessage());
@@ -178,6 +168,21 @@ public final class StoryRoutes {
 
     private static void sendImageError(SseClient client, String requestId, String code, String message) {
         client.sendEvent("image_error", Dtos.errorResponse(code, message, requestId));
+    }
+
+    private static void sendImage(StoryStreamHandler streamHandler, StoryStreamHandler.StreamResult result,
+                                  SseClient client, String requestId) {
+        try {
+            Dtos.Image image = streamHandler.generateImage(result.imagePrompt());
+            client.sendEvent("image", new Dtos.StreamImage(image));
+        } catch (UpstreamException e) {
+            logger.warn("Story image request upstream failure requestId={} code={} status={} message={}",
+                requestId, e.code(), e.status(), e.getMessage());
+            sendImageError(client, requestId, e.code(), "Illustration konnte nicht geladen werden.");
+        } catch (Exception e) {
+            logger.error("Story image request unexpected failure requestId={}", requestId, e);
+            sendImageError(client, requestId, "INTERNAL_ERROR", "Illustration konnte nicht geladen werden.");
+        }
     }
 
     @FunctionalInterface
