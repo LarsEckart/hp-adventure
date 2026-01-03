@@ -183,6 +183,12 @@ OPENROUTER_API_KEY=... ./gradlew test --tests "OpenRouterTextProviderSmokeTest"
 - If a full `./gradlew test` run stalls on smoke tests, unset the API keys or run the targeted suites.
 - Keep the loop tight; run the full test suite before shipping.
 
+## Collaboration Notes
+
+- Ask Lars for clarification when requirements or failures are unclear.
+- Commit in small, frequent checkpoints to keep a safe rollback path.
+- Keep this guide updated when workflows, endpoints, or tooling change.
+
 ## Refactoring Process
 
 When doing production refactors, follow `agents/refactoring.process.md`:
