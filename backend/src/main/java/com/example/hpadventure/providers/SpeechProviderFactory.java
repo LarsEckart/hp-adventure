@@ -1,5 +1,6 @@
 package com.example.hpadventure.providers;
 
+import com.example.hpadventure.config.EnvUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -27,7 +28,7 @@ public final class SpeechProviderFactory {
         String model = System.getenv().getOrDefault("ELEVENLABS_MODEL", DEFAULT_ELEVENLABS_MODEL);
         String baseUrl = System.getenv().getOrDefault("ELEVENLABS_BASE_URL", DEFAULT_ELEVENLABS_BASE_URL);
         String outputFormat = System.getenv("ELEVENLABS_OUTPUT_FORMAT");
-        Integer optimizeLatency = parseIntOrNull(System.getenv("ELEVENLABS_OPTIMIZE_STREAMING_LATENCY"));
+        Integer optimizeLatency = EnvUtils.parseIntOrNull(System.getenv("ELEVENLABS_OPTIMIZE_STREAMING_LATENCY"));
 
         return create(httpClient, mapper, apiKey, voiceId, model, baseUrl, outputFormat, optimizeLatency);
     }
@@ -63,14 +64,4 @@ public final class SpeechProviderFactory {
         );
     }
 
-    private static Integer parseIntOrNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
 }

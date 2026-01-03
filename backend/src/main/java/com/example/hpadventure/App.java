@@ -4,6 +4,7 @@ import com.example.hpadventure.api.AuthRoutes;
 import com.example.hpadventure.api.HealthRoutes;
 import com.example.hpadventure.api.StoryRoutes;
 import com.example.hpadventure.api.TtsRoutes;
+import com.example.hpadventure.config.EnvUtils;
 import com.example.hpadventure.config.RateLimiter;
 import com.example.hpadventure.providers.ImageProvider;
 import com.example.hpadventure.providers.ImageProviderFactory;
@@ -61,7 +62,7 @@ public final class App {
         SpeechProvider speechProvider = SpeechProviderFactory.fromEnv(httpClient, mapper);
 
         // Rate limiter
-        Integer rateLimitPerMinute = parseIntOrNull(System.getenv("RATE_LIMIT_PER_MINUTE"));
+        Integer rateLimitPerMinute = EnvUtils.parseIntOrNull(System.getenv("RATE_LIMIT_PER_MINUTE"));
         if (rateLimitPerMinute == null) {
             rateLimitPerMinute = 2;
         }
@@ -149,14 +150,4 @@ public final class App {
         logger.info("=".repeat(60));
     }
 
-    private static Integer parseIntOrNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return null;
-        }
-    }
 }
