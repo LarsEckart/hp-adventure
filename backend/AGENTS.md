@@ -179,6 +179,7 @@ OPENROUTER_API_KEY=... ./gradlew test --tests "OpenRouterTextProviderSmokeTest"
 - Prefer targeted tests while iterating (`./gradlew test --tests "StoryServiceTest"` or `StoryRoutesTest`).
 - Streaming/image changes: run `StoryStreamServiceTest` to validate SSE ordering + image events.
 - Prompt changes: run `StoryServiceTest` to verify parsing and completion handling.
+- If API keys are set, use targeted tests to avoid triggering external smoke tests during the inner loop.
 - Keep the loop tight; run the full test suite before shipping.
 
 ## Refactoring Process
