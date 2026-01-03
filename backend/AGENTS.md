@@ -174,6 +174,13 @@ ANTHROPIC_API_KEY=... ./gradlew test --tests "AnthropicTextProviderSmokeTest"
 OPENROUTER_API_KEY=... ./gradlew test --tests "OpenRouterTextProviderSmokeTest"
 ```
 
+## Feedback Loops
+
+- Prefer targeted tests while iterating (`./gradlew test --tests "StoryServiceTest"` or `StoryRoutesTest`).
+- Streaming/image changes: run `StoryStreamServiceTest` to validate SSE ordering + image events.
+- Prompt changes: run `StoryServiceTest` to verify parsing and completion handling.
+- Keep the loop tight; run the full test suite before shipping.
+
 ## Refactoring Process
 
 When doing production refactors, follow `agents/refactoring.process.md`:
