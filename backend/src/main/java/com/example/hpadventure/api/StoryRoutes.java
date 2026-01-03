@@ -14,6 +14,7 @@ import java.util.UUID;
 
 public final class StoryRoutes {
     private static final Logger logger = LoggerFactory.getLogger(StoryRoutes.class);
+    private static final String IMAGE_FAILURE_MESSAGE = "Illustration konnte nicht geladen werden.";
 
     private StoryRoutes() {
     }
@@ -125,10 +126,6 @@ public final class StoryRoutes {
             message, requestId, ip, meta.historySize(), meta.actionLength());
     }
 
-    private static void logMissingAction(String message, String requestId, String ip) {
-        logger.warn("{} requestId={} ip={}", message, requestId, ip);
-    }
-
     private static RequestMeta requestMeta(Dtos.StoryRequest request) {
         String action = request == null ? null : request.action();
         int historySize = request == null || request.conversationHistory() == null
@@ -151,7 +148,7 @@ public final class StoryRoutes {
     private static boolean validateAction(RequestMeta meta, String logMessage, String requestId, String ip,
                                           ErrorResponder errorResponder) {
         if (meta.isActionMissing()) {
-            logMissingAction(logMessage, requestId, ip);
+            logger.warn("{} requestId={} ip={}", logMessage, requestId, ip);
             errorResponder.respond(Dtos.errorResponse("INVALID_REQUEST", "action is required", requestId));
             return false;
         }
@@ -177,10 +174,10 @@ public final class StoryRoutes {
         } catch (UpstreamException e) {
             logger.warn("Story image request upstream failure requestId={} code={} status={} message={}",
                 requestId, e.code(), e.status(), e.getMessage());
-            sendImageError(client, requestId, e.code(), "Illustration konnte nicht geladen werden.");
+            sendImageError(client, requestId, e.code(), IMAGE_FAILURE_MESSAGE);
         } catch (Exception e) {
             logger.error("Story image request unexpected failure requestId={}", requestId, e);
-            sendImageError(client, requestId, "INTERNAL_ERROR", "Illustration konnte nicht geladen werden.");
+            sendImageError(client, requestId, "INTERNAL_ERROR", IMAGE_FAILURE_MESSAGE);
         }
     }
 
