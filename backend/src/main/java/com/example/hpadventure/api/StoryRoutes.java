@@ -30,7 +30,6 @@ public final class StoryRoutes {
                 () -> ctx.bodyAsClass(Dtos.StoryRequest.class),
                 "Story request",
                 requestId,
-                ctx.ip(),
                 error -> ctx.status(400).json(error));
             if (request == null) {
                 return;
@@ -72,7 +71,6 @@ public final class StoryRoutes {
                     () -> client.ctx().bodyAsClass(Dtos.StoryRequest.class),
                     "Story stream request",
                     requestId,
-                    client.ctx().ip(),
                     error -> {
                         client.sendEvent("error", error);
                         client.close();
@@ -157,12 +155,12 @@ public final class StoryRoutes {
         return meta.action() == null || meta.action().isBlank();
     }
 
-    private static Dtos.StoryRequest parseRequest(RequestReader reader, String logPrefix, String requestId, String ip,
+    private static Dtos.StoryRequest parseRequest(RequestReader reader, String logPrefix, String requestId,
                                                   ErrorResponder errorResponder) {
         try {
             return reader.read();
         } catch (Exception e) {
-            logger.warn("{} invalid body requestId={} ip={}", logPrefix, requestId, ip, e);
+            logger.warn("{} invalid body requestId={}", logPrefix, requestId, e);
             errorResponder.respond(Dtos.errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
             return null;
         }
