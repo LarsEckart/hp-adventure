@@ -178,7 +178,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         List<String> assistantMessages = new ArrayList<>();
         if (history != null) {
             for (Dtos.ChatMessage message : history) {
-                if (message != null && "assistant".equals(message.role()) && message.content() != null) {
+                if (isAssistantMessage(message) && message.content() != null) {
                     assistantMessages.add(message.content());
                 }
             }
@@ -193,7 +193,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         int completedTurns = 0;
         if (history != null) {
             for (Dtos.ChatMessage message : history) {
-                if (message != null && "assistant".equals(message.role())) {
+                if (isAssistantMessage(message)) {
                     completedTurns += 1;
                 }
             }
@@ -203,6 +203,10 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             return 1;
         }
         return Math.min(step, STORY_ARC_TOTAL_STEPS);
+    }
+
+    private boolean isAssistantMessage(Dtos.ChatMessage message) {
+        return message != null && "assistant".equals(message.role());
     }
 
     private record StoryContext(
