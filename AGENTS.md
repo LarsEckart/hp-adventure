@@ -48,7 +48,7 @@ Developer notes:
 - Streaming deltas may include whitespace-only chunks; do not drop/trim them or words may concatenate.
 - Each assistant turn is expected to include an image; if a turn shows text without an image, check that the SSE `image` event arrived (otherwise the UI keeps `image = Nothing`) and correlate backend OpenAI image logs with the `X-Request-Id`.
 - The UI only shows image placeholders while the latest turn is loading; if image generation fails and an error appears, the image column is hidden for that turn.
-- The service worker caches `elm.js`/`styles.css`; bump `CACHE_NAME` in `frontend/public/sw.js` (and copy to backend public) whenever you change frontend assets (Elm output, CSS, app.js, index.html) or the UI doesn’t reflect recent changes in production.
+- The service worker caches `elm.js`/`styles.css`; bump `CACHE_NAME` in `frontend/public/sw.js` (and copy to backend public) whenever you change frontend assets (Elm output, CSS, app.js, index.html) or the UI doesn't reflect recent changes in production.
 - Prompt + parsing live in `backend/src/main/java/com/example/hpadventure/services` and `backend/src/main/java/com/example/hpadventure/parsing`.
 - HTTP routes live in `backend/src/main/java/com/example/hpadventure/api/HealthRoutes.java` and `backend/src/main/java/com/example/hpadventure/api/StoryRoutes.java` (wired from `App.java`).
 - `StoryService` implements `StoryHandler` so routes can be tested with stubs.
@@ -60,7 +60,7 @@ Developer notes:
 - E2E smoke tests (Playwright): `npm run test:e2e` (first time: `npx playwright install` to fetch browsers; serves `backend/src/main/resources/public` via `python3 -m http.server`).
 - Playwright uses `playwright.config.js` (base URL `http://localhost:4173`, serves `backend/src/main/resources/public`); E2E selectors target `data-testid` attributes in `frontend/src/View.elm`.
 - If you touch Elm views, rerun `./frontend/build.sh` so the compiled `elm.js` in `frontend/public` and `backend/src/main/resources/public` stays in sync.
-- Elm HTTP support requires `elm/http`; add deps with `elm install` (don’t hand-edit versions).
+- Elm HTTP support requires `elm/http`; add deps with `elm install` (don't hand-edit versions).
 - After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.
 - The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText`, `assistant.suggestedActions`, plus `assistant.image` (base64).
 - UI command shortcuts (handled client-side): `inventar`, `geschichte`, `aufgeben`, `start`.
