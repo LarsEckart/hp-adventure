@@ -20,4 +20,18 @@ public final class EnvUtils {
             return null;
         }
     }
+
+    /**
+     * Parse a string as an integer, returning a default value if blank or invalid.
+     */
+    public static int parseIntOrDefault(String value, int defaultValue) {
+        if (value == null || value.isBlank()) {
+            return defaultValue;
+        }
+        try {
+            return Integer.parseInt(value.trim());
+        } catch (NumberFormatException e) {
+            return defaultValue;
+        }
+    }
 }

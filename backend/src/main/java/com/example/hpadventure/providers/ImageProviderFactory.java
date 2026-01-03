@@ -1,5 +1,6 @@
 package com.example.hpadventure.providers;
 
+import com.example.hpadventure.config.EnvUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public final class ImageProviderFactory {
         String openAiFormat = System.getenv().getOrDefault("OPENAI_IMAGE_FORMAT", DEFAULT_OPENAI_FORMAT);
         String openAiQuality = System.getenv().getOrDefault("OPENAI_IMAGE_QUALITY", DEFAULT_OPENAI_QUALITY);
         String openAiSize = System.getenv().getOrDefault("OPENAI_IMAGE_SIZE", DEFAULT_OPENAI_SIZE);
-        Integer openAiCompression = parseIntOrDefault(System.getenv("OPENAI_IMAGE_COMPRESSION"), DEFAULT_OPENAI_COMPRESSION);
+        int openAiCompression = EnvUtils.parseIntOrDefault(System.getenv("OPENAI_IMAGE_COMPRESSION"), DEFAULT_OPENAI_COMPRESSION);
 
         return create(
             httpClient, mapper,
@@ -136,16 +137,5 @@ public final class ImageProviderFactory {
         // Return placeholder provider that generates a static "no provider configured" image
         logger.warn("No image API key configured (OPENROUTER_API_KEY or OPENAI_API_KEY), using placeholder");
         return new PlaceholderImageProvider();
-    }
-
-    private static Integer parseIntOrDefault(String value, int defaultValue) {
-        if (value == null || value.isBlank()) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(value.trim());
-        } catch (NumberFormatException e) {
-            return defaultValue;
-        }
     }
 }
