@@ -26,7 +26,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     private final TextProvider textProvider;
     private final PromptBuilder promptBuilder;
     private final ItemParser itemParser;
-    private final CompletionParser completionParser;
     private final OptionsParser optionsParser;
     private final SceneParser sceneParser;
     private final MarkerCleaner markerCleaner;
@@ -40,7 +39,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         TextProvider textProvider,
         PromptBuilder promptBuilder,
         ItemParser itemParser,
-        CompletionParser completionParser,
         OptionsParser optionsParser,
         SceneParser sceneParser,
         MarkerCleaner markerCleaner,
@@ -53,7 +51,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         this.textProvider = textProvider;
         this.promptBuilder = promptBuilder;
         this.itemParser = itemParser;
-        this.completionParser = completionParser;
         this.optionsParser = optionsParser;
         this.sceneParser = sceneParser;
         this.markerCleaner = markerCleaner;
@@ -127,7 +124,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
 
     private StreamResult buildAssistantDraft(Dtos.StoryRequest request, List<Dtos.ChatMessage> history, String rawStory) {
         List<Dtos.Item> newItems = itemParser.parse(rawStory);
-        boolean completed = completionParser.isComplete(rawStory);
+        boolean completed = CompletionParser.isComplete(rawStory);
         List<String> suggestedActions = optionsParser.parse(rawStory);
         String scene = sceneParser.parse(rawStory);
         String cleanStory = sanitizeStory(rawStory);

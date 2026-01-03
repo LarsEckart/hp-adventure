@@ -1,7 +1,7 @@
 package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
-import com.example.hpadventure.parsing.CompletionParser;
+
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
@@ -83,7 +83,6 @@ final class StoryStreamServiceTest {
             textProvider,
             new PromptBuilder(),
             new ItemParser(clock),
-            new CompletionParser(),
             new OptionsParser(),
             new SceneParser(),
             new MarkerCleaner(),

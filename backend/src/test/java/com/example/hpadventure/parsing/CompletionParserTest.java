@@ -8,9 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 class CompletionParserTest {
     @Test
     void detectsCompletionMarker() {
-        CompletionParser parser = new CompletionParser();
-
-        assertTrue(parser.isComplete("Ende. [ABENTEUER ABGESCHLOSSEN]"));
-        assertFalse(parser.isComplete("Noch nicht vorbei."));
+        assertTrue(CompletionParser.isComplete("Ende. [ABENTEUER ABGESCHLOSSEN]"));
+        assertFalse(CompletionParser.isComplete("Noch nicht vorbei."));
     }
 }

@@ -12,7 +12,7 @@ import com.example.hpadventure.providers.SpeechProvider;
 import com.example.hpadventure.providers.SpeechProviderFactory;
 import com.example.hpadventure.providers.TextProvider;
 import com.example.hpadventure.providers.TextProviderFactory;
-import com.example.hpadventure.parsing.CompletionParser;
+
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
@@ -73,7 +73,6 @@ public final class App {
         // Parsers and services
         PromptBuilder promptBuilder = new PromptBuilder();
         ItemParser itemParser = new ItemParser(Clock.systemUTC());
-        CompletionParser completionParser = new CompletionParser();
         OptionsParser optionsParser = new OptionsParser();
         SceneParser sceneParser = new SceneParser();
         MarkerCleaner markerCleaner = new MarkerCleaner();
@@ -84,7 +83,6 @@ public final class App {
             textProvider,
             promptBuilder,
             itemParser,
-            completionParser,
             optionsParser,
             sceneParser,
             markerCleaner,
