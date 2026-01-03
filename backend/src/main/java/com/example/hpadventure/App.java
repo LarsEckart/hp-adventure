@@ -6,6 +6,7 @@ import com.example.hpadventure.api.StoryRoutes;
 import com.example.hpadventure.api.TtsRoutes;
 import com.example.hpadventure.config.EnvUtils;
 import com.example.hpadventure.config.RateLimiter;
+import com.example.hpadventure.config.SemicolonSeparatedPairs;
 import com.example.hpadventure.providers.ImageProvider;
 import com.example.hpadventure.providers.ImageProviderFactory;
 import com.example.hpadventure.providers.SpeechProvider;
@@ -89,8 +90,8 @@ public final class App {
         TtsService ttsService = new TtsService(speechProvider);
 
         // Authentication
-        String appPasswords = System.getenv("APP_PASSWORDS");
-        AuthRoutes authRoutes = new AuthRoutes(appPasswords);
+        var appPasswords = SemicolonSeparatedPairs.from(System.getenv("APP_PASSWORDS"));
+        AuthRoutes authRoutes = new AuthRoutes(appPasswords.toMap());
 
         Javalin app = Javalin.create(config -> {
             config.jsonMapper(new JavalinJackson(mapper, false));

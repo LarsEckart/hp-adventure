@@ -13,10 +13,24 @@ public final class AuthRoutes {
     private static final Logger logger = LoggerFactory.getLogger(AuthRoutes.class);
     private static final String PASSWORD_HEADER = "X-App-Password";
 
+    public sealed interface AuthResult {
+        record Valid(String user) implements AuthResult {}
+        record Invalid() implements AuthResult {}
+
+        default boolean isValid() {
+            return this instanceof Valid;
+        }
+
+        default String user() {
+            return this instanceof Valid v ? v.user() : null;
+        }
+    }
+
     private final Map<String, String> passwordToUser;
 
-    public AuthRoutes(String passwordsConfig) {
-        this.passwordToUser = parsePasswords(passwordsConfig);
+    public AuthRoutes(Map<String, String> userToPassword) {
+        // Invert the map: we need password -> user for lookups
+        this.passwordToUser = invertMap(userToPassword);
         if (passwordToUser.isEmpty()) {
             logger.warn("No APP_PASSWORDS configured - authentication disabled");
         } else {
@@ -24,25 +38,9 @@ public final class AuthRoutes {
         }
     }
 
-    /**
-     * Parse "name:password,name2:password2" format into password->user map
-     */
-    private static Map<String, String> parsePasswords(String config) {
-        Map<String, String> result = new HashMap<>();
-        if (config == null || config.isBlank()) {
-            return result;
-        }
-        for (String entry : config.split(",")) {
-            String trimmed = entry.trim();
-            int colonIndex = trimmed.indexOf(':');
-            if (colonIndex > 0 && colonIndex < trimmed.length() - 1) {
-                String user = trimmed.substring(0, colonIndex).trim();
-                String password = trimmed.substring(colonIndex + 1).trim();
-                if (!user.isEmpty() && !password.isEmpty()) {
-                    result.put(password, user);
-                }
-            }
-        }
+    private static Map<String, String> invertMap(Map<String, String> map) {
+        var result = new HashMap<String, String>();
+        map.forEach((key, value) -> result.put(value, key));
         return result;
     }
 
@@ -50,14 +48,12 @@ public final class AuthRoutes {
         return !passwordToUser.isEmpty();
     }
 
-    /**
-     * Validate password and return username, or null if invalid
-     */
-    public String validatePassword(String password) {
+    public AuthResult validatePassword(String password) {
         if (password == null || password.isBlank()) {
-            return null;
+            return new AuthResult.Invalid();
         }
-        return passwordToUser.get(password);
+        String user = passwordToUser.get(password);
+        return user != null ? new AuthResult.Valid(user) : new AuthResult.Invalid();
     }
 
     /**
@@ -70,9 +66,9 @@ public final class AuthRoutes {
             }
 
             String password = ctx.header(PASSWORD_HEADER);
-            String user = validatePassword(password);
+            AuthResult result = validatePassword(password);
             
-            if (user == null) {
+            if (!result.isValid()) {
                 logger.warn("[AUTH] Unauthorized request to {} from {}", ctx.path(), ctx.ip());
                 ctx.status(401).json(new Dtos.ErrorResponse(
                     new Dtos.ErrorResponse.Error("UNAUTHORIZED", "Ungültiges Passwort.", null)
@@ -81,8 +77,8 @@ public final class AuthRoutes {
             }
 
             // Store user for logging
-            ctx.attribute("authUser", user);
-            logger.info("[AUTH] {}: {} {}", user, ctx.method(), ctx.path());
+            ctx.attribute("authUser", result.user());
+            logger.info("[AUTH] {}: {} {}", result.user(), ctx.method(), ctx.path());
         };
     }
 
@@ -101,15 +97,15 @@ public final class AuthRoutes {
         }
 
         String password = ctx.header(PASSWORD_HEADER);
-        String user = validatePassword(password);
+        AuthResult result = validatePassword(password);
 
-        if (user == null) {
+        if (!result.isValid()) {
             logger.info("[AUTH] Failed validation attempt from {}", ctx.ip());
             ctx.status(401).json(new Dtos.ErrorResponse(
                 new Dtos.ErrorResponse.Error("UNAUTHORIZED", "Ungültiges Passwort.", null)
             ));
         } else {
-            logger.info("[AUTH] {} validated successfully", user);
+            logger.info("[AUTH] {} validated successfully", result.user());
             ctx.status(200).json(Map.of("valid", true));
         }
     }
