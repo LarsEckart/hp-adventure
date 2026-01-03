@@ -26,21 +26,21 @@ public final class StoryRoutes {
                 ctx.status(429).json(Dtos.errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
                 return;
             }
-            Dtos.StoryRequest request;
-            try {
-                request = ctx.bodyAsClass(Dtos.StoryRequest.class);
-            } catch (Exception e) {
-                logger.warn("Story request invalid body requestId={} ip={}", requestId, ctx.ip(), e);
-                ctx.status(400).json(Dtos.errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
+            Dtos.StoryRequest request = parseRequest(
+                () -> ctx.bodyAsClass(Dtos.StoryRequest.class),
+                "Story request",
+                requestId,
+                ctx.ip(),
+                error -> ctx.status(400).json(error));
+            if (request == null) {
                 return;
             }
             RequestMeta meta = requestMeta(request);
 
             logRequestReceived("Story request received", requestId, ctx.ip(), meta);
 
-            if (isActionMissing(meta)) {
-                logMissingAction("Story request missing action", requestId, ctx.ip());
-                ctx.status(400).json(Dtos.errorResponse("INVALID_REQUEST", "action is required", requestId));
+            if (!validateAction(meta, "Story request missing action", requestId, ctx.ip(),
+                error -> ctx.status(400).json(error))) {
                 return;
             }
 
@@ -68,23 +68,27 @@ public final class StoryRoutes {
                     client.close();
                     return;
                 }
-                Dtos.StoryRequest request;
-                try {
-                    request = client.ctx().bodyAsClass(Dtos.StoryRequest.class);
-                } catch (Exception e) {
-                    logger.warn("Story stream request invalid body requestId={} ip={}", requestId, client.ctx().ip(), e);
-                    client.sendEvent("error", Dtos.errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
-                    client.close();
+                Dtos.StoryRequest request = parseRequest(
+                    () -> client.ctx().bodyAsClass(Dtos.StoryRequest.class),
+                    "Story stream request",
+                    requestId,
+                    client.ctx().ip(),
+                    error -> {
+                        client.sendEvent("error", error);
+                        client.close();
+                    });
+                if (request == null) {
                     return;
                 }
                 RequestMeta meta = requestMeta(request);
 
                 logRequestReceived("Story stream request received", requestId, client.ctx().ip(), meta);
 
-                if (isActionMissing(meta)) {
-                    logMissingAction("Story stream request missing action", requestId, client.ctx().ip());
-                    client.sendEvent("error", Dtos.errorResponse("INVALID_REQUEST", "action is required", requestId));
-                    client.close();
+                if (!validateAction(meta, "Story stream request missing action", requestId, client.ctx().ip(),
+                    error -> {
+                        client.sendEvent("error", error);
+                        client.close();
+                    })) {
                     return;
                 }
 
@@ -151,6 +155,37 @@ public final class StoryRoutes {
 
     private static boolean isActionMissing(RequestMeta meta) {
         return meta.action() == null || meta.action().isBlank();
+    }
+
+    private static Dtos.StoryRequest parseRequest(RequestReader reader, String logPrefix, String requestId, String ip,
+                                                  ErrorResponder errorResponder) {
+        try {
+            return reader.read();
+        } catch (Exception e) {
+            logger.warn("{} invalid body requestId={} ip={}", logPrefix, requestId, ip, e);
+            errorResponder.respond(Dtos.errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
+            return null;
+        }
+    }
+
+    private static boolean validateAction(RequestMeta meta, String logMessage, String requestId, String ip,
+                                          ErrorResponder errorResponder) {
+        if (isActionMissing(meta)) {
+            logMissingAction(logMessage, requestId, ip);
+            errorResponder.respond(Dtos.errorResponse("INVALID_REQUEST", "action is required", requestId));
+            return false;
+        }
+        return true;
+    }
+
+    @FunctionalInterface
+    private interface RequestReader {
+        Dtos.StoryRequest read();
+    }
+
+    @FunctionalInterface
+    private interface ErrorResponder {
+        void respond(Dtos.ErrorResponse error);
     }
 
     private record RequestMeta(String action, int historySize) {
