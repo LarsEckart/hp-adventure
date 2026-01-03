@@ -5,6 +5,7 @@ import com.example.hpadventure.services.StoryHandler;
 import com.example.hpadventure.services.StoryStreamHandler;
 import com.example.hpadventure.services.UpstreamException;
 import io.javalin.Javalin;
+import io.javalin.http.sse.SseClient;
 import io.javalin.http.sse.SseHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,10 +72,7 @@ public final class StoryRoutes {
                     () -> client.ctx().bodyAsClass(Dtos.StoryRequest.class),
                     "Story stream request",
                     requestId,
-                    error -> {
-                        client.sendEvent("error", error);
-                        client.close();
-                    });
+                    streamErrorResponder(client));
                 if (request == null) {
                     return;
                 }
@@ -83,10 +81,7 @@ public final class StoryRoutes {
                 logRequestReceived("Story stream request received", requestId, client.ctx().ip(), meta);
 
                 if (!validateAction(meta, "Story stream request missing action", requestId, client.ctx().ip(),
-                    error -> {
-                        client.sendEvent("error", error);
-                        client.close();
-                    })) {
+                    streamErrorResponder(client))) {
                     return;
                 }
 
@@ -174,6 +169,13 @@ public final class StoryRoutes {
             return false;
         }
         return true;
+    }
+
+    private static ErrorResponder streamErrorResponder(SseClient client) {
+        return error -> {
+            client.sendEvent("error", error);
+            client.close();
+        };
     }
 
     @FunctionalInterface

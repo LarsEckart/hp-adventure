@@ -189,6 +189,7 @@ When doing production refactors, follow `agents/refactoring.process.md`:
 - `RequestMeta` computes action length from the stored action so we do not pass derived values around.
 - Route error payloads should be built via `Dtos.errorResponse(...)` to keep JSON error shapes consistent.
 - `StoryRoutes` shares request parsing + action validation helpers (`parseRequest`, `validateAction`) so JSON and SSE routes stay in sync; use the `ErrorResponder` hook to keep error handling aligned.
+- `StoryRoutes.streamErrorResponder` is the shared helper for SSE error events that must close the client after sending.
 - Keep `StoryRoutes.parseRequest` signature lean (reader + log prefix + requestId + responder); avoid unused params.
 
 ## Running Locally
