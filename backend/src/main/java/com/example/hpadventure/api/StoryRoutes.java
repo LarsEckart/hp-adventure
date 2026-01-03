@@ -21,7 +21,7 @@ public final class StoryRoutes {
         app.post("/api/story", ctx -> {
             String requestId = UUID.randomUUID().toString();
             ctx.header("X-Request-Id", requestId);
-            if (rateLimiter != null && !rateLimiter.allow(ctx.ip())) {
+            if (isRateLimited(rateLimiter, ctx.ip())) {
                 logger.warn("Story request rate limited requestId={} ip={}", requestId, ctx.ip());
                 ctx.status(429).json(errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
                 return;
@@ -36,11 +36,10 @@ public final class StoryRoutes {
             }
             RequestMeta meta = requestMeta(request);
 
-            logger.info("Story request received requestId={} ip={} history={} actionLength={}",
-                requestId, ctx.ip(), meta.historySize(), meta.actionLength());
+            logRequestReceived("Story request received", requestId, ctx.ip(), meta);
 
             if (isActionMissing(meta)) {
-                logger.warn("Story request missing action requestId={} ip={}", requestId, ctx.ip());
+                logMissingAction("Story request missing action", requestId, ctx.ip());
                 ctx.status(400).json(errorResponse("INVALID_REQUEST", "action is required", requestId));
                 return;
             }
@@ -63,7 +62,7 @@ public final class StoryRoutes {
             app.post("/api/story/stream", new SseHandler(client -> {
                 String requestId = UUID.randomUUID().toString();
                 client.ctx().header("X-Request-Id", requestId);
-                if (rateLimiter != null && !rateLimiter.allow(client.ctx().ip())) {
+                if (isRateLimited(rateLimiter, client.ctx().ip())) {
                     logger.warn("Story stream request rate limited requestId={} ip={}", requestId, client.ctx().ip());
                     client.sendEvent("error", errorResponse("RATE_LIMITED", "Zu viele Anfragen. Bitte warte kurz.", requestId));
                     client.close();
@@ -80,11 +79,10 @@ public final class StoryRoutes {
                 }
                 RequestMeta meta = requestMeta(request);
 
-                logger.info("Story stream request received requestId={} ip={} history={} actionLength={}",
-                    requestId, client.ctx().ip(), meta.historySize(), meta.actionLength());
+                logRequestReceived("Story stream request received", requestId, client.ctx().ip(), meta);
 
                 if (isActionMissing(meta)) {
-                    logger.warn("Story stream request missing action requestId={} ip={}", requestId, client.ctx().ip());
+                    logMissingAction("Story stream request missing action", requestId, client.ctx().ip());
                     client.sendEvent("error", errorResponse("INVALID_REQUEST", "action is required", requestId));
                     client.close();
                     return;
@@ -135,6 +133,19 @@ public final class StoryRoutes {
 
     private static int safeLength(String value) {
         return value == null ? 0 : value.length();
+    }
+
+    private static boolean isRateLimited(RateLimiter rateLimiter, String ip) {
+        return rateLimiter != null && !rateLimiter.allow(ip);
+    }
+
+    private static void logRequestReceived(String message, String requestId, String ip, RequestMeta meta) {
+        logger.info("{} requestId={} ip={} history={} actionLength={}",
+            message, requestId, ip, meta.historySize(), meta.actionLength());
+    }
+
+    private static void logMissingAction(String message, String requestId, String ip) {
+        logger.warn("{} requestId={} ip={}", message, requestId, ip);
     }
 
     private static RequestMeta requestMeta(Dtos.StoryRequest request) {

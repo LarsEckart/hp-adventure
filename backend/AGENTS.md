@@ -185,6 +185,7 @@ When doing production refactors, follow `agents/refactoring.process.md`:
 ## Operational Notes
 
 - Story request logging in `StoryRoutes` uses a `RequestMeta` helper to keep action/history metrics consistent across JSON and SSE routes.
+- StoryRoutes logging now routes through small helper methods to keep request/stream message formats aligned.
 
 ## Running Locally
 Use tmux to not block your terminal during server runs.
