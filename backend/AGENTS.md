@@ -186,6 +186,7 @@ When doing production refactors, follow `agents/refactoring.process.md`:
 
 - Story request logging in `StoryRoutes` uses a `RequestMeta` helper to keep action/history metrics consistent across JSON and SSE routes.
 - StoryRoutes logging now routes through small helper methods to keep request/stream message formats aligned.
+- `RequestMeta` computes action length from the stored action so we do not pass derived values around.
 - Route error payloads should be built via `Dtos.errorResponse(...)` to keep JSON error shapes consistent.
 
 ## Running Locally
