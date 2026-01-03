@@ -189,6 +189,7 @@ When doing production refactors, follow `agents/refactoring.process.md`:
 - Keep refactors small (one at a time) and commit each with the message `- r <refactoring>`.
 - Share a short status update after each refactor.
 - Review recent refactors with `git log` before choosing the next code smell.
+- If a refactor fails three times or no further refactoring is found, stop and check with Lars.
 
 ## Operational Notes
 

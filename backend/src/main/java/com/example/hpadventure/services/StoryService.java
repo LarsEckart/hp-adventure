@@ -132,8 +132,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         boolean completed = completionParser.isComplete(rawStory);
         List<String> suggestedActions = optionsParser.parse(rawStory);
         String scene = sceneParser.parse(rawStory);
-        MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
-        String cleanStory = markdownSanitizer.strip(markerCleaner.strip(rawStory));
+        String cleanStory = sanitizeStory(rawStory);
         String imagePrompt = imagePromptService.buildPrompt(scene, cleanStory);
 
         Instant now = Instant.now(clock);
@@ -178,6 +177,11 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             assistant.adventure(),
             image
         );
+    }
+
+    private String sanitizeStory(String rawStory) {
+        MarkdownSanitizer markdownSanitizer = new MarkdownSanitizer();
+        return markdownSanitizer.strip(markerCleaner.strip(rawStory));
     }
 
     private List<String> collectAssistantMessages(List<Dtos.ChatMessage> history, String latestStory) {
