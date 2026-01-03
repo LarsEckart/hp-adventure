@@ -173,6 +173,13 @@ ANTHROPIC_API_KEY=... ./gradlew test --tests "AnthropicTextProviderSmokeTest"
 OPENROUTER_API_KEY=... ./gradlew test --tests "OpenRouterTextProviderSmokeTest"
 ```
 
+## Refactoring Process
+
+When doing production refactors, follow `agents/refactoring.process.md`:
+- Run tests before and after each refactor.
+- Keep refactors small (one at a time) and commit each with the message `- r <refactoring>`.
+- Share a short status update after each refactor.
+
 ## Running Locally
 Use tmux to not block your terminal during server runs.
 
