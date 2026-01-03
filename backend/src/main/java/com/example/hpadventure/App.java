@@ -90,9 +90,12 @@ public final class App {
         );
         TtsService ttsService = new TtsService(speechProvider);
 
-        // Authentication
-        var appPasswords = SemicolonSeparatedPairs.from(System.getenv("APP_PASSWORDS"));
-        var userRepository = new UserRepository(appPasswords.toMap());
+        // Authentication (required)
+        String appPasswordsEnv = System.getenv("APP_PASSWORDS");
+        if (appPasswordsEnv == null || appPasswordsEnv.isBlank()) {
+            throw new IllegalStateException("APP_PASSWORDS environment variable is required");
+        }
+        var userRepository = new UserRepository(SemicolonSeparatedPairs.from(appPasswordsEnv).toMap());
         AuthRoutes authRoutes = new AuthRoutes(userRepository);
 
         Javalin app = Javalin.create(config -> {
@@ -123,11 +126,9 @@ public final class App {
         authRoutes.register(app);
         
         // Apply auth middleware to protected routes
-        if (authRoutes.isEnabled()) {
-            app.before("/api/story", authRoutes.authMiddleware());
-            app.before("/api/story/*", authRoutes.authMiddleware());
-            app.before("/api/tts", authRoutes.authMiddleware());
-        }
+        app.before("/api/story", authRoutes.authMiddleware());
+        app.before("/api/story/*", authRoutes.authMiddleware());
+        app.before("/api/tts", authRoutes.authMiddleware());
         
         StoryRoutes.register(app, storyService, rateLimiter);
         TtsRoutes.register(app, ttsService);
@@ -138,7 +139,7 @@ public final class App {
         logger.info("HP Adventure Server started successfully");
         logger.info("Listening on port {}", port);
         logger.info("Rate limit: {} requests/minute {}", rateLimitPerMinute, rateLimitPerMinute > 0 ? "(enabled)" : "(disabled)");
-        logger.info("Authentication: {}", authRoutes.isEnabled() ? "enabled" : "disabled");
+        logger.info("Authentication: {} user(s)", userRepository.userCount());
         logger.info("Text provider: {}", textProvider.getClass().getSimpleName());
         logger.info("Image provider: {}", imageProvider.isEnabled() ? imageProvider.getClass().getSimpleName() : "disabled");
         logger.info("Speech provider: {}", speechProvider.getClass().getSimpleName());

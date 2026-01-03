@@ -14,27 +14,23 @@ class UserRepositoryTest {
     }
 
     @Test
-    void validConfig() {
+    void authenticatesValidPasswords() {
         var repo = new UserRepository(parse("anna:secret1,tom:secret2,lisa:magic3"));
         
-        assertTrue(repo.isEnabled());
         assertEquals(3, repo.userCount());
         
         assertEquals("anna", repo.authenticate("secret1").orElseThrow());
         assertEquals("tom", repo.authenticate("secret2").orElseThrow());
         assertEquals("lisa", repo.authenticate("magic3").orElseThrow());
+    }
+
+    @Test
+    void rejectsInvalidPasswords() {
+        var repo = new UserRepository(parse("anna:secret1"));
         
         assertTrue(repo.authenticate("wrongpassword").isEmpty());
         assertTrue(repo.authenticate(null).isEmpty());
         assertTrue(repo.authenticate("").isEmpty());
-    }
-
-    @Test
-    void emptyMap() {
-        var repo = new UserRepository(Map.of());
-        
-        assertFalse(repo.isEnabled());
-        assertEquals(0, repo.userCount());
-        assertTrue(repo.authenticate("anypassword").isEmpty());
+        assertTrue(repo.authenticate("   ").isEmpty());
     }
 }

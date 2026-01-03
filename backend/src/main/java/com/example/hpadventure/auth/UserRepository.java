@@ -18,10 +18,6 @@ public final class UserRepository {
         return result;
     }
 
-    public boolean isEnabled() {
-        return !passwordToUser.isEmpty();
-    }
-
     public int userCount() {
         return passwordToUser.size();
     }

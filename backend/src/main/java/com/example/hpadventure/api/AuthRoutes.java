@@ -18,15 +18,7 @@ public final class AuthRoutes {
 
     public AuthRoutes(UserRepository userRepository) {
         this.userRepository = userRepository;
-        if (!userRepository.isEnabled()) {
-            logger.warn("No APP_PASSWORDS configured - authentication disabled");
-        } else {
-            logger.info("Configured {} user(s) for authentication", userRepository.userCount());
-        }
-    }
-
-    public boolean isEnabled() {
-        return userRepository.isEnabled();
+        logger.info("Configured {} user(s) for authentication", userRepository.userCount());
     }
 
     /**
@@ -34,10 +26,6 @@ public final class AuthRoutes {
      */
     public Handler authMiddleware() {
         return ctx -> {
-            if (!userRepository.isEnabled()) {
-                return; // No passwords configured, allow all
-            }
-
             String password = ctx.header(PASSWORD_HEADER);
             Optional<String> user = userRepository.authenticate(password);
 
@@ -63,12 +51,6 @@ public final class AuthRoutes {
     }
 
     private void handleValidate(Context ctx) {
-        if (!userRepository.isEnabled()) {
-            // No passwords configured, always valid
-            ctx.status(200).json(Map.of("valid", true));
-            return;
-        }
-
         String password = ctx.header(PASSWORD_HEADER);
         Optional<String> user = userRepository.authenticate(password);
 

@@ -16,18 +16,6 @@ class AuthRoutesTest {
     }
 
     @Test
-    void validateEndpoint_noAuthConfigured() {
-        AuthRoutes auth = new AuthRoutes(repo(Map.of()));
-        Javalin app = Javalin.create();
-        auth.register(app);
-
-        JavalinTest.test(app, (server, client) -> {
-            var response = client.post("/api/auth/validate");
-            assertEquals(200, response.code());
-        });
-    }
-
-    @Test
     void validateEndpoint_validPassword() {
         AuthRoutes auth = new AuthRoutes(repo(Map.of("testuser", "testpass")));
         Javalin app = Javalin.create();
@@ -89,20 +77,6 @@ class AuthRoutesTest {
                 builder.get().header("X-App-Password", "testpass"));
             assertEquals(200, response3.code());
             assertEquals("secret", response3.body().string());
-        });
-    }
-
-    @Test
-    void middleware_allowsAllWhenDisabled() {
-        AuthRoutes auth = new AuthRoutes(repo(Map.of()));
-        Javalin app = Javalin.create();
-        app.before("/api/protected", auth.authMiddleware());
-        app.get("/api/protected", ctx -> ctx.result("secret"));
-
-        JavalinTest.test(app, (server, client) -> {
-            var response = client.get("/api/protected");
-            assertEquals(200, response.code());
-            assertEquals("secret", response.body().string());
         });
     }
 }
