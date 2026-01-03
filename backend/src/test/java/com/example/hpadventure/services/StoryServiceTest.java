@@ -4,7 +4,7 @@ import com.example.hpadventure.api.Dtos;
 
 import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
-import com.example.hpadventure.parsing.OptionsParser;
+
 import com.example.hpadventure.parsing.SceneParser;
 import com.example.hpadventure.providers.ImageProvider;
 import com.example.hpadventure.providers.TextProvider;
@@ -119,7 +119,6 @@ final class StoryServiceTest {
             textProvider,
             new PromptBuilder(),
             new ItemParser(clock),
-            new OptionsParser(),
             new SceneParser(),
             new MarkerCleaner(),
             new TitleService(textProvider),

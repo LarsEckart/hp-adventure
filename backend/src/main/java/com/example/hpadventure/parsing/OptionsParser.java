@@ -8,7 +8,10 @@ import java.util.regex.Pattern;
 public final class OptionsParser {
     private static final Pattern OPTION_PATTERN = Pattern.compile("\\[OPTION:\\s*([^\\]]+)\\]");
 
-    public List<String> parse(String text) {
+    private OptionsParser() {
+    }
+
+    public static List<String> parse(String text) {
         if (text == null || text.isBlank()) {
             return List.of();
         }
