@@ -82,10 +82,6 @@ public final class PromptBuilder {
         return prompt.toString();
     }
 
-    public String build(Dtos.Player player) {
-        return build(player, 1);
-    }
-
     private static boolean notBlank(String value) {
         return value != null && !value.isBlank();
     }
