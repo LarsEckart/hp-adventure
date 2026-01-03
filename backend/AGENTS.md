@@ -181,6 +181,10 @@ When doing production refactors, follow `agents/refactoring.process.md`:
 - Keep refactors small (one at a time) and commit each with the message `- r <refactoring>`.
 - Share a short status update after each refactor.
 
+## Operational Notes
+
+- Story request logging in `StoryRoutes` uses a `RequestMeta` helper to keep action/history metrics consistent across JSON and SSE routes.
+
 ## Running Locally
 Use tmux to not block your terminal during server runs.
 
