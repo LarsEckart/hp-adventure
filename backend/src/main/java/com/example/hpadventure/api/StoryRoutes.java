@@ -106,13 +106,6 @@ public final class StoryRoutes {
         }
     }
 
-    private static int historySize(Dtos.StoryRequest request) {
-        if (request == null || request.conversationHistory() == null) {
-            return 0;
-        }
-        return request.conversationHistory().size();
-    }
-
     private static boolean isRateLimited(RateLimiter rateLimiter, String ip) {
         return rateLimiter != null && !rateLimiter.allow(ip);
     }
@@ -138,7 +131,10 @@ public final class StoryRoutes {
 
     private static RequestMeta requestMeta(Dtos.StoryRequest request) {
         String action = request == null ? null : request.action();
-        return new RequestMeta(action, historySize(request));
+        int historySize = request == null || request.conversationHistory() == null
+            ? 0
+            : request.conversationHistory().size();
+        return new RequestMeta(action, historySize);
     }
 
     private static Dtos.StoryRequest parseRequest(RequestReader reader, String logPrefix, String requestId,
