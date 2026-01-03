@@ -10,14 +10,20 @@ public final class ImagePromptService {
     private static final int FALLBACK_LIMIT = 220;
 
     public String buildPrompt(String scene, String storyText) {
+        String resolvedScene = resolveScene(scene, storyText);
+        return STYLE_PREFIX + resolvedScene.trim();
+    }
+
+    private String resolveScene(String scene, String storyText) {
         String cleanedScene = safeTrim(scene);
-        if (cleanedScene == null) {
-            cleanedScene = fallbackScene(storyText);
+        if (cleanedScene != null) {
+            return cleanedScene;
         }
+        cleanedScene = fallbackScene(storyText);
         if (cleanedScene == null || cleanedScene.isBlank()) {
-            cleanedScene = "Hogwarts bei Nacht, magische Atmosphäre";
+            return "Hogwarts bei Nacht, magische Atmosphäre";
         }
-        return STYLE_PREFIX + cleanedScene.trim();
+        return cleanedScene;
     }
 
     private String fallbackScene(String storyText) {
