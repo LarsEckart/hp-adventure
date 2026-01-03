@@ -141,10 +141,6 @@ public final class StoryRoutes {
         return new RequestMeta(action, historySize(request));
     }
 
-    private static boolean isActionMissing(RequestMeta meta) {
-        return meta.action() == null || meta.action().isBlank();
-    }
-
     private static Dtos.StoryRequest parseRequest(RequestReader reader, String logPrefix, String requestId,
                                                   ErrorResponder errorResponder) {
         try {
@@ -158,7 +154,7 @@ public final class StoryRoutes {
 
     private static boolean validateAction(RequestMeta meta, String logMessage, String requestId, String ip,
                                           ErrorResponder errorResponder) {
-        if (isActionMissing(meta)) {
+        if (meta.isActionMissing()) {
             logMissingAction(logMessage, requestId, ip);
             errorResponder.respond(Dtos.errorResponse("INVALID_REQUEST", "action is required", requestId));
             return false;
@@ -205,6 +201,10 @@ public final class StoryRoutes {
     private record RequestMeta(String action, int historySize) {
         private int actionLength() {
             return action == null ? 0 : action.length();
+        }
+
+        private boolean isActionMissing() {
+            return action == null || action.isBlank();
         }
     }
 }
