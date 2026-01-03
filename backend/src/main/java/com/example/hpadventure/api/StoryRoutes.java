@@ -20,6 +20,11 @@ public final class StoryRoutes {
     }
 
     public static void register(Javalin app, StoryHandler storyHandler, RateLimiter rateLimiter) {
+        registerStoryRequest(app, storyHandler, rateLimiter);
+        registerStoryStream(app, storyHandler, rateLimiter);
+    }
+
+    private static void registerStoryRequest(Javalin app, StoryHandler storyHandler, RateLimiter rateLimiter) {
         app.post("/api/story", ctx -> {
             String requestId = UUID.randomUUID().toString();
             ctx.header("X-Request-Id", requestId);
@@ -57,7 +62,9 @@ public final class StoryRoutes {
                 ctx.status(500).json(Dtos.errorResponse("INTERNAL_ERROR", "Unexpected server error", requestId));
             }
         });
+    }
 
+    private static void registerStoryStream(Javalin app, StoryHandler storyHandler, RateLimiter rateLimiter) {
         if (storyHandler instanceof StoryStreamHandler streamHandler) {
             app.post("/api/story/stream", new SseHandler(client -> {
                 String requestId = UUID.randomUUID().toString();
