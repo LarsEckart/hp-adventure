@@ -107,13 +107,9 @@ public final class StoryRoutes {
         }
     }
 
-    private static boolean isRateLimited(RateLimiter rateLimiter, String ip) {
-        return rateLimiter != null && !rateLimiter.allow(ip);
-    }
-
     private static boolean rejectIfRateLimited(RateLimiter rateLimiter, String ip, String requestId,
                                                String logMessage, ErrorResponder errorResponder) {
-        if (!isRateLimited(rateLimiter, ip)) {
+        if (rateLimiter == null || rateLimiter.allow(ip)) {
             return false;
         }
         logger.warn("{} requestId={} ip={}", logMessage, requestId, ip);
