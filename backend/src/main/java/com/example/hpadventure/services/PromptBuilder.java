@@ -5,7 +5,8 @@ import com.example.hpadventure.api.Dtos;
 import java.util.List;
 
 public final class PromptBuilder {
-    private static final int STORY_ARC_TOTAL_STEPS = 15;
+    /** Total number of steps in a story arc (15 turns to completion). */
+    public static final int STORY_ARC_TOTAL_STEPS = 15;
 
     public String build(Dtos.Player player, int storyStep) {
         StringBuilder prompt = new StringBuilder();

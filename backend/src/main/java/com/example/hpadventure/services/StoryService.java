@@ -22,7 +22,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     private static final String ASSISTANT_ROLE = "assistant";
     private static final String USER_ROLE = "user";
     private static final int STORY_MAX_TOKENS = 500;
-    private static final int STORY_ARC_TOTAL_STEPS = 15;
 
     private final TextProvider textProvider;
     private final PromptBuilder promptBuilder;
@@ -209,7 +208,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             }
         }
         int step = completedTurns + 1;
-        return Math.min(step, STORY_ARC_TOTAL_STEPS);
+        return Math.min(step, PromptBuilder.STORY_ARC_TOTAL_STEPS);
     }
 
     private boolean isAssistantMessage(Dtos.ChatMessage message) {
