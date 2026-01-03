@@ -48,7 +48,7 @@ public final class StreamMarkerFilter {
     }
 
     private static boolean isPossibleMarker(CharSequence content) {
-        String trimmed = content.toString().stripLeading();
+        String trimmed = trimLeading(content);
         if (trimmed.isEmpty()) {
             return true;
         }
@@ -62,7 +62,7 @@ public final class StreamMarkerFilter {
     }
 
     private static boolean isMarkerContent(CharSequence content) {
-        String trimmed = content.toString().stripLeading();
+        String trimmed = trimLeading(content);
         if (trimmed.isEmpty()) {
             return false;
         }
@@ -72,5 +72,9 @@ public final class StreamMarkerFilter {
             }
         }
         return false;
+    }
+
+    private static String trimLeading(CharSequence content) {
+        return content.toString().stripLeading();
     }
 }
