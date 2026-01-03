@@ -105,6 +105,15 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             ? List.of()
             : request.conversationHistory();
 
+        String action = request.action().trim();
+        List<TextProvider.Message> messages = buildMessages(history, action);
+        int arcStep = storyArcStep(history);
+        String systemPrompt = promptBuilder.build(request.player(), arcStep);
+
+        return new StoryContext(history, messages, systemPrompt);
+    }
+
+    private List<TextProvider.Message> buildMessages(List<Dtos.ChatMessage> history, String action) {
         List<TextProvider.Message> messages = new ArrayList<>();
         for (Dtos.ChatMessage message : history) {
             if (message == null || message.content() == null || message.content().isBlank()) {
@@ -112,13 +121,8 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
             }
             messages.add(new TextProvider.Message(message.role(), message.content()));
         }
-
-        String action = request.action().trim();
         messages.add(new TextProvider.Message("user", action));
-        int arcStep = storyArcStep(history);
-        String systemPrompt = promptBuilder.build(request.player(), arcStep);
-
-        return new StoryContext(history, messages, systemPrompt);
+        return messages;
     }
 
     private StreamResult buildAssistantDraft(Dtos.StoryRequest request, List<Dtos.ChatMessage> history, String rawStory) {
