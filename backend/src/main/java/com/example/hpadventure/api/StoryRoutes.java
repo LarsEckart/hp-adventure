@@ -34,14 +34,12 @@ public final class StoryRoutes {
                 ctx.status(400).json(errorResponse("INVALID_REQUEST", "Invalid JSON body", requestId));
                 return;
             }
-            String action = request == null ? null : request.action();
-            int historySize = historySize(request);
-            int actionLength = safeLength(action);
+            RequestMeta meta = requestMeta(request);
 
             logger.info("Story request received requestId={} ip={} history={} actionLength={}",
-                requestId, ctx.ip(), historySize, actionLength);
+                requestId, ctx.ip(), meta.historySize(), meta.actionLength());
 
-            if (action == null || action.isBlank()) {
+            if (meta.action() == null || meta.action().isBlank()) {
                 logger.warn("Story request missing action requestId={} ip={}", requestId, ctx.ip());
                 ctx.status(400).json(errorResponse("INVALID_REQUEST", "action is required", requestId));
                 return;
@@ -80,14 +78,12 @@ public final class StoryRoutes {
                     client.close();
                     return;
                 }
-                String action = request == null ? null : request.action();
-                int historySize = historySize(request);
-                int actionLength = safeLength(action);
+                RequestMeta meta = requestMeta(request);
 
                 logger.info("Story stream request received requestId={} ip={} history={} actionLength={}",
-                    requestId, client.ctx().ip(), historySize, actionLength);
+                    requestId, client.ctx().ip(), meta.historySize(), meta.actionLength());
 
-                if (action == null || action.isBlank()) {
+                if (meta.action() == null || meta.action().isBlank()) {
                     logger.warn("Story stream request missing action requestId={} ip={}", requestId, client.ctx().ip());
                     client.sendEvent("error", errorResponse("INVALID_REQUEST", "action is required", requestId));
                     client.close();
@@ -141,7 +137,15 @@ public final class StoryRoutes {
         return value == null ? 0 : value.length();
     }
 
+    private static RequestMeta requestMeta(Dtos.StoryRequest request) {
+        String action = request == null ? null : request.action();
+        return new RequestMeta(action, historySize(request), safeLength(action));
+    }
+
     private static Dtos.ErrorResponse errorResponse(String code, String message, String requestId) {
         return new Dtos.ErrorResponse(new Dtos.ErrorResponse.Error(code, message, requestId));
+    }
+
+    private record RequestMeta(String action, int historySize, int actionLength) {
     }
 }
