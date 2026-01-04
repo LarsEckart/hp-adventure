@@ -254,8 +254,27 @@
 
   if (app.ports && app.ports.startStoryStream && app.ports.storyStream) {
     let activeController = null;
+    let receivedFinal = false;
+    let receivedImage = false;
 
     const sendEvent = (event, data) => {
+      // Deduplicate: only allow one final/final_text and one image per stream
+      if ((event === "final_text" || event === "final") && receivedFinal) {
+        console.warn("Duplicate final event skipped:", event);
+        return;
+      }
+      if (event === "image" && receivedImage) {
+        console.warn("Duplicate image event skipped");
+        return;
+      }
+
+      if (event === "final_text" || event === "final") {
+        receivedFinal = true;
+      }
+      if (event === "image") {
+        receivedImage = true;
+      }
+
       app.ports.storyStream.send({ event, data });
     };
 
@@ -363,6 +382,10 @@
       if (activeController) {
         activeController.abort();
       }
+
+      // Reset deduplication flags for new stream
+      receivedFinal = false;
+      receivedImage = false;
 
       stopTts();
 
