@@ -43,7 +43,6 @@ decodeCurrent =
             , isOnline = True
             , error = Nothing
             , notice = Nothing
-            , showInventory = True
             , showHistory = True
             , pendingAbandon = False
             , authState = authState
@@ -68,7 +67,6 @@ decodeLegacy =
             , player =
                 { name = playerName
                 , houseName = houseName
-                , inventory = []
                 , completedAdventures = []
                 , stats = { adventuresCompleted = 0, totalTurns = 0 }
                 }
@@ -78,7 +76,6 @@ decodeLegacy =
             , isOnline = True
             , error = Nothing
             , notice = Nothing
-            , showInventory = True
             , showHistory = True
             , pendingAbandon = False
             , authState = Model.NeedsPassword
@@ -94,7 +91,6 @@ encodePlayer player =
     Encode.object
         [ ( "name", Encode.string player.name )
         , ( "houseName", Encode.string player.houseName )
-        , ( "inventory", Encode.list encodeItem player.inventory )
         , ( "completedAdventures", Encode.list encodeCompletedAdventure player.completedAdventures )
         , ( "stats", encodeStats player.stats )
         ]
@@ -102,14 +98,9 @@ encodePlayer player =
 
 decodePlayer : Decoder Model.Player
 decodePlayer =
-    Decode.map5 Model.Player
+    Decode.map4 Model.Player
         (Decode.field "name" Decode.string)
         (Decode.field "houseName" Decode.string)
-        (Decode.oneOf
-            [ Decode.field "inventory" (Decode.list decodeItem)
-            , Decode.succeed []
-            ]
-        )
         (Decode.oneOf
             [ Decode.field "completedAdventures" (Decode.list decodeCompletedAdventure)
             , Decode.succeed []
@@ -163,7 +154,6 @@ encodeAssistant assistant =
     Encode.object
         [ ( "storyText", Encode.string assistant.storyText )
         , ( "suggestedActions", Encode.list Encode.string assistant.suggestedActions )
-        , ( "newItems", Encode.list encodeItem assistant.newItems )
         , ( "adventureCompleted", Encode.bool assistant.adventureCompleted )
         , ( "image", encodeMaybe encodeImage assistant.image )
         ]
@@ -171,15 +161,10 @@ encodeAssistant assistant =
 
 decodeAssistant : Decoder Model.AssistantTurn
 decodeAssistant =
-    Decode.map5 Model.AssistantTurn
+    Decode.map4 Model.AssistantTurn
         (Decode.field "storyText" Decode.string)
         (Decode.oneOf
             [ Decode.field "suggestedActions" (Decode.list Decode.string)
-            , Decode.succeed []
-            ]
-        )
-        (Decode.oneOf
-            [ Decode.field "newItems" (Decode.list decodeItem)
             , Decode.succeed []
             ]
         )
@@ -203,23 +188,6 @@ encodeMaybe encoder maybeValue =
 
         Just value ->
             encoder value
-
-
-encodeItem : Model.Item -> Encode.Value
-encodeItem item =
-    Encode.object
-        [ ( "name", Encode.string item.name )
-        , ( "description", Encode.string item.description )
-        , ( "foundAt", Encode.string item.foundAt )
-        ]
-
-
-decodeItem : Decoder Model.Item
-decodeItem =
-    Decode.map3 Model.Item
-        (Decode.field "name" Decode.string)
-        (Decode.field "description" Decode.string)
-        (Decode.field "foundAt" Decode.string)
 
 
 encodeImage : Model.ImageData -> Encode.Value

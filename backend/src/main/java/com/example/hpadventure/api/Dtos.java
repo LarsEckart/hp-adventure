@@ -20,13 +20,9 @@ public final class Dtos {
     public record Player(
         String name,
         String houseName,
-        List<Item> inventory,
         List<CompletedAdventure> completedAdventures,
         Stats stats
     ) {
-    }
-
-    public record Item(String name, String description, String foundAt) {
     }
 
     public record CompletedAdventure(String title, String summary, String completedAt) {
@@ -53,7 +49,6 @@ public final class Dtos {
     public record Assistant(
         String storyText,
         List<String> suggestedActions,
-        List<Item> newItems,
         Adventure adventure,
         Image image
     ) {

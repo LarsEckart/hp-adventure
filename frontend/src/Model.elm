@@ -5,7 +5,6 @@ module Model exposing
     , CompletedAdventure
     , GameState
     , ImageData
-    , Item
     , Player
     , Stats
     , Turn
@@ -13,12 +12,6 @@ module Model exposing
     , isAdventureCompleted
     , isProfileComplete
     )
-
-type alias Item =
-    { name : String
-    , description : String
-    , foundAt : String
-    }
 
 
 type alias CompletedAdventure =
@@ -42,7 +35,6 @@ type AuthState
 type alias Player =
     { name : String
     , houseName : String
-    , inventory : List Item
     , completedAdventures : List CompletedAdventure
     , stats : Stats
     }
@@ -58,7 +50,6 @@ type alias ImageData =
 type alias AssistantTurn =
     { storyText : String
     , suggestedActions : List String
-    , newItems : List Item
     , adventureCompleted : Bool
     , image : Maybe ImageData
     }
@@ -86,7 +77,6 @@ type alias GameState =
     , isOnline : Bool
     , error : Maybe String
     , notice : Maybe String
-    , showInventory : Bool
     , showHistory : Bool
     , pendingAbandon : Bool
     , authState : AuthState
@@ -100,7 +90,6 @@ defaultState =
     , player =
         { name = ""
         , houseName = ""
-        , inventory = []
         , completedAdventures = []
         , stats = { adventuresCompleted = 0, totalTurns = 0 }
         }
@@ -110,7 +99,6 @@ defaultState =
     , isOnline = True
     , error = Nothing
     , notice = Nothing
-    , showInventory = True
     , showHistory = True
     , pendingAbandon = False
     , authState = NeedsPassword

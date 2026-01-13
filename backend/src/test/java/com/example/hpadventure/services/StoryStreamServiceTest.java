@@ -2,7 +2,6 @@ package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.parsing.CompletionParser;
-import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
 import com.example.hpadventure.parsing.SceneParser;
@@ -34,16 +33,15 @@ final class StoryStreamServiceTest {
             "",
             "[OPTION: Leise umsehen]",
             "[OPTION: Weitergehen]",
-            "[SZENE: Dunkler Korridor mit Kerzenlicht]",
-            "[NEUER GEGENSTAND: Schluessel | Ein alter, schwerer Schluessel]"
+            "[SZENE: Dunkler Korridor mit Kerzenlicht]"
         );
-        String filteredPartTwo = "Was tust du?\n\n\n\n\n";
+        String filteredPartTwo = "Was tust du?\n\n\n\n";
 
         Clock clock = Clock.fixed(Instant.parse("2026-01-01T10:00:00Z"), ZoneOffset.UTC);
         StoryService service = buildService(partOne, partTwo, clock);
 
         Dtos.StoryRequest request = new Dtos.StoryRequest(
-            new Dtos.Player("Hermine", "Gryffindor", List.of(), List.of(), new Dtos.Stats(0, 0)),
+            new Dtos.Player("Hermine", "Gryffindor", List.of(), new Dtos.Stats(0, 0)),
             new Dtos.CurrentAdventure(null, "2026-01-01T09:00:00Z"),
             List.of(new Dtos.ChatMessage("assistant", "Vorherige Szene")),
             "Ich oeffne die Tuer."
@@ -62,8 +60,6 @@ final class StoryStreamServiceTest {
             assistant.storyText()
         );
         assertEquals(List.of("Leise umsehen", "Weitergehen"), assistant.suggestedActions());
-        assertEquals("Schluessel", assistant.newItems().get(0).name());
-        assertEquals("2026-01-01T10:00:00Z", assistant.newItems().get(0).foundAt());
         assertFalse(assistant.adventure().completed());
         assertEquals("Ravenclaws Verborgenes Geheimnis", assistant.adventure().title());
         assertNull(assistant.image());
@@ -82,7 +78,6 @@ final class StoryStreamServiceTest {
         return new StoryService(
             textProvider,
             new PromptBuilder(),
-            new ItemParser(clock),
             new CompletionParser(),
             new OptionsParser(),
             new SceneParser(),

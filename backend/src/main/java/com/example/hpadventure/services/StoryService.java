@@ -4,7 +4,6 @@ import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.providers.ImageProvider;
 import com.example.hpadventure.providers.TextProvider;
 import com.example.hpadventure.parsing.CompletionParser;
-import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkdownSanitizer;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
@@ -24,7 +23,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
 
     private final TextProvider textProvider;
     private final PromptBuilder promptBuilder;
-    private final ItemParser itemParser;
     private final CompletionParser completionParser;
     private final OptionsParser optionsParser;
     private final SceneParser sceneParser;
@@ -38,7 +36,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     public StoryService(
         TextProvider textProvider,
         PromptBuilder promptBuilder,
-        ItemParser itemParser,
         CompletionParser completionParser,
         OptionsParser optionsParser,
         SceneParser sceneParser,
@@ -51,7 +48,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     ) {
         this.textProvider = textProvider;
         this.promptBuilder = promptBuilder;
-        this.itemParser = itemParser;
         this.completionParser = completionParser;
         this.optionsParser = optionsParser;
         this.sceneParser = sceneParser;
@@ -122,7 +118,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
     }
 
     private StreamResult buildAssistantDraft(Dtos.StoryRequest request, List<Dtos.ChatMessage> history, String rawStory) {
-        List<Dtos.Item> newItems = itemParser.parse(rawStory);
         boolean completed = completionParser.isComplete(rawStory);
         List<String> suggestedActions = optionsParser.parse(rawStory);
         String scene = sceneParser.parse(rawStory);
@@ -150,7 +145,7 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         }
 
         Dtos.Adventure adventure = new Dtos.Adventure(adventureTitle, completed, summary, completedAt);
-        Dtos.Assistant assistant = new Dtos.Assistant(cleanStory, suggestedActions, newItems, adventure, null);
+        Dtos.Assistant assistant = new Dtos.Assistant(cleanStory, suggestedActions, adventure, null);
         return new StreamResult(assistant, imagePrompt);
     }
 
@@ -158,7 +153,6 @@ public final class StoryService implements StoryHandler, StoryStreamHandler {
         return new Dtos.Assistant(
             assistant.storyText(),
             assistant.suggestedActions(),
-            assistant.newItems(),
             assistant.adventure(),
             image
         );

@@ -2,7 +2,6 @@ package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
 import com.example.hpadventure.parsing.CompletionParser;
-import com.example.hpadventure.parsing.ItemParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
 import com.example.hpadventure.parsing.SceneParser;
@@ -30,8 +29,7 @@ final class StoryServiceTest {
             "",
             "[OPTION: Leise umsehen]",
             "[OPTION: Weitergehen]",
-            "[SZENE: Dunkler Korridor mit Kerzenlicht]",
-            "[NEUER GEGENSTAND: Schluessel | Ein alter, schwerer Schluessel]"
+            "[SZENE: Dunkler Korridor mit Kerzenlicht]"
         );
 
         FakeTextProvider textProvider = new FakeTextProvider(
@@ -46,7 +44,7 @@ final class StoryServiceTest {
         StoryService service = buildService(textProvider, imageProvider, clock);
 
         Dtos.StoryRequest request = new Dtos.StoryRequest(
-            new Dtos.Player("Hermine", "Gryffindor", List.of(), List.of(), new Dtos.Stats(0, 0)),
+            new Dtos.Player("Hermine", "Gryffindor", List.of(), new Dtos.Stats(0, 0)),
             new Dtos.CurrentAdventure(null, "2026-01-01T09:00:00Z"),
             List.of(new Dtos.ChatMessage("assistant", "Vorherige Szene")),
             "Ich oeffne die Tuer."
@@ -56,10 +54,6 @@ final class StoryServiceTest {
 
         assertEquals("Du trittst in den Gang und hoerst das Knistern der Fackeln.\n\nWas tust du?", assistant.storyText());
         assertEquals(List.of("Leise umsehen", "Weitergehen"), assistant.suggestedActions());
-        assertEquals(1, assistant.newItems().size());
-        assertEquals("Schluessel", assistant.newItems().get(0).name());
-        assertEquals("Ein alter, schwerer Schluessel", assistant.newItems().get(0).description());
-        assertEquals("2026-01-01T10:00:00Z", assistant.newItems().get(0).foundAt());
 
         assertFalse(assistant.adventure().completed());
         assertEquals("Ravenclaws Verborgenes Geheimnis", assistant.adventure().title());
@@ -96,7 +90,7 @@ final class StoryServiceTest {
         StoryService service = buildService(textProvider, imageProvider, clock);
 
         Dtos.StoryRequest request = new Dtos.StoryRequest(
-            new Dtos.Player("Harry", "Gryffindor", List.of(), List.of(), new Dtos.Stats(2, 10)),
+            new Dtos.Player("Harry", "Gryffindor", List.of(), new Dtos.Stats(2, 10)),
             new Dtos.CurrentAdventure("Das Finale", "2026-01-01T10:30:00Z"),
             List.of(new Dtos.ChatMessage("user", "start")),
             "Ich renne los."
@@ -118,7 +112,6 @@ final class StoryServiceTest {
         return new StoryService(
             textProvider,
             new PromptBuilder(),
-            new ItemParser(clock),
             new CompletionParser(),
             new OptionsParser(),
             new SceneParser(),

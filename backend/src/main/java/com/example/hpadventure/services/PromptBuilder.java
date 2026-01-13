@@ -12,7 +12,6 @@ public final class PromptBuilder {
         prompt.append("Du bist ein Spielleiter für ein deutsches Text-Adventure im Harry Potter Universum. Du erzählst eine spannende, immersive Geschichte in der zweiten Person Singular (\"Du siehst...\", \"Du stehst vor...\").\n\n");
         prompt.append("SPIELER-INFORMATIONEN:\n");
 
-        List<Dtos.Item> inventory = null;
         if (player != null) {
             if (notBlank(player.name())) {
                 prompt.append("- Name: ").append(player.name().trim()).append("\n");
@@ -20,8 +19,6 @@ public final class PromptBuilder {
             if (notBlank(player.houseName())) {
                 prompt.append("- Haus: ").append(player.houseName().trim()).append("\n");
             }
-
-            inventory = player.inventory();
 
             List<Dtos.CompletedAdventure> completedAdventures = player.completedAdventures();
             if (completedAdventures != null && !completedAdventures.isEmpty()) {
@@ -38,20 +35,6 @@ public final class PromptBuilder {
                 }
                 prompt.append("\nDu kannst auf vergangene Abenteuer Bezug nehmen wenn es passt (z.B. \"Nach deinem Erlebnis mit dem Basilisken bist du vorsichtiger geworden...\").\n");
             }
-        }
-
-        prompt.append("\nINVENTAR DES SPIELERS:\n");
-        if (inventory != null && !inventory.isEmpty()) {
-            for (Dtos.Item item : inventory) {
-                if (item == null) {
-                    continue;
-                }
-                prompt.append("- ").append(nullToEmpty(item.name())).append(": ")
-                    .append(nullToEmpty(item.description())).append("\n");
-            }
-            prompt.append("\nWICHTIG: Beziehe das Inventar in die Geschichte ein! Wenn ein Gegenstand nützlich sein könnte, frage den Spieler ob er ihn einsetzen möchte. Beispiel: \"Du hast noch den magischen Ring in deiner Tasche - möchtest du ihn benutzen?\"\n");
-        } else {
-            prompt.append("- (keine)\n");
         }
 
         prompt.append("\nSETTING:\n");
@@ -71,11 +54,6 @@ public final class PromptBuilder {
         prompt.append("6. Reagiere auf die Entscheidungen der Spieler und treibe die Geschichte voran\n");
         prompt.append("7. Es kann Gefahren, Rätsel, Begegnungen und Schätze geben\n");
         prompt.append("8. Führe Konsequenzen für Entscheidungen ein\n\n");
-
-        prompt.append("GEGENSTÄNDE & INVENTAR:\n");
-        prompt.append("- Wenn der Spieler einen besonderen Gegenstand findet oder erhält, markiere ihn mit [NEUER GEGENSTAND: Name | Beschreibung]\n");
-        prompt.append("- Beispiel: [NEUER GEGENSTAND: Unsichtbarkeitsumhang | Ein silbrig schimmernder Umhang der unsichtbar macht]\n");
-        prompt.append("- Gib nur wirklich besondere, magische oder story-relevante Gegenstände\n\n");
 
         prompt.append("ABENTEUER-STRUKTUR:\n");
         prompt.append("- Ein Abenteuer sollte nach etwa 10-20 Zügen zu einem befriedigenden Ende kommen\n");

@@ -32,7 +32,6 @@ final class StoryRoutesTest {
         StoryHandler handler = request -> new Dtos.Assistant(
             "Der Korridor ist still. Was tust du?",
             List.of("Weitergehen", "Umkehren"),
-            List.of(),
             new Dtos.Adventure("Der Nordturm", false, null, null),
             new Dtos.Image("image/webp", "base64", "Dunkler Korridor")
         );
@@ -123,7 +122,6 @@ final class StoryRoutesTest {
         return new Dtos.Assistant(
             "Test",
             List.of(),
-            List.of(),
             new Dtos.Adventure(null, false, null, null),
             new Dtos.Image("image/webp", "base64", null)
         );
@@ -137,7 +135,7 @@ final class StoryRoutesTest {
 
     private static Dtos.StoryRequest sampleRequest(String action) {
         return new Dtos.StoryRequest(
-            new Dtos.Player("Hermine", "Gryffindor", List.of(), List.of(), new Dtos.Stats(0, 0)),
+            new Dtos.Player("Hermine", "Gryffindor", List.of(), new Dtos.Stats(0, 0)),
             new Dtos.CurrentAdventure("Test", "2026-01-01T10:00:00Z"),
             List.of(),
             action

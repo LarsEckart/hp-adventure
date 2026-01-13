@@ -215,7 +215,6 @@ adventureView state adventure =
         , div [ class "story-sidebar" ]
             [ statsPanel state.player
             , currentAdventurePanel adventure
-            , inventoryPanel state.player state.showInventory
             , historyPanel state.player state.showHistory
             , resetPanel state
             ]
@@ -280,7 +279,6 @@ assistantView maybeAssistant =
         Just assistant ->
             div [ class "assistant", dataTestId "assistant-turn" ]
                 [ p [ dataTestId "assistant-story" ] [ text assistant.storyText ]
-                , newItemsView assistant.newItems
                 , completionView assistant.adventureCompleted
                 ]
 
@@ -362,23 +360,6 @@ latestSuggestions adventure =
                     assistant.suggestedActions
 
 
-newItemsView : List Model.Item -> Html Msg
-newItemsView items =
-    case items of
-        [] ->
-            text ""
-
-        _ ->
-            div [ class "new-items" ]
-                [ p [] [ text "Neue Gegenstände:" ]
-                , ul []
-                    (List.map
-                        (\item -> li [] [ text (item.name ++ " — " ++ item.description) ])
-                        items
-                    )
-                ]
-
-
 completionView : Bool -> Html Msg
 completionView completed =
     if completed then
@@ -444,26 +425,6 @@ currentAdventurePanel adventure =
     div [ class "panel panel-side", dataTestId "current-adventure-panel" ]
         [ h3 [] [ text "Aktuelles Abenteuer" ]
         , p [] [ text titleText ]
-        ]
-
-
-inventoryPanel : Model.Player -> Bool -> Html Msg
-inventoryPanel player isVisible =
-    div [ class "panel panel-side", dataTestId "inventory-panel" ]
-        [ panelHeader "Inventar" ToggleInventory isVisible
-        , if isVisible then
-            if List.isEmpty player.inventory then
-                p [] [ text "Noch keine Gegenstände." ]
-
-            else
-                ul [ class "panel-list" ]
-                    (List.map
-                        (\item -> li [] [ text (item.name ++ " — " ++ item.description) ])
-                        player.inventory
-                    )
-
-          else
-            text ""
         ]
 
 

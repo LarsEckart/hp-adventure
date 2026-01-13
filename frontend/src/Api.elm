@@ -17,7 +17,6 @@ type alias StoryResponse =
 type alias Assistant =
     { storyText : String
     , suggestedActions : List String
-    , newItems : List Model.Item
     , adventure : AdventureMeta
     , image : Maybe Model.ImageData
     }
@@ -132,7 +131,6 @@ encodePlayer player =
     Encode.object
         [ ( "name", Encode.string player.name )
         , ( "houseName", Encode.string player.houseName )
-        , ( "inventory", Encode.list encodeItem player.inventory )
         , ( "completedAdventures", Encode.list encodeCompletedAdventure player.completedAdventures )
         , ( "stats", encodeStats player.stats )
         ]
@@ -189,15 +187,10 @@ decodeStoryResponse =
 
 assistantDecoder : Decoder Assistant
 assistantDecoder =
-    Decode.map5 Assistant
+    Decode.map4 Assistant
         (Decode.field "storyText" Decode.string)
         (Decode.oneOf
             [ Decode.field "suggestedActions" (Decode.list Decode.string)
-            , Decode.succeed []
-            ]
-        )
-        (Decode.oneOf
-            [ Decode.field "newItems" (Decode.list itemDecoder)
             , Decode.succeed []
             ]
         )
@@ -233,23 +226,6 @@ defaultAdventure =
     , summary = Nothing
     , completedAt = Nothing
     }
-
-
-encodeItem : Model.Item -> Encode.Value
-encodeItem item =
-    Encode.object
-        [ ( "name", Encode.string item.name )
-        , ( "description", Encode.string item.description )
-        , ( "foundAt", Encode.string item.foundAt )
-        ]
-
-
-itemDecoder : Decoder Model.Item
-itemDecoder =
-    Decode.map3 Model.Item
-        (Decode.field "name" Decode.string)
-        (Decode.field "description" Decode.string)
-        (Decode.field "foundAt" Decode.string)
 
 
 imageDecoder : Decoder Model.ImageData

@@ -20,7 +20,6 @@ Developer notes:
 - Story system prompts plus title/summary prompts are logged where they are built (`PromptBuilder`, `TitleService`, `SummaryService`) to keep logs lean.
 - Prompt now explicitly requires 2-3 `[OPTION: ...]` lines after "Was tust du?" to keep UI options populated.
 - Image prompts now instruct "no characters/portraits"; scenes only (locations, objects, enemies/creatures/animals).
-- New adventures auto-add a starter item ("Zauberstab") to the player inventory; prompt always includes an inventory section.
 - Story arc tracking: steps 1-5 intro, 6-13 main arc, 14-15 finale. Server derives step from completed assistant turns and injects it into the prompt.
 - UI includes a reset button that clears the `hpAdventure:v1` localStorage key and resets state to defaults.
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
@@ -42,7 +41,7 @@ Developer notes:
 - Authentication: Set `APP_PASSWORDS` env var with format `name:password,name2:password2,...` to enable password protection. Protected routes: `/api/story`, `/api/story/stream`, `/api/tts`. Validation endpoint: `POST /api/auth/validate`. Frontend shows password screen until validated; password stored in `hpAdventure:password` localStorage and sent via `X-App-Password` header. If `APP_PASSWORDS` is not set, authentication is disabled.
 - Streaming endpoint: `POST /api/story/stream` (SSE). Client uses JS fetch streaming via `startStoryStream`/`storyStream` ports and falls back to `POST /api/story`. Streaming sends `delta` + `final_text` (story content) first, then an `image` event when image generation completes (or `image_error` on failure).
 - TTS endpoint: `POST /api/tts` returns streamed `audio/mpeg` for a story turn. Requires `ELEVENLABS_API_KEY`; voice id defaults to `g1jpii0iyvtRs8fqXsd1` (override with `ELEVENLABS_VOICE_ID`, optional: `ELEVENLABS_MODEL`, `ELEVENLABS_BASE_URL`, `ELEVENLABS_OUTPUT_FORMAT`, `ELEVENLABS_OPTIMIZE_STREAMING_LATENCY`). Frontend auto-plays per assistant turn via the `speakStory` port.
-- Streaming deltas are filtered server-side to strip `[OPTION: ...]`/`[SZENE: ...]`/inventory markers; UI options arrive with the `final_text` event (or the non-streaming JSON response).
+- Streaming deltas are filtered server-side to strip `[OPTION: ...]`/`[SZENE: ...]` markers; UI options arrive with the `final_text` event (or the non-streaming JSON response).
 - Story text is sanitized server-side to strip simple Markdown markers (`*`, `_`, `` ` ``) in both streaming deltas and final responses.
 - Title output from Anthropic is sanitized server-side (strip markdown headers, clamp to 5 words, trim trailing stopwords) before being stored/displayed.
 - Streaming deltas may include whitespace-only chunks; do not drop/trim them or words may concatenate.
@@ -63,7 +62,7 @@ Developer notes:
 - Elm HTTP support requires `elm/http`; add deps with `elm install` (don't hand-edit versions).
 - After frontend changes, run `./frontend/build.sh` to refresh `backend/src/main/resources/public`.
 - The Elm app expects `/api/story` to accept `{ player, currentAdventure, conversationHistory, action }` and return `assistant.storyText`, `assistant.suggestedActions`, plus `assistant.image` (base64).
-- UI command shortcuts (handled client-side): `inventar`, `geschichte`, `aufgeben`, `start`.
+- UI command shortcuts (handled client-side): `geschichte`, `aufgeben`, `start`.
 - Client-side error handling drops the last pending turn on failed story requests to avoid stuck "Die Geschichte schreibt sich..." placeholders (see `frontend/src/Update.elm`).
 - Completed adventures remain visible in the story view; inputs are disabled and a "Neues Abenteuer" button returns to the setup screen.
 

@@ -8,7 +8,6 @@ import Json.Encode as Encode
 import Model
 import Msg exposing (Msg(..))
 import Maybe
-import Set
 import String
 import Task
 import Time
@@ -113,9 +112,6 @@ update save startStream speakStory clearStorage validatePassword msg state =
         GotStoryStreamEvent payload ->
             handleStreamEvent save speakStory payload state
 
-        ToggleInventory ->
-            ( { state | showInventory = not state.showInventory }, Cmd.none )
-
         ToggleHistory ->
             ( { state | showHistory = not state.showHistory }, Cmd.none )
 
@@ -175,9 +171,6 @@ beginAdventure save startStream startedAt state =
         startedAtIso =
             Util.posixToIso startedAt
 
-        updatedPlayer =
-            ensureStarterItems startedAtIso state.player
-
         adventure =
             { title = Nothing
             , startedAt = startedAtIso
@@ -185,7 +178,7 @@ beginAdventure save startStream startedAt state =
             }
 
         next =
-            { state | currentAdventure = Just adventure, notice = Nothing, player = updatedPlayer }
+            { state | currentAdventure = Just adventure, notice = Nothing }
     in
     sendAction save startStream "start" next
 
@@ -201,13 +194,6 @@ handleAction save startStream rawAction state =
     in
     if trimmed == "" then
         ( state, Cmd.none )
-
-    else if command == "inventar" then
-        let
-            next =
-                { state | showInventory = True, actionInput = "", notice = Just "Inventar geöffnet." }
-        in
-        ( next, save next )
 
     else if command == "geschichte" then
         let
@@ -281,7 +267,6 @@ applyStoryResponse save speakStory loadingComplete response state =
                 assistantTurn =
                     { storyText = response.assistant.storyText
                     , suggestedActions = response.assistant.suggestedActions
-                    , newItems = response.assistant.newItems
                     , adventureCompleted = response.assistant.adventure.completed
                     , image = response.assistant.image
                     }
@@ -292,9 +277,7 @@ applyStoryResponse save speakStory loadingComplete response state =
                         |> updateAdventureTitle response.assistant.adventure.title
 
                 updatedPlayer =
-                    state.player
-                        |> addItems response.assistant.newItems
-                        |> incrementTurns
+                    incrementTurns state.player
 
                 ( finalPlayer, finalAdventure, notice ) =
                     if response.assistant.adventure.completed then
@@ -340,7 +323,7 @@ applyStoryResponse save speakStory loadingComplete response state =
                     else
                         ( updatedPlayer
                         , Just updatedAdventure
-                        , newItemNotice response.assistant.newItems
+                        , Nothing
                         )
 
                 next =
@@ -495,7 +478,6 @@ updateLastTurnWithDelta delta adventure =
                         Nothing ->
                             { storyText = delta
                             , suggestedActions = []
-                            , newItems = []
                             , adventureCompleted = False
                             , image = Nothing
                             }
@@ -614,43 +596,6 @@ finishAdventure save state =
     ( next, save next )
 
 
-addItems : List Model.Item -> Model.Player -> Model.Player
-addItems newItems player =
-    let
-        existingNames =
-            player.inventory
-                |> List.map (\item -> String.toLower item.name)
-                |> Set.fromList
-
-        uniqueNewItems =
-            newItems
-                |> List.filter (\item -> not (Set.member (String.toLower item.name) existingNames))
-    in
-    { player | inventory = player.inventory ++ uniqueNewItems }
-
-
-ensureStarterItems : String -> Model.Player -> Model.Player
-ensureStarterItems startedAtIso player =
-    let
-        hasWand =
-            player.inventory
-                |> List.any (\item -> String.toLower item.name == "zauberstab")
-
-        wandItem =
-            { name = "Zauberstab"
-            , description = "Ein einfacher Schulzauberstab."
-            , foundAt = startedAtIso
-            }
-
-        nextInventory =
-            if hasWand then
-                player.inventory
-            else
-                wandItem :: player.inventory
-    in
-    { player | inventory = nextInventory }
-
-
 incrementTurns : Model.Player -> Model.Player
 incrementTurns player =
     let
@@ -658,16 +603,6 @@ incrementTurns player =
             player.stats
     in
     { player | stats = { currentStats | totalTurns = currentStats.totalTurns + 1 } }
-
-
-newItemNotice : List Model.Item -> Maybe String
-newItemNotice items =
-    case items of
-        [] ->
-            Nothing
-
-        _ ->
-            Just ("Neue Gegenstände: " ++ String.join ", " (List.map .name items))
 
 
 offlineMessage : String
