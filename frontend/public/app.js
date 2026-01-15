@@ -103,14 +103,20 @@
     try {
       const payload = await response.json();
       console.warn("TTS failed", payload);
-      if (response.status === 402 || (payload.error && payload.error.code === "PAYMENT_REQUIRED")) {
+      // ElevenLabs returns 401 with quota_exceeded, or we might get 402
+      const isQuotaExceeded =
+        response.status === 401 ||
+        response.status === 402 ||
+        (payload.error && payload.error.message && payload.error.message.includes("quota_exceeded")) ||
+        (payload.detail && payload.detail.status === "quota_exceeded");
+      if (isQuotaExceeded) {
         message = "Sprachausgabe nicht verfügbar (Guthaben erschöpft).";
       } else if (response.status === 503 || (payload.error && payload.error.code === "TTS_DISABLED")) {
         message = "Sprachausgabe ist deaktiviert.";
       }
     } catch (_) {
       console.warn("TTS failed with status", response.status);
-      if (response.status === 402) {
+      if (response.status === 401 || response.status === 402) {
         message = "Sprachausgabe nicht verfügbar (Guthaben erschöpft).";
       } else if (response.status === 503) {
         message = "Sprachausgabe ist deaktiviert.";
