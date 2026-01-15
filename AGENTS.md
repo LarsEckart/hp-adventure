@@ -28,10 +28,12 @@ Developer notes:
   - `ImageProvider` interface for image generation (implemented by `OpenRouterImageProvider`, `OpenAiImageProvider`)
   - `SpeechProvider` interface for text-to-speech (implemented by `ElevenLabsSpeechProvider`)
   - Factory classes (`TextProviderFactory`, `ImageProviderFactory`, `SpeechProviderFactory`) create providers from env vars
-- Text generation supports two providers via the `TextProvider` interface: OpenRouter (primary) and Anthropic (fallback).
+- Text generation supports three providers via the `TextProvider` interface: OpenRouter, Anthropic, and Mistral.
   - **OpenRouter**: Uses `/v1/chat/completions`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_TEXT_MODEL` default `xiaomi/mimo-v2-flash:free`).
   - **Anthropic**: Uses `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_BASE_URL`, `ANTHROPIC_MODEL`).
-  - Priority: `OPENROUTER_API_KEY` > `ANTHROPIC_API_KEY`.
+  - **Mistral**: Uses `/v1/chat/completions`; requires `MISTRAL_API_KEY` (optional: `MISTRAL_BASE_URL`, `MISTRAL_MODEL` default `mistral-small-latest`).
+  - **Explicit override**: Set `TEXT_PROVIDER=openrouter|anthropic|mistral` to force a specific provider (useful when multiple API keys are set).
+  - Default priority (when `TEXT_PROVIDER` not set): `OPENROUTER_API_KEY` > `ANTHROPIC_API_KEY` > `MISTRAL_API_KEY`.
 - Image generation supports two providers via the `ImageProvider` interface: OpenRouter (primary) and OpenAI (fallback).
   - **OpenRouter**: Uses `/v1/chat/completions` with image-generating models like `google/gemini-2.5-flash-image`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_IMAGE_MODEL`).
   - **OpenAI**: Uses `/v1/images/generations`; requires `OPENAI_API_KEY` (optional: `OPENAI_BASE_URL`, `OPENAI_IMAGE_MODEL`, `OPENAI_IMAGE_FORMAT`, `OPENAI_IMAGE_COMPRESSION`, `OPENAI_IMAGE_QUALITY`, `OPENAI_IMAGE_SIZE`).
@@ -56,6 +58,7 @@ Developer notes:
 - `StoryStreamServiceTest` uses in-memory `FakeTextProvider`/`FakeImageProvider` in `backend/src/test/java/com/example/hpadventure/services` to drive stream + image paths without HTTP.
 - `StoryRoutesTest` uses Javalin testtools to cover API validation, rate limiting, and upstream error mapping.
 - `AnthropicTextProviderSmokeTest` hits the real https://api.anthropic.com endpoint; set `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`) to run and expect real API usage/costs.
+- `MistralTextProviderSmokeTest` hits the real https://api.mistral.ai endpoint; set `MISTRAL_API_KEY` (optional: `MISTRAL_MODEL`) to run and expect real API usage/costs.
 - E2E smoke tests (Playwright): `npm run test:e2e` (first time: `npx playwright install` to fetch browsers; serves `backend/src/main/resources/public` via `python3 -m http.server`).
 - Playwright uses `playwright.config.js` (base URL `http://localhost:4173`, serves `backend/src/main/resources/public`); E2E selectors target `data-testid` attributes in `frontend/src/View.elm`.
 - If you touch Elm views, rerun `./frontend/build.sh` so the compiled `elm.js` in `frontend/public` and `backend/src/main/resources/public` stays in sync.
