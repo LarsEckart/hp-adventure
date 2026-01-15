@@ -20,6 +20,7 @@ type Msg
     | UseSuggestedAction String
     | GotStoryResponse (Result Api.HttpError Api.StoryResponse)
     | GotStoryStreamEvent Decode.Value
+    | GotTtsError String
     | ToggleHistory
     | RequestAbandon
     | ConfirmAbandon

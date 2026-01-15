@@ -4682,6 +4682,9 @@ var $elm$core$Basics$LT = 0;
 var $author$project$Msg$GotStoryStreamEvent = function (a) {
 	return {$: 12, a: a};
 };
+var $author$project$Msg$GotTtsError = function (a) {
+	return {$: 13, a: a};
+};
 var $author$project$Msg$OnlineStatusChanged = function (a) {
 	return {$: 4, a: a};
 };
@@ -5798,6 +5801,7 @@ var $author$project$Main$speakStory = _Platform_outgoingPort('speakStory', $elm$
 var $author$project$Main$startStoryStream = _Platform_outgoingPort('startStoryStream', $elm$core$Basics$identity);
 var $elm$json$Json$Decode$value = _Json_decodeValue;
 var $author$project$Main$storyStream = _Platform_incomingPort('storyStream', $elm$json$Json$Decode$value);
+var $author$project$Main$ttsError = _Platform_incomingPort('ttsError', $elm$json$Json$Decode$string);
 var $author$project$Model$Validating = 1;
 var $author$project$Update$incrementTurns = function (player) {
 	var currentStats = player.bb;
@@ -5811,7 +5815,7 @@ var $author$project$Update$incrementTurns = function (player) {
 };
 var $elm$core$Basics$not = _Basics_not;
 var $author$project$Msg$ScrolledToBottom = function (a) {
-	return {$: 20, a: a};
+	return {$: 21, a: a};
 };
 var $elm$core$Basics$composeL = F3(
 	function (g, f, x) {
@@ -6965,27 +6969,42 @@ var $author$project$Update$update = F7(
 			case 12:
 				var payload = msg.a;
 				return A4($author$project$Update$handleStreamEvent, save, speakStory, payload, state);
-			case 13:
+			case 14:
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,
 						{av: !state.av}),
 					$elm$core$Platform$Cmd$none);
-			case 14:
-				return A2($author$project$Update$requestAbandon, save, state);
 			case 15:
-				return A2($author$project$Update$confirmAbandon, save, state);
+				return A2($author$project$Update$requestAbandon, save, state);
 			case 16:
-				return A2($author$project$Update$cancelAbandon, save, state);
+				return A2($author$project$Update$confirmAbandon, save, state);
 			case 17:
-				return A2($author$project$Update$finishAdventure, save, state);
+				return A2($author$project$Update$cancelAbandon, save, state);
 			case 18:
+				return A2($author$project$Update$finishAdventure, save, state);
+			case 19:
 				return _Utils_Tuple2(
 					_Utils_update(
 						state,
 						{ah: $elm$core$Maybe$Nothing}),
 					$elm$core$Platform$Cmd$none);
-			case 19:
+			case 13:
+				var message = msg.a;
+				var nextNotice = function () {
+					var _v3 = state.ah;
+					if (_v3.$ === 1) {
+						return $elm$core$Maybe$Just(message);
+					} else {
+						return state.ah;
+					}
+				}();
+				return _Utils_Tuple2(
+					_Utils_update(
+						state,
+						{ah: nextNotice}),
+					$elm$core$Platform$Cmd$none);
+			case 20:
 				var baseState = $author$project$Model$defaultState;
 				var next = _Utils_update(
 					baseState,
@@ -7865,7 +7884,7 @@ var $author$project$View$headerView = A2(
 					$elm$html$Html$text('Dein interaktives Hogwarts-Abenteuer im Browser.')
 				]))
 		]));
-var $author$project$Msg$DismissNotice = {$: 18};
+var $author$project$Msg$DismissNotice = {$: 19};
 var $elm$html$Html$button = _VirtualDom_node('button');
 var $elm$virtual_dom$VirtualDom$Normal = function (a) {
 	return {$: 0, a: a};
@@ -7938,13 +7957,13 @@ var $author$project$View$offlineView = function (isOnline) {
 					]))
 			]));
 };
-var $author$project$Msg$RequestAbandon = {$: 14};
+var $author$project$Msg$RequestAbandon = {$: 15};
 var $author$project$Msg$SendAction = {$: 9};
 var $author$project$Msg$UpdateActionInput = function (a) {
 	return {$: 2, a: a};
 };
-var $author$project$Msg$CancelAbandon = {$: 16};
-var $author$project$Msg$ConfirmAbandon = {$: 15};
+var $author$project$Msg$CancelAbandon = {$: 17};
+var $author$project$Msg$ConfirmAbandon = {$: 16};
 var $author$project$View$abandonConfirmView = function (isVisible) {
 	return isVisible ? A2(
 		$elm$html$Html$div,
@@ -7993,7 +8012,7 @@ var $author$project$View$abandonConfirmView = function (isVisible) {
 					]))
 			])) : $elm$html$Html$text('');
 };
-var $author$project$Msg$FinishAdventure = {$: 17};
+var $author$project$Msg$FinishAdventure = {$: 18};
 var $author$project$View$completionActionsView = A2(
 	$elm$html$Html$div,
 	_List_fromArray(
@@ -8067,7 +8086,7 @@ var $elm$html$Html$Attributes$boolProperty = F2(
 			$elm$json$Json$Encode$bool(bool));
 	});
 var $elm$html$Html$Attributes$disabled = $elm$html$Html$Attributes$boolProperty('disabled');
-var $author$project$Msg$ToggleHistory = {$: 13};
+var $author$project$Msg$ToggleHistory = {$: 14};
 var $elm$html$Html$li = _VirtualDom_node('li');
 var $author$project$View$historyItemView = function (adventure) {
 	return A2(
@@ -8234,7 +8253,7 @@ var $elm$html$Html$Events$onInput = function (tagger) {
 			A2($elm$json$Json$Decode$map, tagger, $elm$html$Html$Events$targetValue)));
 };
 var $elm$html$Html$Attributes$placeholder = $elm$html$Html$Attributes$stringProperty('placeholder');
-var $author$project$Msg$ResetState = {$: 19};
+var $author$project$Msg$ResetState = {$: 20};
 var $author$project$View$resetPanel = function (state) {
 	return A2(
 		$elm$html$Html$div,
@@ -8926,7 +8945,8 @@ var $author$project$Main$main = $elm$browser$Browser$element(
 				_List_fromArray(
 					[
 						$author$project$Main$onlineStatus($author$project$Msg$OnlineStatusChanged),
-						$author$project$Main$storyStream($author$project$Msg$GotStoryStreamEvent)
+						$author$project$Main$storyStream($author$project$Msg$GotStoryStreamEvent),
+						$author$project$Main$ttsError($author$project$Msg$GotTtsError)
 					]))),
 		bk: A5(
 			$author$project$Update$update,

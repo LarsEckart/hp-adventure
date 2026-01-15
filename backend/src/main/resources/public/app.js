@@ -92,13 +92,31 @@
     }
   };
 
+  const sendTtsError = (message) => {
+    if (app.ports && app.ports.ttsError) {
+      app.ports.ttsError.send(message);
+    }
+  };
+
   const logTtsError = async (response) => {
+    let message = "Sprachausgabe fehlgeschlagen.";
     try {
       const payload = await response.json();
       console.warn("TTS failed", payload);
+      if (response.status === 402 || (payload.error && payload.error.code === "PAYMENT_REQUIRED")) {
+        message = "Sprachausgabe nicht verfügbar (Guthaben erschöpft).";
+      } else if (response.status === 503 || (payload.error && payload.error.code === "TTS_DISABLED")) {
+        message = "Sprachausgabe ist deaktiviert.";
+      }
     } catch (_) {
       console.warn("TTS failed with status", response.status);
+      if (response.status === 402) {
+        message = "Sprachausgabe nicht verfügbar (Guthaben erschöpft).";
+      } else if (response.status === 503) {
+        message = "Sprachausgabe ist deaktiviert.";
+      }
     }
+    sendTtsError(message);
   };
 
   const playTts = async (text) => {

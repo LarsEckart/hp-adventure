@@ -130,6 +130,18 @@ update save startStream speakStory clearStorage validatePassword msg state =
         DismissNotice ->
             ( { state | notice = Nothing }, Cmd.none )
 
+        GotTtsError message ->
+            let
+                nextNotice =
+                    case state.notice of
+                        Nothing ->
+                            Just message
+
+                        Just _ ->
+                            state.notice
+            in
+            ( { state | notice = nextNotice }, Cmd.none )
+
         ResetState ->
             let
                 baseState =

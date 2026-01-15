@@ -17,6 +17,7 @@ port onlineStatus : (Bool -> msg) -> Sub msg
 port startStoryStream : Encode.Value -> Cmd msg
 port storyStream : (Decode.Value -> msg) -> Sub msg
 port speakStory : String -> Cmd msg
+port ttsError : (String -> msg) -> Sub msg
 
 main : Program Decode.Value Model.GameState Msg
 main =
@@ -24,7 +25,7 @@ main =
         { init = init
         , update = Update.update save startStoryStream speakStory (clearState ()) validatePassword
         , view = View.view
-        , subscriptions = always (Sub.batch [ onlineStatus Msg.OnlineStatusChanged, storyStream Msg.GotStoryStreamEvent ])
+        , subscriptions = always (Sub.batch [ onlineStatus Msg.OnlineStatusChanged, storyStream Msg.GotStoryStreamEvent, ttsError Msg.GotTtsError ])
         }
 
 init : Decode.Value -> ( Model.GameState, Cmd Msg )
