@@ -3,6 +3,7 @@ package com.example.hpadventure.providers.text;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
@@ -14,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("smoke")
+@Disabled("OpenRouter free tier is frequently rate-limited upstream")
 final class OpenRouterTextProviderSmokeTest {
     private static final String PRODUCTION_BASE_URL = "https://openrouter.ai/api";
 
