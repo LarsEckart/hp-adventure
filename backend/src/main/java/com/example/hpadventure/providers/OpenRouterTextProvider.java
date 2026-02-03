@@ -28,7 +28,7 @@ final class OpenRouterTextProvider implements TextProvider {
     private static final Logger logger = LoggerFactory.getLogger(OpenRouterTextProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String DEFAULT_BASE_URL = "https://openrouter.ai/api";
-    private static final String DEFAULT_MODEL = "xiaomi/mimo-v2-flash:free";
+    private static final String DEFAULT_MODEL = "mistralai/mistral-small-3.1-24b-instruct:free";
     
     /** Max retry attempts for transient upstream errors (5xx). */
     private static final int MAX_RETRIES = 2;
