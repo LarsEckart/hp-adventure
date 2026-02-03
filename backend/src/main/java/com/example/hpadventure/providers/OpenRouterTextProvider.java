@@ -28,8 +28,7 @@ final class OpenRouterTextProvider implements TextProvider {
     private static final Logger logger = LoggerFactory.getLogger(OpenRouterTextProvider.class);
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final String DEFAULT_BASE_URL = "https://openrouter.ai/api";
-    private static final String DEFAULT_MODEL = "mistralai/mistral-small-3.1-24b-instruct:free";
-    
+
     /** Max retry attempts for transient upstream errors (5xx). */
     private static final int MAX_RETRIES = 2;
     /** Initial backoff delay in milliseconds. */
@@ -51,7 +50,7 @@ final class OpenRouterTextProvider implements TextProvider {
         this.httpClient = Objects.requireNonNull(httpClient, "httpClient");
         this.mapper = Objects.requireNonNull(mapper, "mapper");
         this.apiKey = apiKey;
-        this.model = model != null ? model : DEFAULT_MODEL;
+        this.model = model != null ? model : TextProviderFactory.DEFAULT_OPENROUTER_MODEL;
         this.baseUrl = baseUrl != null ? baseUrl : DEFAULT_BASE_URL;
     }
 
