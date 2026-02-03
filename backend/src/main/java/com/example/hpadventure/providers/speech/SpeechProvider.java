@@ -1,4 +1,4 @@
-package com.example.hpadventure.providers;
+package com.example.hpadventure.providers.speech;
 
 import java.io.OutputStream;
 

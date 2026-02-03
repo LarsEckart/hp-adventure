@@ -5,8 +5,8 @@ import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.MarkerCleaner;
 import com.example.hpadventure.parsing.OptionsParser;
 import com.example.hpadventure.parsing.SceneParser;
-import com.example.hpadventure.providers.ImageProvider;
-import com.example.hpadventure.providers.TextProvider;
+import com.example.hpadventure.providers.image.ImageProvider;
+import com.example.hpadventure.providers.text.TextProvider;
 import org.junit.jupiter.api.Test;
 
 import java.time.Clock;

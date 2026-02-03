@@ -1,4 +1,4 @@
-package com.example.hpadventure.providers;
+package com.example.hpadventure.providers.image;
 
 import org.junit.jupiter.api.Test;
 

@@ -1,4 +1,4 @@
-package com.example.hpadventure.providers;
+package com.example.hpadventure.providers.image;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

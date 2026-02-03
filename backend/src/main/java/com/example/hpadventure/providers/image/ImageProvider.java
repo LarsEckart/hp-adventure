@@ -1,4 +1,4 @@
-package com.example.hpadventure.providers;
+package com.example.hpadventure.providers.image;
 
 /**
  * Interface for image generation providers.

@@ -1,8 +1,8 @@
 package com.example.hpadventure.services;
 
 import com.example.hpadventure.api.Dtos;
-import com.example.hpadventure.providers.ImageProvider;
-import com.example.hpadventure.providers.TextProvider;
+import com.example.hpadventure.providers.image.ImageProvider;
+import com.example.hpadventure.providers.text.TextProvider;
 import com.example.hpadventure.parsing.CompletionParser;
 import com.example.hpadventure.parsing.MarkdownSanitizer;
 import com.example.hpadventure.parsing.MarkerCleaner;

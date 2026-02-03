@@ -23,11 +23,10 @@ Developer notes:
 - Story arc tracking: steps 1-5 intro, 6-13 main arc, 14-15 finale. Server derives step from completed assistant turns and injects it into the prompt.
 - UI includes a reset button that clears the `hpAdventure:v1` localStorage key and resets state to defaults.
 - `POST /api/story` now calls Anthropic `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_MODEL`, `ANTHROPIC_BASE_URL`).
-- Provider abstractions live in `backend/src/main/java/com/example/hpadventure/providers`:
-  - `TextProvider` interface for text generation (implemented by `OpenRouterTextProvider`, `AnthropicTextProvider`)
-  - `ImageProvider` interface for image generation (implemented by `OpenRouterImageProvider`, `OpenAiImageProvider`)
-  - `SpeechProvider` interface for text-to-speech (implemented by `ElevenLabsSpeechProvider`)
-  - Factory classes (`TextProviderFactory`, `ImageProviderFactory`, `SpeechProviderFactory`) create providers from env vars
+- Provider abstractions live in `backend/src/main/java/com/example/hpadventure/providers/` with three subpackages:
+  - `text/` - Text generation: `TextProvider` interface (implemented by `OpenRouterTextProvider`, `AnthropicTextProvider`, `MistralTextProvider`) + `TextProviderFactory`
+  - `image/` - Image generation: `ImageProvider` interface (implemented by `OpenRouterImageProvider`, `OpenAiImageProvider`, `PlaceholderImageProvider`) + `ImageProviderFactory`
+  - `speech/` - Text-to-speech: `SpeechProvider` interface (implemented by `ElevenLabsSpeechProvider`) + `SpeechProviderFactory`
 - Text generation supports three providers via the `TextProvider` interface: OpenRouter, Anthropic, and Mistral.
   - **OpenRouter**: Uses `/v1/chat/completions`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_TEXT_MODEL` default `xiaomi/mimo-v2-flash:free`).
   - **Anthropic**: Uses `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_BASE_URL`, `ANTHROPIC_MODEL`).

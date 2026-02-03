@@ -1,6 +1,6 @@
 package com.example.hpadventure.services;
 
-import com.example.hpadventure.providers.TextProvider;
+import com.example.hpadventure.providers.text.TextProvider;
 
 import java.util.ArrayList;
 import java.util.List;

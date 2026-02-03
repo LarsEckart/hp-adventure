@@ -1,4 +1,4 @@
-package com.example.hpadventure.providers;
+package com.example.hpadventure.providers.text;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.OkHttpClient;
@@ -14,16 +14,15 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("smoke")
-final class OpenRouterTextProviderSmokeTest {
-    private static final String PRODUCTION_BASE_URL = "https://openrouter.ai/api";
-    private static final String DEFAULT_MODEL = "xiaomi/mimo-v2-flash:free";
+final class MistralTextProviderSmokeTest {
+    private static final String PRODUCTION_BASE_URL = "https://api.mistral.ai";
 
     @Test
     void createMessage_hitsProduction() {
-        String apiKey = System.getenv("OPENROUTER_API_KEY");
-        Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "OPENROUTER_API_KEY must be set for smoke test");
+        String apiKey = System.getenv("MISTRAL_API_KEY");
+        Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "MISTRAL_API_KEY must be set for smoke test");
 
-        OpenRouterTextProvider provider = buildProvider(apiKey);
+        MistralTextProvider provider = buildProvider(apiKey);
         String response = provider.createMessage(
             "You are a test harness. Reply with the word OK.",
             List.of(new TextProvider.Message("user", "Please respond with OK.")),
@@ -35,10 +34,10 @@ final class OpenRouterTextProviderSmokeTest {
 
     @Test
     void streamMessage_hitsProduction() {
-        String apiKey = System.getenv("OPENROUTER_API_KEY");
-        Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "OPENROUTER_API_KEY must be set for smoke test");
+        String apiKey = System.getenv("MISTRAL_API_KEY");
+        Assumptions.assumeTrue(apiKey != null && !apiKey.isBlank(), "MISTRAL_API_KEY must be set for smoke test");
 
-        OpenRouterTextProvider provider = buildProvider(apiKey);
+        MistralTextProvider provider = buildProvider(apiKey);
         StringBuilder builder = new StringBuilder();
         AtomicInteger chunks = new AtomicInteger();
 
@@ -56,8 +55,8 @@ final class OpenRouterTextProviderSmokeTest {
         assertFalse(builder.toString().isBlank());
     }
 
-    private static OpenRouterTextProvider buildProvider(String apiKey) {
-        String model = System.getenv().getOrDefault("OPENROUTER_TEXT_MODEL", DEFAULT_MODEL);
+    private static MistralTextProvider buildProvider(String apiKey) {
+        String model = System.getenv().getOrDefault("MISTRAL_MODEL", "mistral-small-latest");
         OkHttpClient httpClient = new OkHttpClient.Builder()
             .connectTimeout(Duration.ofSeconds(10))
             .readTimeout(Duration.ofSeconds(60))
@@ -65,6 +64,6 @@ final class OpenRouterTextProviderSmokeTest {
             .build();
         ObjectMapper mapper = new ObjectMapper();
 
-        return new OpenRouterTextProvider(httpClient, mapper, apiKey, model, PRODUCTION_BASE_URL);
+        return new MistralTextProvider(httpClient, mapper, apiKey, model, PRODUCTION_BASE_URL);
     }
 }

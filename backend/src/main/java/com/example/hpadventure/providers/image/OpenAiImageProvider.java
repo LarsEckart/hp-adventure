@@ -1,4 +1,4 @@
-package com.example.hpadventure.providers;
+package com.example.hpadventure.providers.image;
 
 import com.example.hpadventure.services.UpstreamException;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;

@@ -1,6 +1,6 @@
 package com.example.hpadventure.services;
 
-import com.example.hpadventure.providers.SpeechProvider;
+import com.example.hpadventure.providers.speech.SpeechProvider;
 
 import java.io.OutputStream;
 import java.util.Objects;

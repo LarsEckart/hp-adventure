@@ -1,4 +1,4 @@
-package com.example.hpadventure.providers;
+package com.example.hpadventure.providers.text;
 
 import java.util.List;
 import java.util.function.Consumer;

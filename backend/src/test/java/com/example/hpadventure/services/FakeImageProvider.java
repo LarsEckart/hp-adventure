@@ -1,6 +1,6 @@
 package com.example.hpadventure.services;
 
-import com.example.hpadventure.providers.ImageProvider;
+import com.example.hpadventure.providers.image.ImageProvider;
 
 import java.util.Objects;
 
