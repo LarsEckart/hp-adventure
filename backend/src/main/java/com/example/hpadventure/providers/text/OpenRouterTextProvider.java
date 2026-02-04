@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 /**
  * Text generation provider using OpenRouter's chat completions API.
  * Compatible with OpenAI-style /v1/chat/completions endpoint.
- * Default model: openrouter/free
+ * Default model: mistralai/mistral-small-3.1-24b-instruct:free
  */
 final class OpenRouterTextProvider implements TextProvider {
     private static final Logger logger = LoggerFactory.getLogger(OpenRouterTextProvider.class);

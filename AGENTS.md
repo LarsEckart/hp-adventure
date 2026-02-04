@@ -28,7 +28,7 @@ Developer notes:
   - `image/` - Image generation: `ImageProvider` interface (implemented by `OpenRouterImageProvider`, `OpenAiImageProvider`, `PlaceholderImageProvider`) + `ImageProviderFactory`
   - `speech/` - Text-to-speech: `SpeechProvider` interface (implemented by `ElevenLabsSpeechProvider`) + `SpeechProviderFactory`
 - Text generation supports three providers via the `TextProvider` interface: OpenRouter, Anthropic, and Mistral.
-  - **OpenRouter**: Uses `/v1/chat/completions`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_TEXT_MODEL` default `openrouter/free`).
+  - **OpenRouter**: Uses `/v1/chat/completions`; requires `OPENROUTER_API_KEY` (optional: `OPENROUTER_BASE_URL`, `OPENROUTER_TEXT_MODEL` default `mistralai/mistral-small-3.1-24b-instruct:free`).
   - **Anthropic**: Uses `/v1/messages`; requires `ANTHROPIC_API_KEY` (optional: `ANTHROPIC_BASE_URL`, `ANTHROPIC_MODEL`).
   - **Mistral**: Uses `/v1/chat/completions`; requires `MISTRAL_API_KEY` (optional: `MISTRAL_BASE_URL`, `MISTRAL_MODEL` default `mistral-small-latest`).
   - **Explicit override**: Set `TEXT_PROVIDER=openrouter|anthropic|mistral` to force a specific provider (useful when multiple API keys are set).
