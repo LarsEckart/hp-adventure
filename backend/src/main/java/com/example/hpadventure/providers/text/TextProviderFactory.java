@@ -15,7 +15,7 @@ public final class TextProviderFactory {
     private static final Logger logger = LoggerFactory.getLogger(TextProviderFactory.class);
 
     private static final String DEFAULT_OPENROUTER_BASE_URL = "https://openrouter.ai/api";
-    public static final String DEFAULT_OPENROUTER_MODEL = "mistralai/mistral-small-3.1-24b-instruct:free";
+    public static final String DEFAULT_OPENROUTER_MODEL = "openrouter/free";
     private static final String DEFAULT_ANTHROPIC_BASE_URL = "https://api.anthropic.com";
     private static final String DEFAULT_ANTHROPIC_MODEL = "claude-sonnet-4-5";
     private static final String DEFAULT_MISTRAL_BASE_URL = "https://api.mistral.ai";

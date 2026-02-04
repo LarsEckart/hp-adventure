@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 /**
  * Text generation provider using OpenRouter's chat completions API.
  * Compatible with OpenAI-style /v1/chat/completions endpoint.
- * Default model: xiaomi/mimo-v2-flash:free
+ * Default model: openrouter/free
  */
 final class OpenRouterTextProvider implements TextProvider {
     private static final Logger logger = LoggerFactory.getLogger(OpenRouterTextProvider.class);
