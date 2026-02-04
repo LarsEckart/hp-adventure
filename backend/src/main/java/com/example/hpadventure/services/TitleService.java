@@ -67,7 +67,11 @@ public final class TitleService {
             return null;
         }
 
-        String cleaned = response.trim().replace("\"", "").replace("'", "");
+        String cleaned = response.trim()
+                .replace("\"", "")
+                .replace("'", "")
+                .replace("*", "")
+                .replace("_", "");
         if (cleaned.isEmpty()) {
             return null;
         }
